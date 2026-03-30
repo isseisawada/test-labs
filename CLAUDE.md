@@ -2,22 +2,27 @@
 
 python-pptx を使って PowerPoint 提案書を生成するプロジェクト。
 
-## 主なファイル
+## セットアップ
 
-- `yadokari_proposal.py` - 最初のバージョン
-- `yadokari_proposal_v3.py` - v3
-- `yadokari_proposal_v4.py` - v4（最新）
+```bash
+pip install python-pptx lxml
+```
+
+## バージョン履歴
+
+- `yadokari_proposal.py` - v1（原型）
+- `yadokari_proposal_v3.py` - v3（ブランド追加）
+- `yadokari_proposal_v4.py` - v4（最終版・通常はこれを編集する）
 
 ## 実行方法
 
 ```bash
-python yadokari_proposal_v4.py   # 最新バージョンを実行して pptx を生成
+python3 yadokari_proposal_v4.py   # 実行すると pptx をリポジトリ直下に生成する
 ```
 
-## 依存ライブラリ
+## 出力
 
-- `python-pptx`
-- `lxml`
+- 生成された `.pptx` ファイルは git 管理しない
 
 ## コードスタイル
 
