@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>トレーラーハウス 簡単見積もり</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Helvetica Neue', Arial, 'Hiragino Sans', sans-serif;
+      background: #f5f5f0;
+      color: #333;
+      min-height: 100vh;
+    }
+
+    header {
+      background: #2c2c2c;
+      color: white;
+      padding: 20px 32px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    header h1 { font-size: 1.3rem; font-weight: 600; letter-spacing: 0.04em; }
+    header span { font-size: 0.85rem; color: #aaa; }
+
+    .layout {
+      display: flex;
+      max-width: 1100px;
+      margin: 0 auto;
+      gap: 24px;
+      padding: 24px 16px;
+      align-items: flex-start;
+    }
+
+    .form-panel {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .summary-panel {
+      width: 320px;
+      position: sticky;
+      top: 24px;
+    }
+
+    .card {
+      background: white;
+      border-radius: 10px;
+      padding: 20px 24px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+    }
+
+    .card-title {
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: #888;
+      margin-bottom: 14px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid #eee;
+    }
+
+    /* Base model */
+    .model-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+    .model-btn {
+      padding: 10px 8px;
+      border: 2px solid #e0e0e0;
+      border-radius: 8px;
+      background: white;
+      cursor: pointer;
+      text-align: center;
+      font-size: 0.8rem;
+      color: #444;
+      transition: all 0.15s;
+      line-height: 1.4;
+    }
+    .model-btn:hover { border-color: #bbb; background: #fafafa; }
+    .model-btn.selected { border-color: #2c2c2c; background: #2c2c2c; color: white; }
+    .model-btn .price { font-size: 0.75rem; margin-top: 4px; opacity: 0.7; }
+    .model-btn.selected .price { opacity: 0.8; }
+
+    /* Options */
+    .option-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+
+    .option-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 10px 0;
+      border-bottom: 1px solid #f0f0f0;
+      cursor: pointer;
+    }
+    .option-item:last-child { border-bottom: none; }
+    .option-item:hover .option-name { color: #000; }
+
+    .option-item input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      flex-shrink: 0;
+      margin-top: 1px;
+      accent-color: #2c2c2c;
+      cursor: pointer;
+    }
+
+    .option-info { flex: 1; }
+    .option-name { font-size: 0.85rem; color: #333; line-height: 1.4; }
+    .option-sub  { font-size: 0.72rem; color: #999; margin-top: 2px; }
+
+    .option-price {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #333;
+      white-space: nowrap;
+      margin-top: 1px;
+    }
+
+    /* Size-linked options */
+    .size-note {
+      font-size: 0.72rem;
+      color: #e07b00;
+      margin-top: 4px;
+    }
+
+    /* Select dropdown options */
+    .select-option {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      padding: 10px 0;
+      border-bottom: 1px solid #f0f0f0;
+    }
+    .select-option:last-child { border-bottom: none; }
+    .select-label { font-size: 0.85rem; color: #333; }
+    .select-option select {
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      padding: 6px 10px;
+      font-size: 0.82rem;
+      color: #333;
+      background: white;
+      width: 100%;
+    }
+    .select-option select:focus { outline: none; border-color: #999; }
+
+    /* Discount */
+    .discount-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .discount-row label { font-size: 0.85rem; color: #555; white-space: nowrap; }
+    .discount-row input {
+      flex: 1;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      padding: 8px 12px;
+      font-size: 0.9rem;
+      text-align: right;
+    }
+    .discount-row input:focus { outline: none; border-color: #999; }
+
+    /* Summary */
+    .summary-lines {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+    .summary-line {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      padding: 7px 0;
+      border-bottom: 1px solid #f0f0f0;
+      font-size: 0.82rem;
+      gap: 8px;
+    }
+    .summary-line:last-child { border-bottom: none; }
+    .summary-line .s-name { color: #555; flex: 1; line-height: 1.3; }
+    .summary-line .s-val  { font-weight: 600; white-space: nowrap; }
+    .summary-line.base .s-name { color: #333; }
+
+    .summary-divider {
+      height: 1px;
+      background: #e0e0e0;
+      margin: 8px 0;
+    }
+
+    .summary-total {
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 2px solid #2c2c2c;
+    }
+    .total-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 6px;
+    }
+    .total-label { font-size: 0.8rem; color: #666; }
+    .total-amount { font-size: 1.3rem; font-weight: 700; color: #2c2c2c; }
+    .total-tax {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+    }
+    .total-tax-label { font-size: 0.75rem; color: #888; }
+    .total-tax-amount { font-size: 1.05rem; font-weight: 600; color: #555; }
+
+    .no-model {
+      color: #bbb;
+      font-size: 0.85rem;
+      text-align: center;
+      padding: 20px 0;
+    }
+
+    .btn-print {
+      margin-top: 16px;
+      width: 100%;
+      padding: 12px;
+      background: #2c2c2c;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      cursor: pointer;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+    }
+    .btn-print:hover { background: #444; }
+
+    .btn-reset {
+      margin-top: 8px;
+      width: 100%;
+      padding: 10px;
+      background: white;
+      color: #888;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      font-size: 0.82rem;
+      cursor: pointer;
+    }
+    .btn-reset:hover { border-color: #999; color: #333; }
+
+    /* Number registration note */
+    .reg-note {
+      margin-top: 12px;
+      padding: 10px 12px;
+      background: #fafafa;
+      border-radius: 6px;
+      font-size: 0.72rem;
+      color: #888;
+      line-height: 1.6;
+    }
+    .reg-note strong { color: #666; }
+
+    @media (max-width: 768px) {
+      .layout { flex-direction: column; padding: 12px; }
+      .summary-panel { width: 100%; position: static; order: -1; }
+      .model-grid { grid-template-columns: 1fr; }
+    }
+
+    @media print {
+      header { background: #333 !important; -webkit-print-color-adjust: exact; }
+      .btn-print, .btn-reset { display: none; }
+      .summary-panel { position: static; width: 100%; }
+      .layout { flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>トレーラーハウス 簡単見積もり</h1>
+    <span>Tinys INSPIRATION シリーズ</span>
+  </div>
+</header>
+
+<div class="layout">
+  <!-- ===== Left: Form ===== -->
+  <div class="form-panel">
+
+    <!-- 1. Base Model -->
+    <div class="card">
+      <div class="card-title">1. ベースモデルを選択</div>
+      <div class="model-grid" id="modelGrid"></div>
+    </div>
+
+    <!-- 2. Size-linked Options -->
+    <div class="card">
+      <div class="card-title">2. サイズ連動オプション</div>
+      <p class="size-note" style="margin-bottom:10px;">※ベースモデルのサイズに合わせて自動選択されます</p>
+      <div class="option-list" id="sizeOptions"></div>
+    </div>
+
+    <!-- 3. Common Options -->
+    <div class="card">
+      <div class="card-title">3. 共通オプション</div>
+      <div class="option-list" id="commonOptions"></div>
+    </div>
+
+    <!-- 4. Roll Screen / Blind -->
+    <div class="card">
+      <div class="card-title">4. ロールスクリーン・ブラインド</div>
+      <div class="option-list" id="blindOptions"></div>
+    </div>
+
+    <!-- 5. Misc Costs -->
+    <div class="card">
+      <div class="card-title">5. 諸費用・手続き</div>
+      <div class="option-list" id="miscOptions"></div>
+    </div>
+
+    <!-- 6. Discount -->
+    <div class="card">
+      <div class="card-title">6. 値引き（税前）</div>
+      <div class="discount-row">
+        <label>値引き額</label>
+        <input type="number" id="discountInput" placeholder="0" min="0" step="10000">
+        <span style="font-size:0.85rem;color:#555;">円</span>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ===== Right: Summary ===== -->
+  <div class="summary-panel">
+    <div class="card">
+      <div class="card-title">見積もり合計</div>
+      <div id="summaryContent">
+        <div class="no-model">ベースモデルを選択してください</div>
+      </div>
+      <button class="btn-print" onclick="window.print()">印刷 / PDF保存</button>
+      <button class="btn-reset" onclick="resetAll()">リセット</button>
+
+      <div class="reg-note">
+        <strong>ナンバー登録費用の目安（別途）</strong><br>
+        20ft 水回りあり：約18万円<br>
+        20ft スケルトン：約15万円<br>
+        30ft 水回りあり：約25万円
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// Data
+// ============================================================
+const MODELS = [
+  { id:'m1',  label:'6m｜標準｜水回りあり',      price:7490000, size:'6m' },
+  { id:'m2',  label:'6m｜標準｜水回りなし',      price:6490000, size:'6m' },
+  { id:'m3',  label:'6m｜寒冷地｜水回りあり',    price:8000000, size:'6m' },
+  { id:'m4',  label:'7.2m｜標準｜水回りあり',    price:7990000, size:'7.2m' },
+  { id:'m5',  label:'7.2m｜標準｜水回りなし',    price:6990000, size:'7.2m' },
+  { id:'m6',  label:'7.2m｜寒冷地｜水回りあり',  price:9050000, size:'7.2m' },
+  { id:'m7',  label:'9m｜標準｜水回りあり',      price:8780000, size:'9m' },
+  { id:'m8',  label:'9m｜標準｜水回りなし',      price:7780000, size:'9m' },
+  { id:'m9',  label:'9m｜寒冷地｜水回りあり',    price:9800000, size:'9m' },
+  { id:'m10', label:'実車 7.2m（エアコン込）',    price:7742500, size:'7.2m', note:'エアコン込' },
+  { id:'m11', label:'実車 9m（ロフト付＋エアコン込）', price:9025000, size:'9m', note:'ロフト・エアコン込' },
+];
+
+// Size-linked options: price per size
+const SIZE_OPTIONS = [
+  {
+    id:'chassis',
+    name:'シャーシ塩害対策塗装',
+    sub:'ローバル 亜鉛メッキ塗装',
+    prices:{ '6m':350000, '7.2m':370000, '9m':420000 }
+  },
+  {
+    id:'insulation',
+    name:'高断熱仕様',
+    sub:'天井GW 24K/100mm・壁ミラフォームラムダ/75mm・床/90mm',
+    prices:{ '6m':220000, '7.2m':250000, '9m':280000 }
+  },
+  {
+    id:'roof',
+    name:'急勾配屋根（3寸勾配）',
+    sub:'',
+    prices:{ '6m':100000, '7.2m':110000, '9m':130000 }
+  },
+  {
+    id:'aircon',
+    name:'エアコン',
+    sub:'パナソニック エオリア（6m:8畳用 / 7.2m:10畳用 / 9m:12畳用）',
+    prices:{ '6m':180000, '7.2m':200000, '9m':250000 }
+  },
+  {
+    id:'jack',
+    name:'水平ジャッキ',
+    sub:'',
+    prices:{ '6m':100000, '7.2m':170000, '9m':170000 }
+  },
+];
+
+// Common options
+const COMMON_OPTIONS = [
+  { id:'step',    name:'造作ステップ',    sub:'スチール4段 W670×D1100×H700〜850', price:140000 },
+  { id:'accordionnet', name:'アコーディオン網戸', sub:'LIXIL 18020 W1845×H2030用', price:130000 },
+  { id:'light',   name:'外部照明',        sub:'オーデリック OG254917R1（人感センサー付）', price:50000 },
+  { id:'bunk',    name:'２段ベッド',      sub:'小上がり＋ロフト＋斜めはしご', price:350000 },
+  { id:'loft',    name:'ロフト',          sub:'ロフト＋斜めはしご', price:240000 },
+];
+
+// Roll screen options (select)
+const BLIND_OPTIONS = [
+  { id:'blind_none',  label:'なし',                           price:0 },
+  { id:'blind_l',     label:'W3510×H2030（大）',              price:120000 },
+  { id:'blind_m1',    label:'W1690×H2030（中）',              price:60000 },
+  { id:'blind_m2',    label:'W2010×H1800（中）',              price:70000 },
+  { id:'blind_s',     label:'W1235×H570（小）',               price:40000 },
+];
+
+// Misc costs
+const MISC_OPTIONS = [
+  { id:'design_semi', name:'設計費用（セミオーダー）',   price:150000 },
+  { id:'design_full', name:'設計費用（フルオーダー）',   price:300000 },
+  { id:'doc',         name:'車両申請書類',               price:100000 },
+  { id:'insp',        name:'予備車検',                   price:80000 },
+  { id:'install',     name:'設置費用',                   price:50000 },
+  { id:'misc_cost',   name:'諸経費',                     price:100000 },
+  { id:'transport',   name:'運送費用',                   price:450000 },
+  { id:'new_reg',     name:'新規車両申請費用',           price:300000 },
+];
+
+// ============================================================
+// State
+// ============================================================
+let state = {
+  modelId: null,
+  sizeOpts: {},   // id -> bool
+  commonOpts: {}, // id -> bool
+  blindIdx: 0,
+  blindCount: 1,
+  miscOpts: {},   // id -> bool
+  transportCustom: 0,
+  discount: 0,
+};
+
+// ============================================================
+// Render helpers
+// ============================================================
+function fmt(n) {
+  return '¥' + Math.round(n).toLocaleString('ja-JP');
+}
+
+function getSize() {
+  if (!state.modelId) return null;
+  return MODELS.find(m => m.id === state.modelId)?.size || null;
+}
+
+// ============================================================
+// Build UI
+// ============================================================
+function buildModelGrid() {
+  const grid = document.getElementById('modelGrid');
+  grid.innerHTML = '';
+  MODELS.forEach(m => {
+    const btn = document.createElement('button');
+    btn.className = 'model-btn' + (state.modelId === m.id ? ' selected' : '');
+    btn.innerHTML = `<div>${m.label}</div><div class="price">${fmt(m.price)}</div>`;
+    btn.onclick = () => { state.modelId = m.id; update(); };
+    grid.appendChild(btn);
+  });
+}
+
+function buildSizeOptions() {
+  const container = document.getElementById('sizeOptions');
+  container.innerHTML = '';
+  const size = getSize();
+  SIZE_OPTIONS.forEach(opt => {
+    const price = size ? opt.prices[size] : null;
+    const checked = !!state.sizeOpts[opt.id];
+    const item = document.createElement('label');
+    item.className = 'option-item';
+    item.innerHTML = `
+      <input type="checkbox" ${checked ? 'checked' : ''} ${!size ? 'disabled' : ''}>
+      <div class="option-info">
+        <div class="option-name">${opt.name}</div>
+        ${opt.sub ? `<div class="option-sub">${opt.sub}</div>` : ''}
+      </div>
+      <div class="option-price">${price !== null ? fmt(price) : '—'}</div>
+    `;
+    item.querySelector('input').addEventListener('change', e => {
+      state.sizeOpts[opt.id] = e.target.checked;
+      update();
+    });
+    container.appendChild(item);
+  });
+}
+
+function buildCommonOptions() {
+  const container = document.getElementById('commonOptions');
+  container.innerHTML = '';
+  COMMON_OPTIONS.forEach(opt => {
+    const checked = !!state.commonOpts[opt.id];
+    const item = document.createElement('label');
+    item.className = 'option-item';
+    item.innerHTML = `
+      <input type="checkbox" ${checked ? 'checked' : ''}>
+      <div class="option-info">
+        <div class="option-name">${opt.name}</div>
+        ${opt.sub ? `<div class="option-sub">${opt.sub}</div>` : ''}
+      </div>
+      <div class="option-price">${fmt(opt.price)}</div>
+    `;
+    item.querySelector('input').addEventListener('change', e => {
+      state.commonOpts[opt.id] = e.target.checked;
+      update();
+    });
+    container.appendChild(item);
+  });
+}
+
+function buildBlindOptions() {
+  const container = document.getElementById('blindOptions');
+  container.innerHTML = '';
+
+  // Type select
+  const row1 = document.createElement('div');
+  row1.className = 'select-option';
+  row1.innerHTML = `
+    <div class="select-label">TOSOルノファブ 遮光マイテックループ 正面付け</div>
+    <select id="blindSelect">
+      ${BLIND_OPTIONS.map((b,i)=>`<option value="${i}" ${state.blindIdx===i?'selected':''}>${b.label}${b.price?'　'+fmt(b.price):''}</option>`).join('')}
+    </select>
+  `;
+  row1.querySelector('select').addEventListener('change', e => {
+    state.blindIdx = parseInt(e.target.value);
+    update();
+  });
+  container.appendChild(row1);
+
+  // Count
+  if (state.blindIdx > 0) {
+    const row2 = document.createElement('div');
+    row2.className = 'select-option';
+    row2.innerHTML = `
+      <div class="select-label">枚数</div>
+      <select id="blindCount">
+        ${[1,2,3,4].map(n=>`<option value="${n}" ${state.blindCount===n?'selected':''}>${n}枚</option>`).join('')}
+      </select>
+    `;
+    row2.querySelector('select').addEventListener('change', e => {
+      state.blindCount = parseInt(e.target.value);
+      update();
+    });
+    container.appendChild(row2);
+  }
+}
+
+function buildMiscOptions() {
+  const container = document.getElementById('miscOptions');
+  container.innerHTML = '';
+  MISC_OPTIONS.forEach(opt => {
+    const checked = !!state.miscOpts[opt.id];
+    const item = document.createElement('label');
+    item.className = 'option-item';
+    item.innerHTML = `
+      <input type="checkbox" ${checked ? 'checked' : ''}>
+      <div class="option-info">
+        <div class="option-name">${opt.name}</div>
+      </div>
+      <div class="option-price">${fmt(opt.price)}</div>
+    `;
+    item.querySelector('input').addEventListener('change', e => {
+      state.miscOpts[opt.id] = e.target.checked;
+      update();
+    });
+    container.appendChild(item);
+  });
+}
+
+// ============================================================
+// Summary
+// ============================================================
+function updateSummary() {
+  const el = document.getElementById('summaryContent');
+  if (!state.modelId) {
+    el.innerHTML = '<div class="no-model">ベースモデルを選択してください</div>';
+    return;
+  }
+  const model = MODELS.find(m => m.id === state.modelId);
+  const size  = model.size;
+  const lines = [];
+  let subtotal = model.price;
+  lines.push({ name: `【ベース】${model.label}`, val: model.price, cls:'base' });
+
+  // size opts
+  SIZE_OPTIONS.forEach(opt => {
+    if (state.sizeOpts[opt.id]) {
+      const p = opt.prices[size];
+      subtotal += p;
+      lines.push({ name: opt.name, val: p });
+    }
+  });
+
+  // common opts
+  COMMON_OPTIONS.forEach(opt => {
+    if (state.commonOpts[opt.id]) {
+      subtotal += opt.price;
+      lines.push({ name: opt.name, val: opt.price });
+    }
+  });
+
+  // blind
+  if (state.blindIdx > 0) {
+    const blind = BLIND_OPTIONS[state.blindIdx];
+    const p = blind.price * state.blindCount;
+    subtotal += p;
+    lines.push({ name: `ロールスクリーン ${blind.label}×${state.blindCount}枚`, val: p });
+  }
+
+  // misc
+  MISC_OPTIONS.forEach(opt => {
+    if (state.miscOpts[opt.id]) {
+      subtotal += opt.price;
+      lines.push({ name: opt.name, val: opt.price });
+    }
+  });
+
+  const discount = state.discount || 0;
+  const total_pre = subtotal - discount;
+  const total_tax = Math.round(total_pre * 1.1);
+
+  let html = '<div class="summary-lines">';
+  lines.forEach(l => {
+    html += `<div class="summary-line ${l.cls||''}">
+      <span class="s-name">${l.name}</span>
+      <span class="s-val">${fmt(l.val)}</span>
+    </div>`;
+  });
+  html += '</div>';
+
+  if (discount > 0) {
+    html += `<div class="summary-line" style="color:#c00;margin-top:4px;display:flex;justify-content:space-between;">
+      <span class="s-name" style="color:#c00;">値引き</span>
+      <span class="s-val" style="color:#c00;">−${fmt(discount)}</span>
+    </div>`;
+  }
+
+  html += `
+    <div class="summary-divider"></div>
+    <div class="summary-total">
+      <div class="total-row">
+        <span class="total-label">合計（税前）</span>
+        <span class="total-amount">${fmt(total_pre)}</span>
+      </div>
+      <div class="total-tax">
+        <span class="total-tax-label">合計（税込10%）</span>
+        <span class="total-tax-amount">${fmt(total_tax)}</span>
+      </div>
+    </div>
+  `;
+
+  el.innerHTML = html;
+}
+
+// ============================================================
+// Main update
+// ============================================================
+function update() {
+  buildModelGrid();
+  buildSizeOptions();
+  buildCommonOptions();
+  buildBlindOptions();
+  buildMiscOptions();
+  updateSummary();
+}
+
+function resetAll() {
+  state = {
+    modelId: null,
+    sizeOpts: {},
+    commonOpts: {},
+    blindIdx: 0,
+    blindCount: 1,
+    miscOpts: {},
+    discount: 0,
+  };
+  document.getElementById('discountInput').value = '';
+  update();
+}
+
+// Discount input
+document.getElementById('discountInput').addEventListener('input', e => {
+  state.discount = parseInt(e.target.value) || 0;
+  updateSummary();
+});
+
+// Initial render
+update();
+</script>
+</body>
+</html>
