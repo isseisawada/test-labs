@@ -1,0 +1,1183 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>トレーラーハウス 簡単見積もり</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Helvetica Neue', Arial, 'Hiragino Sans', sans-serif;
+      background: #f5f5f0;
+      color: #333;
+      min-height: 100vh;
+    }
+
+    header {
+      background: #2c2c2c;
+      color: white;
+      padding: 20px 32px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    header h1 { font-size: 1.3rem; font-weight: 600; letter-spacing: 0.04em; }
+    header span { font-size: 0.85rem; color: #aaa; }
+
+    /* Series tabs */
+    .series-tabs {
+      display: flex;
+      gap: 0;
+      padding: 0 16px;
+      background: #fff;
+      border-bottom: 2px solid #e0e0e0;
+      max-width: 1100px;
+      margin: 0 auto;
+      overflow-x: auto;
+    }
+    .series-tab {
+      padding: 12px 20px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #888;
+      cursor: pointer;
+      border-bottom: 3px solid transparent;
+      white-space: nowrap;
+      transition: all 0.15s;
+      margin-bottom: -2px;
+    }
+    .series-tab:hover { color: #555; }
+    .series-tab.active { color: #2c2c2c; border-bottom-color: #2c2c2c; }
+    .series-tab .tab-dot {
+      display: inline-block;
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: #ccc;
+      margin-right: 6px;
+      vertical-align: middle;
+    }
+    .series-tab.has-selection .tab-dot { background: #2c2c2c; }
+
+    .series-tabs-wrapper {
+      background: #fff;
+      border-bottom: 2px solid #e0e0e0;
+    }
+
+    .layout {
+      display: flex;
+      max-width: 1100px;
+      margin: 0 auto;
+      gap: 24px;
+      padding: 24px 16px;
+      align-items: flex-start;
+    }
+
+    .form-panel {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .summary-panel {
+      width: 320px;
+      position: sticky;
+      top: 24px;
+    }
+
+    .card {
+      background: white;
+      border-radius: 10px;
+      padding: 20px 24px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+    }
+
+    .card-title {
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: #888;
+      margin-bottom: 14px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid #eee;
+    }
+
+    /* Base model */
+    .model-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+    .model-btn {
+      padding: 10px 8px;
+      border: 2px solid #e0e0e0;
+      border-radius: 8px;
+      background: white;
+      cursor: pointer;
+      text-align: center;
+      font-size: 0.8rem;
+      color: #444;
+      transition: all 0.15s;
+      line-height: 1.4;
+    }
+    .model-btn:hover { border-color: #bbb; background: #fafafa; }
+    .model-btn.selected { border-color: #2c2c2c; background: #2c2c2c; color: white; }
+    .model-btn .price { font-size: 0.75rem; margin-top: 4px; opacity: 0.7; }
+    .model-btn.selected .price { opacity: 0.8; }
+    .model-btn .price.unknown { color: #e07b00; }
+    .model-btn.selected .price.unknown { color: #ffcc88; }
+
+    /* Custom price input */
+    .custom-price-row {
+      margin-top: 12px;
+      padding: 12px;
+      background: #fff8f0;
+      border-radius: 8px;
+      border: 1px solid #ffd0a0;
+    }
+    .custom-price-row label { font-size: 0.8rem; color: #c07000; display: block; margin-bottom: 6px; }
+    .custom-price-row .price-input-wrap {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .custom-price-row input {
+      flex: 1;
+      border: 1px solid #ffc080;
+      border-radius: 6px;
+      padding: 7px 10px;
+      font-size: 0.9rem;
+      text-align: right;
+      background: white;
+    }
+    .custom-price-row input:focus { outline: none; border-color: #e07b00; }
+    .custom-price-row span { font-size: 0.85rem; color: #555; }
+
+    /* Options */
+    .option-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+
+    .option-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 10px 0;
+      border-bottom: 1px solid #f0f0f0;
+      cursor: pointer;
+    }
+    .option-item:last-child { border-bottom: none; }
+    .option-item:hover .option-name { color: #000; }
+
+    .option-item input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      flex-shrink: 0;
+      margin-top: 1px;
+      accent-color: #2c2c2c;
+      cursor: pointer;
+    }
+
+    .option-info { flex: 1; }
+    .option-name { font-size: 0.85rem; color: #333; line-height: 1.4; }
+    .option-sub  { font-size: 0.72rem; color: #999; margin-top: 2px; }
+
+    .option-price {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #333;
+      white-space: nowrap;
+      margin-top: 1px;
+    }
+
+    /* Size-linked options */
+    .size-note {
+      font-size: 0.72rem;
+      color: #e07b00;
+      margin-top: 4px;
+    }
+
+    /* Select dropdown options */
+    .select-option {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      padding: 10px 0;
+      border-bottom: 1px solid #f0f0f0;
+    }
+    .select-option:last-child { border-bottom: none; }
+    .select-label { font-size: 0.85rem; color: #333; }
+    .select-option select {
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      padding: 6px 10px;
+      font-size: 0.82rem;
+      color: #333;
+      background: white;
+      width: 100%;
+    }
+    .select-option select:focus { outline: none; border-color: #999; }
+
+    /* Discount */
+    .discount-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .discount-row label { font-size: 0.85rem; color: #555; white-space: nowrap; }
+    .discount-row input {
+      flex: 1;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      padding: 8px 12px;
+      font-size: 0.9rem;
+      text-align: right;
+    }
+    .discount-row input:focus { outline: none; border-color: #999; }
+
+    /* Summary */
+    .summary-series-header {
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #aaa;
+      padding: 8px 0 4px;
+      border-bottom: 1px solid #e8e8e8;
+      margin-bottom: 2px;
+    }
+    .summary-lines {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+    .summary-line {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      padding: 7px 0;
+      border-bottom: 1px solid #f0f0f0;
+      font-size: 0.82rem;
+      gap: 8px;
+    }
+    .summary-line:last-child { border-bottom: none; }
+    .summary-line .s-name { color: #555; flex: 1; line-height: 1.3; }
+    .summary-line .s-val  { font-weight: 600; white-space: nowrap; }
+    .summary-line.base .s-name { color: #333; }
+
+    .summary-divider {
+      height: 1px;
+      background: #e0e0e0;
+      margin: 8px 0;
+    }
+
+    .summary-total {
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 2px solid #2c2c2c;
+    }
+    .total-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 6px;
+    }
+    .total-label { font-size: 0.8rem; color: #666; }
+    .total-amount { font-size: 1.3rem; font-weight: 700; color: #2c2c2c; }
+    .total-tax {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+    }
+    .total-tax-label { font-size: 0.75rem; color: #888; }
+    .total-tax-amount { font-size: 1.05rem; font-weight: 600; color: #555; }
+
+    .no-model {
+      color: #bbb;
+      font-size: 0.85rem;
+      text-align: center;
+      padding: 20px 0;
+    }
+
+    .btn-print {
+      margin-top: 16px;
+      width: 100%;
+      padding: 12px;
+      background: #2c2c2c;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      cursor: pointer;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+    }
+    .btn-print:hover { background: #444; }
+
+    .btn-copy {
+      margin-top: 8px;
+      width: 100%;
+      padding: 12px;
+      background: #f0f0f0;
+      color: #333;
+      border: none;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      cursor: pointer;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      transition: background 0.15s;
+    }
+    .btn-copy:hover { background: #e0e0e0; }
+    .btn-copy.copied { background: #d4edda; color: #2a6b3c; }
+
+    .btn-reset {
+      margin-top: 8px;
+      width: 100%;
+      padding: 10px;
+      background: white;
+      color: #888;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      font-size: 0.82rem;
+      cursor: pointer;
+    }
+    .btn-reset:hover { border-color: #999; color: #333; }
+
+    .reg-note {
+      margin-top: 12px;
+      padding: 10px 12px;
+      background: #fafafa;
+      border-radius: 6px;
+      font-size: 0.72rem;
+      color: #888;
+      line-height: 1.6;
+    }
+    .reg-note strong { color: #666; }
+
+    @media (max-width: 768px) {
+      header { padding: 14px 16px; }
+      header h1 { font-size: 1.1rem; }
+
+      .series-tabs { padding: 0 12px; }
+      .series-tab { padding: 10px 14px; font-size: 0.8rem; }
+
+      .layout { flex-direction: column; padding: 12px; gap: 16px; }
+      .summary-panel { width: 100%; position: static; }
+      .card { padding: 16px; }
+
+      .model-grid { grid-template-columns: 1fr; }
+      .model-btn { padding: 12px 10px; font-size: 0.85rem; text-align: left;
+        display: flex; align-items: center; justify-content: space-between; }
+      .model-btn .price { margin-top: 0; font-size: 0.8rem; }
+
+      .option-item { padding: 12px 0; }
+      .option-item input[type="checkbox"] { width: 20px; height: 20px; }
+      .option-name { font-size: 0.9rem; }
+      .option-price { font-size: 0.9rem; }
+
+      .select-option select { padding: 8px 10px; font-size: 0.9rem; }
+
+      .total-amount { font-size: 1.2rem; }
+      .btn-print, .btn-copy, .btn-reset { padding: 14px; font-size: 0.95rem; }
+
+      .custom-price-row input { padding: 9px 10px; font-size: 0.95rem; }
+      .discount-row input { padding: 10px 12px; font-size: 0.95rem; }
+    }
+
+    @media (max-width: 480px) {
+      .series-tab { padding: 9px 12px; font-size: 0.75rem; }
+      .series-tab .tab-dot { display: none; }
+    }
+
+    @media print {
+      header { background: #333 !important; -webkit-print-color-adjust: exact; }
+      .btn-print, .btn-reset { display: none; }
+      .summary-panel { position: static; width: 100%; }
+      .layout { flex-direction: column; }
+      .series-tabs-wrapper { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>トレーラーハウス 簡単見積もり</h1>
+    <span>YADOKARI</span>
+  </div>
+</header>
+
+<div class="series-tabs-wrapper">
+  <div class="series-tabs" id="seriesTabs">
+    <div class="series-tab active" data-series="tinys" onclick="switchSeries('tinys')">
+      <span class="tab-dot"></span>Tinys INSPIRATION
+    </div>
+    <div class="series-tab" data-series="roadie" onclick="switchSeries('roadie')">
+      <span class="tab-dot"></span>ROADIE
+    </div>
+    <div class="series-tab" data-series="chassis" onclick="switchSeries('chassis')">
+      <span class="tab-dot"></span>シャーシ
+    </div>
+  </div>
+</div>
+
+<div class="layout">
+  <div class="form-panel" id="formPanel"></div>
+
+  <div class="summary-panel">
+    <div class="card">
+      <div class="card-title">見積もり合計</div>
+      <div id="summaryContent">
+        <div class="no-model">モデルを選択してください</div>
+      </div>
+      <button class="btn-print" onclick="window.print()">印刷 / PDF保存</button>
+      <button class="btn-copy" id="copyBtn" onclick="copyEstimate()">テキストをコピー</button>
+      <button class="btn-reset" onclick="resetAll()">リセット</button>
+      <div class="reg-note">
+        <strong>ナンバー登録費用の目安（別途）</strong><br>
+        20ft 水回りあり：約18万円<br>
+        20ft スケルトン：約15万円<br>
+        30ft 水回りあり：約25万円
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// Data — Tinys INSPIRATION
+// ============================================================
+const TINYS_MODELS = [
+  { id:'t1',  label:'6m｜標準｜水回りあり',      price:7490000, size:'6m' },
+  { id:'t2',  label:'6m｜標準｜水回りなし',      price:6490000, size:'6m' },
+  { id:'t3',  label:'6m｜寒冷地｜水回りあり',    price:8000000, size:'6m' },
+  { id:'t4',  label:'7.2m｜標準｜水回りあり',    price:7990000, size:'7.2m' },
+  { id:'t5',  label:'7.2m｜標準｜水回りなし',    price:6990000, size:'7.2m' },
+  { id:'t6',  label:'7.2m｜寒冷地｜水回りあり',  price:9050000, size:'7.2m' },
+  { id:'t7',  label:'9m｜標準｜水回りあり',      price:8780000, size:'9m' },
+  { id:'t8',  label:'9m｜標準｜水回りなし',      price:7780000, size:'9m' },
+  { id:'t9',  label:'9m｜寒冷地｜水回りあり',    price:9800000, size:'9m' },
+  { id:'t10', label:'実車 7.2m（エアコン込）',    price:7742500, size:'7.2m', note:'エアコン込' },
+  { id:'t11', label:'実車 9m（ロフト付＋エアコン込）', price:9025000, size:'9m', note:'ロフト・エアコン込' },
+];
+
+const TINYS_SIZE_OPTIONS = [
+  { id:'ts1', name:'シャーシ塩害対策塗装',   sub:'ローバル 亜鉛メッキ塗装',
+    prices:{ '6m':350000, '7.2m':370000, '9m':420000 } },
+  { id:'ts2', name:'高断熱仕様',
+    sub:'天井GW 24K/100mm・壁ミラフォームラムダ/75mm・床/90mm',
+    prices:{ '6m':220000, '7.2m':250000, '9m':280000 } },
+  { id:'ts3', name:'急勾配屋根（3寸勾配）',  sub:'',
+    prices:{ '6m':100000, '7.2m':110000, '9m':130000 } },
+  { id:'ts4', name:'エアコン',
+    sub:'パナソニック エオリア（6m:8畳用 / 7.2m:10畳用 / 9m:12畳用）',
+    prices:{ '6m':180000, '7.2m':200000, '9m':250000 } },
+  { id:'ts5', name:'水平ジャッキ', sub:'',
+    prices:{ '6m':100000, '7.2m':170000, '9m':170000 } },
+];
+
+const TINYS_COMMON_OPTIONS = [
+  { id:'tc1', name:'造作ステップ',    sub:'スチール4段 W670×D1100×H700〜850', price:140000 },
+  { id:'tc2', name:'アコーディオン網戸', sub:'LIXIL 18020 W1845×H2030用', price:130000 },
+  { id:'tc3', name:'外部照明',        sub:'オーデリック OG254917R1（人感センサー付）', price:50000 },
+  { id:'tc4', name:'２段ベッド',      sub:'小上がり＋ロフト＋斜めはしご', price:350000 },
+  { id:'tc5', name:'ロフト',          sub:'ロフト＋斜めはしご', price:240000 },
+];
+
+const TINYS_BLIND_OPTIONS = [
+  { id:'tb0', label:'なし',                  price:0 },
+  { id:'tb1', label:'W3510×H2030（大）',     price:120000 },
+  { id:'tb2', label:'W1690×H2030（中）',     price:60000 },
+  { id:'tb3', label:'W2010×H1800（中）',     price:70000 },
+  { id:'tb4', label:'W1235×H570（小）',      price:40000 },
+];
+
+const TINYS_MISC_OPTIONS = [
+  { id:'tm1', name:'設計費用（セミオーダー）', price:150000 },
+  { id:'tm2', name:'設計費用（フルオーダー）', price:300000 },
+  { id:'tm3', name:'車両申請書類',             price:100000 },
+  { id:'tm4', name:'予備車検',                 price:80000 },
+  { id:'tm5', name:'設置費用',                 price:50000 },
+  { id:'tm8', name:'新規車両申請費用',         price:300000 },
+];
+
+// ============================================================
+// Data — ROADIE
+// ============================================================
+const ROADIE_MODELS = [
+  { id:'r1', label:'7.2m｜切り妻',                    price:10250000, size:'7.2m' },
+  { id:'r2', label:'7.2m｜片流れ',                    price:10100000, size:'7.2m' },
+  { id:'r3', label:'6m',                              price:7150000,  size:'6m' },
+  { id:'r4', label:'6m｜寒冷地',                      price:7300000,  size:'6m' },
+  { id:'r5', label:'7.2m｜寒冷地｜片流れ',            price:10350000, size:'7.2m' },
+  { id:'r6', label:'mini',                            price:3700000,  size:'mini' },
+  { id:'r7', label:'実車（ロフト付き・エアコン込）',  price:10022500, size:'7.2m', note:'ロフト・エアコン込' },
+];
+
+const ROADIE_SIZE_OPTIONS = [
+  { id:'rs1', name:'シャーシ塩害対策塗装',
+    sub:'PPG社 QP-140水性1液防錆プライマー',
+    prices:{ 'mini':110000, '6m':155000, '7.2m':220000 } },
+  { id:'rs2', name:'断熱（寒冷地仕様）',
+    sub:'天井GW 32K/90mm・壁GW 32K/90mm・床スタイロフォーム/100mm',
+    prices:{ 'mini':155000, '6m':235000, '7.2m':280000 } },
+  { id:'rs3', name:'水平ジャッキ', sub:'',
+    prices:{ 'mini':null, '6m':100000, '7.2m':120000 } },
+];
+
+const ROADIE_COMMON_OPTIONS = [
+  { id:'rc1', name:'造作ステップ',    sub:'34段 W1000×D900×H600', price:140000 },
+  { id:'rc2', name:'エアコン本体',    sub:'パナソニック エオリア', price:280000 },
+  { id:'rc3', name:'給湯器本体',      sub:'リンナイ 16号', price:110000 },
+  { id:'rc4', name:'アコーディオン網戸', sub:'サーモスL オープンウィンFD4枚建', price:90000 },
+  { id:'rc5', name:'外部照明',        sub:'オーデリックOG254917R1', price:40000 },
+];
+
+const ROADIE_MISC_OPTIONS = [
+  { id:'rm1', name:'設計費用（セミオーダー）', price:150000 },
+  { id:'rm2', name:'設計費用（フルオーダー）', price:300000 },
+  { id:'rm3', name:'車両申請書類',             price:100000 },
+  { id:'rm4', name:'予備車検',                 price:80000 },
+  { id:'rm5', name:'設置費用',                 price:50000 },
+];
+
+
+// ============================================================
+// Data — シャーシ
+// ============================================================
+const CHASSIS_MODELS = [
+  { id:'ch1', label:'YCL360（12ft コンテナロック付き）', price:1200000 },
+  { id:'ch2', label:'YCL600（20ft コンテナロック付き）', price:1230000 },
+  { id:'ch3', label:'YNR600（ナローシャーシ 6m）',       price:1270000 },
+  { id:'ch4', label:'YNR720（ナローシャーシ 7.2m）',     price:1380000 },
+  { id:'ch5', label:'YNR900（ナローシャーシ 9m）',       price:1910000 },
+  { id:'ch6', label:'YLW600',                            price:1750000 },
+];
+
+const CHASSIS_OPTIONS = [
+  { id:'co1', name:'リジットジャッキ YCL360用（4個）',     price:60000 },
+  { id:'co2', name:'リジットジャッキ YCL/YNR600用（6個）', price:90000 },
+  { id:'co3', name:'リジットジャッキ YNR720,900用（8個）', price:120000 },
+  { id:'co4', name:'リジットジャッキ YLW600用（6個）',     price:150000 },
+  { id:'co5', name:'土台ベース YNR600用',                  price:430000 },
+  { id:'co6', name:'土台ベース YNR720用',                  price:445000 },
+  { id:'co7', name:'土台ベース YNR900用',                  price:580000 },
+  { id:'co8', name:'土台ベース YCL600用',                  price:385000 },
+  { id:'co9', name:'土台ベース YLW600用',                  price:440000 },
+  { id:'co10', name:'予備車検',                            price:80000 },
+];
+
+// ============================================================
+// Data — 共通：配送費用・諸経費
+// ============================================================
+const TRANSPORT_OPTIONS = [
+  { idx:0,  label:'なし',      price:0 },
+  { idx:1,  label:'100km以内', price:190000 },
+  { idx:2,  label:'200km以内', price:260000 },
+  { idx:3,  label:'300km以内', price:330000 },
+  { idx:4,  label:'400km以内', price:400000 },
+  { idx:5,  label:'500km以内', price:470000 },
+  { idx:6,  label:'600km以内', price:540000 },
+  { idx:7,  label:'700km以内', price:620000 },
+  { idx:8,  label:'800km以内', price:690000 },
+  { idx:9,  label:'900km以内', price:760000 },
+  { idx:10, label:'1000km以内', price:830000 },
+];
+
+const REGION_MISC_OPTIONS = [
+  { idx:0, label:'なし',        price:0 },
+  { idx:1, label:'関東',        price:50000 },
+  { idx:2, label:'北陸・中部',  price:70000 },
+  { idx:3, label:'東北・関西',  price:100000 },
+  { idx:4, label:'四国・中国',  price:150000 },
+  { idx:5, label:'九州・北海道', price:150000 },
+  { idx:6, label:'沖縄・離島',  price:150000 },
+];
+
+// ============================================================
+// State
+// ============================================================
+let state = {
+  activeSeries: 'tinys',
+  transportIdx: 0,
+  miscCostIdx: 0,
+  discount: 0,
+  tinys: {
+    modelId: null, customPrice: 0,
+    sizeOpts: {}, commonOpts: {}, blindIdx: 0, blindCount: 1, miscOpts: {},
+  },
+  roadie: {
+    modelId: null, customPrice: 0,
+    sizeOpts: {}, commonOpts: {}, miscOpts: {},
+  },
+  chassis: {
+    modelId: null,
+    opts: {},
+  },
+};
+
+// ============================================================
+// Helpers
+// ============================================================
+function fmt(n) {
+  return '¥' + Math.round(n).toLocaleString('ja-JP');
+}
+
+function getModelPrice(model, customPrice) {
+  if (model.price !== null && model.price !== undefined) return model.price;
+  return customPrice || 0;
+}
+
+// ============================================================
+// Series switch
+// ============================================================
+function switchSeries(series) {
+  state.activeSeries = series;
+  document.querySelectorAll('.series-tab').forEach(t => {
+    t.classList.toggle('active', t.dataset.series === series);
+  });
+  renderForm();
+}
+
+function updateTabDots() {
+  const hasSelection = {
+    tinys:   !!state.tinys.modelId,
+    roadie:  !!state.roadie.modelId,
+    chassis: !!state.chassis.modelId,
+  };
+  document.querySelectorAll('.series-tab').forEach(t => {
+    t.classList.toggle('has-selection', !!hasSelection[t.dataset.series]);
+  });
+}
+
+// ============================================================
+// Render Form (dispatches to per-series render)
+// ============================================================
+function renderForm() {
+  const panel = document.getElementById('formPanel');
+  panel.innerHTML = '';
+  if (state.activeSeries === 'tinys')   renderTinys(panel);
+  if (state.activeSeries === 'roadie')  renderRoadie(panel);
+  if (state.activeSeries === 'chassis') renderChassis(panel);
+}
+
+// ============================================================
+// Shared UI builders
+// ============================================================
+function makeCard(title) {
+  const card = document.createElement('div');
+  card.className = 'card';
+  const t = document.createElement('div');
+  t.className = 'card-title';
+  t.textContent = title;
+  card.appendChild(t);
+  return card;
+}
+
+function buildModelGrid(container, models, selectedId, customPrice, onSelect, onCustomPrice) {
+  const grid = document.createElement('div');
+  grid.className = 'model-grid';
+  models.forEach(m => {
+    const btn = document.createElement('button');
+    btn.className = 'model-btn' + (selectedId === m.id ? ' selected' : '');
+    const priceText = m.price !== null && m.price !== undefined
+      ? fmt(m.price)
+      : '価格要確認';
+    const unknownCls = (m.price === null || m.price === undefined) ? ' unknown' : '';
+    btn.innerHTML = `<div>${m.label}</div><div class="price${unknownCls}">${priceText}</div>`;
+    btn.onclick = () => onSelect(m.id);
+    grid.appendChild(btn);
+  });
+  container.appendChild(grid);
+
+  // Custom price input if selected model has no price
+  if (selectedId) {
+    const m = models.find(x => x.id === selectedId);
+    if (m && (m.price === null || m.price === undefined)) {
+      const row = document.createElement('div');
+      row.className = 'custom-price-row';
+      row.innerHTML = `
+        <label>このモデルの価格を入力してください（税前）</label>
+        <div class="price-input-wrap">
+          <input type="number" placeholder="0" min="0" step="10000" value="${customPrice || ''}">
+          <span>円</span>
+        </div>
+      `;
+      row.querySelector('input').addEventListener('input', e => onCustomPrice(parseInt(e.target.value) || 0));
+      container.appendChild(row);
+    }
+  }
+}
+
+function buildSizeLinkedOptions(container, opts, selectedId, models, stateOpts, onChange) {
+  const size = selectedId ? models.find(m => m.id === selectedId)?.size : null;
+  const list = document.createElement('div');
+  list.className = 'option-list';
+  opts.forEach(opt => {
+    const price = size ? opt.prices[size] : null;
+    const checked = !!stateOpts[opt.id];
+    const item = document.createElement('label');
+    item.className = 'option-item';
+    item.innerHTML = `
+      <input type="checkbox" ${checked ? 'checked' : ''} ${(!size || price === null || price === undefined) ? 'disabled' : ''}>
+      <div class="option-info">
+        <div class="option-name">${opt.name}</div>
+        ${opt.sub ? `<div class="option-sub">${opt.sub}</div>` : ''}
+      </div>
+      <div class="option-price">${(price !== null && price !== undefined) ? fmt(price) : '—'}</div>
+    `;
+    item.querySelector('input').addEventListener('change', e => onChange(opt.id, e.target.checked));
+    list.appendChild(item);
+  });
+  container.appendChild(list);
+}
+
+function buildCheckboxOptions(container, opts, stateOpts, onChange) {
+  const list = document.createElement('div');
+  list.className = 'option-list';
+  opts.forEach(opt => {
+    const checked = !!stateOpts[opt.id];
+    const item = document.createElement('label');
+    item.className = 'option-item';
+    item.innerHTML = `
+      <input type="checkbox" ${checked ? 'checked' : ''}>
+      <div class="option-info">
+        <div class="option-name">${opt.name}</div>
+        ${opt.sub ? `<div class="option-sub">${opt.sub}</div>` : ''}
+      </div>
+      <div class="option-price">${fmt(opt.price)}</div>
+    `;
+    item.querySelector('input').addEventListener('change', e => onChange(opt.id, e.target.checked));
+    list.appendChild(item);
+  });
+  container.appendChild(list);
+}
+
+// ============================================================
+// Tinys INSPIRATION form
+// ============================================================
+function renderTinys(panel) {
+  const s = state.tinys;
+
+  // 1. Base model
+  const c1 = makeCard('1. ベースモデルを選択');
+  buildModelGrid(c1, TINYS_MODELS, s.modelId, s.customPrice,
+    id => { s.modelId = id; s.sizeOpts = {}; update(); },
+    v  => { s.customPrice = v; update(); }
+  );
+  panel.appendChild(c1);
+
+  // 2. Size options
+  const c2 = makeCard('2. サイズ連動オプション');
+  const note = document.createElement('p');
+  note.className = 'size-note';
+  note.style.marginBottom = '10px';
+  note.textContent = '※ベースモデルのサイズに合わせて自動選択されます';
+  c2.appendChild(note);
+  buildSizeLinkedOptions(c2, TINYS_SIZE_OPTIONS, s.modelId, TINYS_MODELS, s.sizeOpts,
+    (id, v) => { s.sizeOpts[id] = v; update(); }
+  );
+  panel.appendChild(c2);
+
+  // 3. Common options
+  const c3 = makeCard('3. 共通オプション');
+  buildCheckboxOptions(c3, TINYS_COMMON_OPTIONS, s.commonOpts,
+    (id, v) => { s.commonOpts[id] = v; update(); }
+  );
+  panel.appendChild(c3);
+
+  // 4. Blind
+  const c4 = makeCard('4. ロールスクリーン・ブラインド');
+  const row1 = document.createElement('div');
+  row1.className = 'select-option';
+  row1.innerHTML = `
+    <div class="select-label">TOSOルノファブ 遮光マイテックループ 正面付け</div>
+    <select>
+      ${TINYS_BLIND_OPTIONS.map((b,i)=>`<option value="${i}" ${s.blindIdx===i?'selected':''}>${b.label}${b.price?'　'+fmt(b.price):''}</option>`).join('')}
+    </select>
+  `;
+  row1.querySelector('select').addEventListener('change', e => {
+    s.blindIdx = parseInt(e.target.value); update();
+  });
+  c4.appendChild(row1);
+  if (s.blindIdx > 0) {
+    const row2 = document.createElement('div');
+    row2.className = 'select-option';
+    row2.innerHTML = `
+      <div class="select-label">枚数</div>
+      <select>
+        ${[1,2,3,4].map(n=>`<option value="${n}" ${s.blindCount===n?'selected':''}>${n}枚</option>`).join('')}
+      </select>
+    `;
+    row2.querySelector('select').addEventListener('change', e => {
+      s.blindCount = parseInt(e.target.value); update();
+    });
+    c4.appendChild(row2);
+  }
+  panel.appendChild(c4);
+
+  // 5. Misc
+  const c5 = makeCard('5. 諸費用・手続き');
+  buildCheckboxOptions(c5, TINYS_MISC_OPTIONS, s.miscOpts,
+    (id, v) => { s.miscOpts[id] = v; update(); }
+  );
+  panel.appendChild(c5);
+
+  // 6. 共通：配送費用・諸経費
+  appendSharedCostCard(panel);
+
+  // 7. Discount
+  appendDiscountCard(panel);
+}
+
+// ============================================================
+// ROADIE form
+// ============================================================
+function renderRoadie(panel) {
+  const s = state.roadie;
+
+  const c1 = makeCard('1. ベースモデルを選択');
+  buildModelGrid(c1, ROADIE_MODELS, s.modelId, s.customPrice,
+    id => { s.modelId = id; s.sizeOpts = {}; update(); },
+    v  => { s.customPrice = v; update(); }
+  );
+  panel.appendChild(c1);
+
+  const c2 = makeCard('2. サイズ連動オプション');
+  const note = document.createElement('p');
+  note.className = 'size-note';
+  note.style.marginBottom = '10px';
+  note.textContent = '※ベースモデルのサイズに合わせて自動選択されます';
+  c2.appendChild(note);
+  buildSizeLinkedOptions(c2, ROADIE_SIZE_OPTIONS, s.modelId, ROADIE_MODELS, s.sizeOpts,
+    (id, v) => { s.sizeOpts[id] = v; update(); }
+  );
+  panel.appendChild(c2);
+
+  const c3 = makeCard('3. 共通オプション');
+  buildCheckboxOptions(c3, ROADIE_COMMON_OPTIONS, s.commonOpts,
+    (id, v) => { s.commonOpts[id] = v; update(); }
+  );
+  panel.appendChild(c3);
+
+  const c4 = makeCard('4. 諸費用・手続き');
+  buildCheckboxOptions(c4, ROADIE_MISC_OPTIONS, s.miscOpts,
+    (id, v) => { s.miscOpts[id] = v; update(); }
+  );
+  panel.appendChild(c4);
+
+  appendSharedCostCard(panel);
+  appendDiscountCard(panel);
+}
+
+// ============================================================
+// シャーシ form
+// ============================================================
+function renderChassis(panel) {
+  const s = state.chassis;
+
+  const c1 = makeCard('1. シャーシを選択');
+  buildModelGrid(c1, CHASSIS_MODELS, s.modelId, 0,
+    id => { s.modelId = id; update(); },
+    () => {}
+  );
+  panel.appendChild(c1);
+
+  const c2 = makeCard('2. オプション');
+  buildCheckboxOptions(c2, CHASSIS_OPTIONS, s.opts,
+    (id, v) => { s.opts[id] = v; update(); }
+  );
+  panel.appendChild(c2);
+
+  appendSharedCostCard(panel);
+  appendDiscountCard(panel);
+}
+
+// ============================================================
+// Shared cost card (配送費用・諸経費) — always appended last before discount
+// ============================================================
+function appendSharedCostCard(panel) {
+  const card = makeCard('配送費用・諸経費');
+
+  const r1 = document.createElement('div');
+  r1.className = 'select-option';
+  r1.innerHTML = `
+    <div class="select-label">配送費用（距離別）</div>
+    <select id="transportSelect">
+      ${TRANSPORT_OPTIONS.map(o =>
+        `<option value="${o.idx}" ${state.transportIdx === o.idx ? 'selected' : ''}>${o.label}${o.price ? '　' + fmt(o.price) : ''}</option>`
+      ).join('')}
+    </select>
+  `;
+  r1.querySelector('select').addEventListener('change', e => {
+    state.transportIdx = parseInt(e.target.value); updateSummary();
+  });
+  card.appendChild(r1);
+
+  const r2 = document.createElement('div');
+  r2.className = 'select-option';
+  r2.innerHTML = `
+    <div class="select-label">諸経費（エリア別）</div>
+    <select id="miscCostSelect">
+      ${REGION_MISC_OPTIONS.map(o =>
+        `<option value="${o.idx}" ${state.miscCostIdx === o.idx ? 'selected' : ''}>${o.label}${o.price ? '　' + fmt(o.price) : ''}</option>`
+      ).join('')}
+    </select>
+  `;
+  r2.querySelector('select').addEventListener('change', e => {
+    state.miscCostIdx = parseInt(e.target.value); updateSummary();
+  });
+  card.appendChild(r2);
+
+  panel.appendChild(card);
+}
+
+// ============================================================
+// Discount card (shared)
+// ============================================================
+function appendDiscountCard(panel) {
+  const card = makeCard('値引き（税前）');
+  card.innerHTML += `
+    <div class="discount-row">
+      <label>値引き額</label>
+      <input type="number" id="discountInput" placeholder="0" min="0" step="10000" value="${state.discount || ''}">
+      <span style="font-size:0.85rem;color:#555;">円</span>
+    </div>
+  `;
+  panel.appendChild(card);
+  card.querySelector('#discountInput').addEventListener('input', e => {
+    state.discount = parseInt(e.target.value) || 0;
+    updateSummary();
+  });
+}
+
+// ============================================================
+// Collect all selected items across series
+// ============================================================
+function collectAllLines() {
+  const sections = [];
+
+  // Tinys
+  if (state.tinys.modelId) {
+    const s = state.tinys;
+    const model = TINYS_MODELS.find(m => m.id === s.modelId);
+    const size = model.size;
+    const lines = [];
+    const basePrice = getModelPrice(model, s.customPrice);
+    lines.push({ name:`【ベース】${model.label}`, val:basePrice, cls:'base' });
+
+    TINYS_SIZE_OPTIONS.forEach(opt => {
+      if (s.sizeOpts[opt.id]) {
+        const p = opt.prices[size];
+        if (p) lines.push({ name:opt.name, val:p });
+      }
+    });
+    TINYS_COMMON_OPTIONS.forEach(opt => {
+      if (s.commonOpts[opt.id]) lines.push({ name:opt.name, val:opt.price });
+    });
+    if (s.blindIdx > 0) {
+      const blind = TINYS_BLIND_OPTIONS[s.blindIdx];
+      const p = blind.price * s.blindCount;
+      lines.push({ name:`ロールスクリーン ${blind.label}×${s.blindCount}枚`, val:p });
+    }
+    TINYS_MISC_OPTIONS.forEach(opt => {
+      if (s.miscOpts[opt.id]) lines.push({ name:opt.name, val:opt.price });
+    });
+    sections.push({ title:'Tinys INSPIRATION', lines });
+  }
+
+  // ROADIE
+  if (state.roadie.modelId) {
+    const s = state.roadie;
+    const model = ROADIE_MODELS.find(m => m.id === s.modelId);
+    const size = model.size;
+    const lines = [];
+    const basePrice = getModelPrice(model, s.customPrice);
+    lines.push({ name:`【ベース】ROADIE ${model.label}`, val:basePrice, cls:'base' });
+
+    ROADIE_SIZE_OPTIONS.forEach(opt => {
+      if (s.sizeOpts[opt.id]) {
+        const p = opt.prices[size];
+        if (p) lines.push({ name:opt.name, val:p });
+      }
+    });
+    ROADIE_COMMON_OPTIONS.forEach(opt => {
+      if (s.commonOpts[opt.id]) lines.push({ name:opt.name, val:opt.price });
+    });
+    ROADIE_MISC_OPTIONS.forEach(opt => {
+      if (s.miscOpts[opt.id]) lines.push({ name:opt.name, val:opt.price });
+    });
+    sections.push({ title:'ROADIE', lines });
+  }
+
+  // Chassis
+  if (state.chassis.modelId) {
+    const s = state.chassis;
+    const model = CHASSIS_MODELS.find(m => m.id === s.modelId);
+    const lines = [];
+    lines.push({ name:`【ベース】${model.label}`, val:model.price, cls:'base' });
+    CHASSIS_OPTIONS.forEach(opt => {
+      if (s.opts[opt.id]) lines.push({ name:opt.name, val:opt.price });
+    });
+    sections.push({ title:'シャーシ', lines });
+  }
+
+  // 配送費用・諸経費（共通）
+  const transport = TRANSPORT_OPTIONS[state.transportIdx];
+  const miscCost  = REGION_MISC_OPTIONS[state.miscCostIdx];
+  const sharedLines = [];
+  if (transport && transport.price > 0)
+    sharedLines.push({ name:`配送費用（${transport.label}）`, val:transport.price });
+  if (miscCost && miscCost.price > 0)
+    sharedLines.push({ name:`諸経費（${miscCost.label}）`, val:miscCost.price });
+  if (sharedLines.length > 0)
+    sections.push({ title:'配送・諸経費', lines:sharedLines });
+
+  return sections;
+}
+
+// ============================================================
+// Summary
+// ============================================================
+function updateSummary() {
+  const el = document.getElementById('summaryContent');
+  const sections = collectAllLines();
+
+  if (sections.length === 0) {
+    el.innerHTML = '<div class="no-model">モデルを選択してください</div>';
+    return;
+  }
+
+  let grandTotal = 0;
+  let html = '';
+
+  sections.forEach(sec => {
+    const secTotal = sec.lines.reduce((s, l) => s + l.val, 0);
+    grandTotal += secTotal;
+
+    html += `<div class="summary-series-header">${sec.title}</div>`;
+    html += '<div class="summary-lines">';
+    sec.lines.forEach(l => {
+      html += `<div class="summary-line ${l.cls||''}">
+        <span class="s-name">${l.name}</span>
+        <span class="s-val">${fmt(l.val)}</span>
+      </div>`;
+    });
+    html += '</div>';
+  });
+
+  const discount = state.discount || 0;
+  const total_pre = grandTotal - discount;
+  const total_tax = Math.round(total_pre * 1.1);
+
+  if (discount > 0) {
+    html += `<div class="summary-line" style="color:#c00;margin-top:4px;display:flex;justify-content:space-between;">
+      <span class="s-name" style="color:#c00;">値引き</span>
+      <span class="s-val" style="color:#c00;">−${fmt(discount)}</span>
+    </div>`;
+  }
+
+  html += `
+    <div class="summary-divider"></div>
+    <div class="summary-total">
+      <div class="total-row">
+        <span class="total-label">合計（税前）</span>
+        <span class="total-amount">${fmt(total_pre)}</span>
+      </div>
+      <div class="total-tax">
+        <span class="total-tax-label">合計（税込10%）</span>
+        <span class="total-tax-amount">${fmt(total_tax)}</span>
+      </div>
+    </div>
+  `;
+
+  el.innerHTML = html;
+}
+
+// ============================================================
+// Copy as plain text
+// ============================================================
+function buildEstimateText() {
+  const sections = collectAllLines();
+  if (sections.length === 0) return '';
+
+  const pad = (s, len) => s + ' '.repeat(Math.max(0, len - [...s].length));
+  let grandTotal = 0;
+  let text = '━━━━━━━━━━━━━━━━━━━━━━━━\n';
+  text += 'トレーラーハウス 概算見積もり\n';
+  text += '━━━━━━━━━━━━━━━━━━━━━━━━\n\n';
+
+  sections.forEach(sec => {
+    text += `【${sec.title}】\n`;
+    sec.lines.forEach(l => {
+      text += `${pad(l.name, 24)}  ${fmt(l.val)}\n`;
+      grandTotal += l.val;
+    });
+    text += '\n';
+  });
+
+  const discount = state.discount || 0;
+  const total_pre = grandTotal - discount;
+  const total_tax = Math.round(total_pre * 1.1);
+
+  if (discount > 0) {
+    text += `${pad('値引き', 24)}  −${fmt(discount)}\n\n`;
+  }
+  text += '────────────────────────\n';
+  text += `${pad('合計（税前）', 24)}  ${fmt(total_pre)}\n`;
+  text += `${pad('合計（税込10%）', 24)}  ${fmt(total_tax)}\n`;
+  text += '━━━━━━━━━━━━━━━━━━━━━━━━\n';
+  text += '※ ナンバー登録費用は別途\n';
+  return text;
+}
+
+function copyEstimate() {
+  const text = buildEstimateText();
+  if (!text) return;
+  const btn = document.getElementById('copyBtn');
+  navigator.clipboard.writeText(text).then(() => {
+    btn.textContent = 'コピーしました！';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = 'テキストをコピー'; btn.classList.remove('copied'); }, 2000);
+  }).catch(() => {
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.cssText = 'position:fixed;opacity:0';
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    btn.textContent = 'コピーしました！';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = 'テキストをコピー'; btn.classList.remove('copied'); }, 2000);
+  });
+}
+
+// ============================================================
+// Main update
+// ============================================================
+function update() {
+  renderForm();
+  updateTabDots();
+  updateSummary();
+}
+
+function resetAll() {
+  state.transportIdx = 0;
+  state.miscCostIdx  = 0;
+  state.discount = 0;
+  state.tinys   = { modelId:null, customPrice:0, sizeOpts:{}, commonOpts:{}, blindIdx:0, blindCount:1, miscOpts:{} };
+  state.roadie  = { modelId:null, customPrice:0, sizeOpts:{}, commonOpts:{}, miscOpts:{} };
+  state.chassis = { modelId:null, opts:{} };
+  update();
+}
+
+// Initial render
+update();
+</script>
+</body>
+</html>
