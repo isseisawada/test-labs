@@ -226,12 +226,18 @@
     /* RESPONSIVE */
     @media (max-width: 1060px) { .sidebar { display: none; } .sum-panel { width: 252px; } }
     @media (max-width: 760px) {
-      .app { flex-direction: column; padding: 12px; }
+      .app { flex-direction: column; padding: 0; gap: 0; }
       .sum-panel { width: 100%; position: static; }
+      .card { border-radius: 0; border-left: none; border-right: none; }
+      .sum-card { border-radius: 0; border-left: none; border-right: none; }
       .m-grid { grid-template-columns: 1fr 1fr; }
       .sel-grid { grid-template-columns: 1fr; }
-      .hdr { gap: 10px; padding: 0 12px; }
-      .s-btn { padding: 5px 10px; font-size: 0.78rem; }
+      .hdr { flex-wrap: wrap; height: auto; padding: 10px 12px 0; gap: 0; }
+      .btn-pdf { margin-left: auto; }
+      .s-nav { order: 3; width: 100%; flex: none; border-top: 1px solid var(--border); padding: 6px 0; margin-top: 8px; overflow-x: auto; gap: 0; }
+      .s-btn { padding: 5px 10px; font-size: 0.78rem; white-space: nowrap; }
+      .mg-row .qty-btn { width: 36px; height: 36px; font-size: 1rem; }
+      .mg-row .qty-val { font-size: 0.88rem; min-width: 32px; }
     }
     @media (max-width: 480px) { .m-grid { grid-template-columns: 1fr; } }
     @media print {
