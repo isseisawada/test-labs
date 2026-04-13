@@ -3,1180 +3,963 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>トレーラーハウス 簡単見積もり</title>
+  <title>YADOKARI トレーラーハウス 見積もり</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Noto+Sans+JP:wght@100..900&display=swap" rel="stylesheet">
   <style>
+    :root {
+      --p: #5B3DE8;
+      --p-hover: #4A2ED0;
+      --p-light: #EDEBFC;
+      --p-mid: #B8AEFF;
+      --bg: #F3F2F7;
+      --surface: #FFFFFF;
+      --border: #E4E4EC;
+      --t1: #111827;
+      --t2: #4B5563;
+      --t3: #9CA3AF;
+      --red: #EF4444;
+      --hh: 56px;
+    }
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      font-family: 'Helvetica Neue', Arial, 'Hiragino Sans', sans-serif;
-      background: #f5f5f0;
-      color: #333;
-      min-height: 100vh;
-    }
+    body { font-family: 'Inter', 'Noto Sans JP', -apple-system, BlinkMacSystemFont, sans-serif; background: var(--bg); color: var(--t1); min-height: 100vh; }
 
-    header {
-      background: #2c2c2c;
-      color: white;
-      padding: 20px 32px;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-    header h1 { font-size: 1.3rem; font-weight: 600; letter-spacing: 0.04em; }
-    header span { font-size: 0.85rem; color: #aaa; }
+    /* HEADER */
+    .hdr { height: var(--hh); background: var(--surface); border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 24px; position: sticky; top: 0; z-index: 100; gap: 24px; }
+    .logo { font-size: 0.82rem; font-weight: 800; letter-spacing: 0.02em; white-space: nowrap; line-height: 1.2; }
+    .logo-by { font-size: 0.55rem; font-weight: 500; color: var(--t3); letter-spacing: 0.04em; display: block; }
+    .s-nav { display: flex; gap: 2px; flex: 1; }
+    .s-btn { padding: 6px 14px; border-radius: 8px; border: none; background: transparent; font-size: 0.83rem; font-weight: 500; color: var(--t2); cursor: pointer; transition: all .15s; white-space: nowrap; display: flex; align-items: center; gap: 6px; }
+    .s-btn:hover { background: var(--bg); color: var(--t1); }
+    .s-btn.active { background: var(--p-light); color: var(--p); font-weight: 600; }
+    .s-btn .dot { width: 6px; height: 6px; border-radius: 50%; background: #D1D5DB; opacity: 1; transition: background .15s; flex-shrink: 0; }
+    .s-btn.has-sel .dot { background: var(--p); }
+    .btn-pdf { padding: 7px 16px; background: var(--p); color: #fff; border: none; border-radius: 8px; font-size: 0.83rem; font-weight: 600; cursor: pointer; white-space: nowrap; transition: background .15s; }
+    .btn-pdf:hover { background: var(--p-hover); }
 
-    /* Series tabs */
-    .series-tabs {
-      display: flex;
-      gap: 0;
-      padding: 0 16px;
-      background: #fff;
-      border-bottom: 2px solid #e0e0e0;
-      max-width: 1100px;
-      margin: 0 auto;
-      overflow-x: auto;
-    }
-    .series-tab {
-      padding: 12px 20px;
-      font-size: 0.85rem;
-      font-weight: 600;
-      color: #888;
-      cursor: pointer;
-      border-bottom: 3px solid transparent;
-      white-space: nowrap;
-      transition: all 0.15s;
-      margin-bottom: -2px;
-    }
-    .series-tab:hover { color: #555; }
-    .series-tab.active { color: #2c2c2c; border-bottom-color: #2c2c2c; }
-    .series-tab .tab-dot {
-      display: inline-block;
-      width: 7px; height: 7px;
-      border-radius: 50%;
-      background: #ccc;
-      margin-right: 6px;
-      vertical-align: middle;
-    }
-    .series-tab.has-selection .tab-dot { background: #2c2c2c; }
+    /* LAYOUT */
+    .app { display: flex; max-width: 1260px; margin: 0 auto; padding: 24px 16px; gap: 18px; align-items: flex-start; }
 
-    .series-tabs-wrapper {
-      background: #fff;
-      border-bottom: 2px solid #e0e0e0;
-    }
+    /* SIDEBAR */
+    .sidebar { width: 196px; flex-shrink: 0; position: sticky; top: calc(var(--hh) + 24px); }
+    .sb-badge { background: var(--surface); border-radius: 10px; padding: 14px 16px; margin-bottom: 8px; border: 1px solid var(--border); }
+    .sb-title { font-size: 0.83rem; font-weight: 700; margin-bottom: 2px; }
+    .sb-sub { font-size: 0.7rem; color: var(--t3); }
+    .sb-nav { background: var(--surface); border-radius: 10px; padding: 6px; border: 1px solid var(--border); display: flex; flex-direction: column; gap: 2px; }
+    .sb-item { display: flex; align-items: center; gap: 9px; padding: 9px 10px; border-radius: 7px; text-decoration: none; color: var(--t2); font-size: 0.8rem; font-weight: 500; cursor: pointer; transition: all .12s; }
+    .sb-item:hover { background: var(--bg); color: var(--t1); }
+    .sb-item.active { background: var(--p-light); color: var(--p); }
+    .sb-item svg { width: 16px; height: 16px; flex-shrink: 0; opacity: .7; }
+    .sb-item.active svg { opacity: 1; }
+    .sb-dot { width: 6px; height: 6px; border-radius: 50%; background: #D1D5DB; margin-left: auto; opacity: 1; flex-shrink: 0; transition: background .15s; }
+    .sb-item.done .sb-dot { background: var(--p); }
 
-    .layout {
-      display: flex;
-      max-width: 1100px;
-      margin: 0 auto;
-      gap: 24px;
-      padding: 24px 16px;
-      align-items: flex-start;
-    }
+    /* MAIN */
+    .main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 16px; }
+    .card { background: var(--surface); border-radius: 14px; padding: 22px 24px; border: 1px solid var(--border); }
+    .sec-title { font-size: 1rem; font-weight: 700; margin-bottom: 3px; }
+    .sec-sub { font-size: 0.75rem; color: var(--t3); margin-bottom: 18px; }
 
-    .form-panel {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      gap: 16px;
-    }
+    /* MODEL GRID */
+    .m-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+    .m-card { border: 2px solid var(--border); border-radius: 12px; padding: 14px; cursor: pointer; position: relative; transition: all .15s; }
+    .m-card:hover { border-color: var(--p-mid); }
+    .m-card.sel { border-color: var(--p); background: var(--p-light); }
+    .m-chk { position: absolute; top: 10px; right: 10px; width: 20px; height: 20px; background: #D1D5DB; border-radius: 50%; display: flex; align-items: center; justify-content: center; opacity: 1; transition: background .15s; }
+    .m-card.sel .m-chk { background: var(--p); }
+    .m-chk svg { width: 11px; height: 11px; stroke: white; stroke-width: 2.5; fill: none; opacity: 0; transition: opacity .15s; }
+    .m-card.sel .m-chk svg { opacity: 1; }
+    .m-ico { width: 34px; height: 34px; background: var(--bg); border-radius: 8px; display: flex; align-items: center; justify-content: center; margin-bottom: 8px; font-size: 17px; }
+    .m-card.sel .m-ico { background: rgba(91,61,232,.12); }
+    .m-name { font-size: 0.82rem; font-weight: 700; line-height: 1.3; margin-bottom: 3px; padding-right: 22px; }
+    .m-price { font-size: 0.95rem; font-weight: 700; margin-top: 8px; }
+    .m-card.sel .m-price { color: var(--p); }
+    .m-price-unk { font-size: 0.78rem; color: #D97706; font-weight: 600; margin-top: 8px; }
 
-    .summary-panel {
-      width: 320px;
-      position: sticky;
-      top: 24px;
-    }
+    .custom-p { margin-top: 12px; padding: 12px 14px; background: #FFFBEB; border: 1px solid #FCD34D; border-radius: 8px; }
+    .custom-p label { display: block; font-size: 0.73rem; color: #B45309; margin-bottom: 6px; }
+    .custom-p .wrap { display: flex; align-items: center; gap: 8px; }
+    .custom-p input { flex: 1; border: 1px solid #FCD34D; border-radius: 6px; padding: 7px 10px; font-size: 0.9rem; text-align: right; background: white; }
+    .custom-p input:focus { outline: none; border-color: #D97706; }
+    .custom-p span { font-size: 0.83rem; color: var(--t2); }
 
-    .card {
-      background: white;
-      border-radius: 10px;
-      padding: 20px 24px;
-      box-shadow: 0 1px 4px rgba(0,0,0,0.08);
-    }
+    .size-note { display: flex; align-items: center; gap: 6px; padding: 7px 12px; background: var(--p-light); border-radius: 8px; font-size: 0.73rem; color: var(--p); font-weight: 500; margin-bottom: 14px; }
 
-    .card-title {
-      font-size: 0.75rem;
-      font-weight: 700;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      color: #888;
-      margin-bottom: 14px;
-      padding-bottom: 10px;
-      border-bottom: 1px solid #eee;
-    }
+    /* TOGGLE ROWS */
+    .opt-rows { display: flex; flex-direction: column; }
+    .opt-row { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--border); }
+    .opt-row:last-child { border-bottom: none; }
+    .opt-ico { width: 36px; height: 36px; border-radius: 9px; background: var(--bg); display: flex; align-items: center; justify-content: center; font-size: 17px; flex-shrink: 0; transition: background .15s; }
+    .opt-row.on .opt-ico { background: var(--p-light); }
+    .opt-info { flex: 1; min-width: 0; }
+    .opt-name { font-size: 0.85rem; font-weight: 600; color: var(--t1); }
+    .opt-sub { font-size: 0.7rem; color: var(--t3); margin-top: 1px; }
+    .opt-price { font-size: 0.85rem; font-weight: 700; color: var(--t2); white-space: nowrap; text-align: right; min-width: 84px; }
+    .opt-row.on .opt-price { color: var(--p); }
+    .opt-price-dash { color: var(--t3); font-weight: 400; }
 
-    /* Base model */
-    .model-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 8px;
-    }
-    .model-btn {
-      padding: 10px 8px;
-      border: 2px solid #e0e0e0;
-      border-radius: 8px;
-      background: white;
-      cursor: pointer;
-      text-align: center;
-      font-size: 0.8rem;
-      color: #444;
-      transition: all 0.15s;
-      line-height: 1.4;
-    }
-    .model-btn:hover { border-color: #bbb; background: #fafafa; }
-    .model-btn.selected { border-color: #2c2c2c; background: #2c2c2c; color: white; }
-    .model-btn .price { font-size: 0.75rem; margin-top: 4px; opacity: 0.7; }
-    .model-btn.selected .price { opacity: 0.8; }
-    .model-btn .price.unknown { color: #e07b00; }
-    .model-btn.selected .price.unknown { color: #ffcc88; }
+    /* MODEL GROUP LIST */
+    .mg-group { margin-bottom: 14px; }
+    .mg-group:last-child { margin-bottom: 0; }
+    .mg-hdr { font-size: 0.68rem; font-weight: 700; color: var(--t3); letter-spacing: .07em; padding: 3px 4px 5px; border-bottom: 1px solid var(--border); margin-bottom: 2px; }
+    .mg-row { display: flex; align-items: center; gap: 10px; padding: 7px 8px; border-radius: 8px; transition: background .12s; }
+    .mg-row.on { background: var(--p-light); }
+    .mg-ico { font-size: 14px; width: 20px; text-align: center; flex-shrink: 0; }
+    .mg-name { flex: 1; font-size: 0.82rem; font-weight: 500; color: var(--t2); }
+    .mg-row.on .mg-name { color: var(--t1); font-weight: 600; }
+    .mg-price { font-size: 0.8rem; font-weight: 600; color: var(--t3); white-space: nowrap; min-width: 88px; text-align: right; }
+    .mg-row.on .mg-price { color: var(--p); }
+    .mg-row .qty-ctrl { gap: 6px; }
+    .mg-row .qty-btn { width: 22px; height: 22px; font-size: 0.85rem; border-radius: 6px; }
+    .mg-row .qty-val { font-size: 0.78rem; min-width: 24px; }
 
-    /* Custom price input */
-    .custom-price-row {
-      margin-top: 12px;
-      padding: 12px;
-      background: #fff8f0;
-      border-radius: 8px;
-      border: 1px solid #ffd0a0;
-    }
-    .custom-price-row label { font-size: 0.8rem; color: #c07000; display: block; margin-bottom: 6px; }
-    .custom-price-row .price-input-wrap {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-    .custom-price-row input {
-      flex: 1;
-      border: 1px solid #ffc080;
-      border-radius: 6px;
-      padding: 7px 10px;
-      font-size: 0.9rem;
-      text-align: right;
-      background: white;
-    }
-    .custom-price-row input:focus { outline: none; border-color: #e07b00; }
-    .custom-price-row span { font-size: 0.85rem; color: #555; }
+    /* QTY SELECTOR */
+    .qty-row { display: flex; align-items: center; gap: 12px; margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--border); }
+    .qty-lbl { font-size: 0.82rem; color: var(--t2); font-weight: 500; }
+    .qty-ctrl { display: flex; align-items: center; gap: 10px; margin-left: auto; }
+    .qty-btn { width: 28px; height: 28px; border-radius: 7px; border: 1px solid var(--border); background: var(--bg); font-size: 1rem; cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--t1); transition: all .12s; font-weight: 400; }
+    .qty-btn:hover { background: var(--p-light); border-color: var(--p-mid); color: var(--p); }
+    .qty-btn:disabled { opacity: .35; cursor: not-allowed; }
+    .qty-val { font-size: 0.92rem; font-weight: 700; min-width: 36px; text-align: center; }
 
-    /* Options */
-    .option-list {
-      display: flex;
-      flex-direction: column;
-      gap: 0;
+    /* BLIND ROW (inside common opts) */
+    .blind-row { display: flex; flex-direction: column; padding: 12px 0; border-bottom: 1px solid var(--border); gap: 8px; }
+    .blind-row-top { display: flex; align-items: center; gap: 12px; }
+    .blind-selects { display: flex; gap: 8px; padding-left: 48px; }
+    .blind-selects select { padding: 6px 28px 6px 10px; border: 1px solid var(--border); border-radius: 7px; font-size: 0.8rem; color: var(--t1); background: var(--surface); cursor: pointer; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='11' height='7' viewBox='0 0 11 7'%3E%3Cpath d='M1 1l4.5 4.5L10 1' stroke='%239CA3AF' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 9px center; font-family: inherit; }
+    .blind-selects select:focus { outline: none; border-color: var(--p); }
+
+    /* Toggle switch */
+    .tgl { position: relative; width: 42px; height: 24px; flex-shrink: 0; }
+    .tgl input { position: absolute; opacity: 0; width: 0; height: 0; }
+    .tgl-track { position: absolute; inset: 0; background: #D1D5DB; border-radius: 12px; cursor: pointer; transition: background .2s; }
+    .tgl-track::after { content: ''; position: absolute; top: 3px; left: 3px; width: 18px; height: 18px; background: white; border-radius: 50%; transition: transform .2s; box-shadow: 0 1px 3px rgba(0,0,0,.18); }
+    .tgl input:checked ~ .tgl-track { background: var(--p); }
+    .tgl input:checked ~ .tgl-track::after { transform: translateX(18px); }
+    .tgl input:disabled ~ .tgl-track { opacity: .35; cursor: not-allowed; }
+
+    /* SELECT GRID */
+    .sel-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .sel-group label { display: block; font-size: 0.78rem; font-weight: 600; color: var(--t2); margin-bottom: 6px; }
+    .sel-group select { width: 100%; padding: 9px 32px 9px 11px; border: 1px solid var(--border); border-radius: 8px; font-size: 0.83rem; color: var(--t1); background: var(--surface); cursor: pointer; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='11' height='7' viewBox='0 0 11 7'%3E%3Cpath d='M1 1l4.5 4.5L10 1' stroke='%239CA3AF' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 11px center; }
+    .sel-group select:focus { outline: none; border-color: var(--p); }
+
+    /* DISCOUNT */
+    .disc-row { display: flex; align-items: center; gap: 12px; }
+    .disc-row label { font-size: 0.83rem; color: var(--t2); white-space: nowrap; }
+    .disc-row input { max-width: 200px; padding: 9px 11px; border: 1px solid var(--border); border-radius: 8px; font-size: 0.9rem; text-align: right; }
+    .disc-row input:focus { outline: none; border-color: var(--p); }
+    .disc-row span { font-size: 0.83rem; color: var(--t2); }
+
+    /* SUMMARY PANEL */
+    .sum-panel { width: 282px; flex-shrink: 0; position: sticky; top: calc(var(--hh) + 24px); }
+    .sum-card { background: var(--surface); border-radius: 14px; padding: 20px; border: 1px solid var(--border); }
+    .sum-lbl { font-size: 0.68rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--t3); }
+    .sum-tax { font-size: 0.7rem; color: var(--t3); margin: 2px 0; }
+    .sum-big { font-size: 1.9rem; font-weight: 800; color: var(--t1); line-height: 1.1; margin-bottom: 14px; }
+    .sum-lines { display: flex; flex-direction: column; margin-bottom: 12px; }
+    .sl { display: flex; justify-content: space-between; align-items: baseline; padding: 5px 0; border-bottom: 1px solid var(--border); font-size: 0.78rem; gap: 8px; }
+    .sl:last-child { border-bottom: none; }
+    .sl-n { color: var(--t2); flex: 1; line-height: 1.3; }
+    .sl-v { font-weight: 600; white-space: nowrap; }
+    .sl.base .sl-n { color: var(--t1); font-weight: 600; }
+    .sl.series-hdr { font-size: 0.67rem; color: var(--t3); font-weight: 700; letter-spacing: .06em; border-bottom: none; padding-top: 10px; padding-bottom: 2px; }
+    .sl.disc .sl-n, .sl.disc .sl-v { color: var(--red); }
+    .sum-divider { height: 1px; background: var(--border); margin: 10px 0; }
+    .sum-totals { margin-bottom: 14px; }
+    .sum-tot-row { display: flex; justify-content: space-between; font-size: 0.8rem; color: var(--t2); padding: 3px 0; }
+    .prog-hdr { display: flex; justify-content: space-between; margin-bottom: 5px; }
+    .prog-lbl { font-size: 0.73rem; color: var(--t2); }
+    .prog-pct { font-size: 0.73rem; font-weight: 700; color: var(--p); }
+    .prog-bg { height: 6px; background: var(--bg); border-radius: 3px; overflow: hidden; margin-bottom: 14px; }
+    .prog-fill { height: 100%; background: var(--p); border-radius: 3px; transition: width .4s ease; }
+    .btn-a { width: 100%; padding: 12px; background: var(--p); color: #fff; border: none; border-radius: 10px; font-size: 0.88rem; font-weight: 700; cursor: pointer; transition: background .15s; margin-bottom: 7px; }
+    .btn-a:hover { background: var(--p-hover); }
+    .btn-b { width: 100%; padding: 10px; background: var(--bg); color: var(--t1); border: 1px solid var(--border); border-radius: 10px; font-size: 0.83rem; font-weight: 600; cursor: pointer; transition: all .15s; margin-bottom: 7px; }
+    .btn-b:hover { background: #e5e4ec; }
+    .btn-b.copied { background: #D1FAE5; color: #065F46; border-color: #6EE7B7; }
+    .btn-c { width: 100%; padding: 7px; background: transparent; color: var(--t3); border: none; border-radius: 8px; font-size: 0.78rem; cursor: pointer; }
+    .btn-c:hover { color: var(--t2); }
+    .sum-disc-row { display: flex; align-items: center; gap: 8px; padding: 8px 0 6px; }
+    .sum-disc-row label { font-size: 0.78rem; color: var(--t2); flex: 1; }
+    .sum-disc-field { display: flex; align-items: center; gap: 5px; }
+    .sum-disc-field input { width: 86px; padding: 5px 8px; border: 1px solid var(--border); border-radius: 6px; font-size: 0.82rem; text-align: right; font-family: inherit; color: var(--t1); }
+    .sum-disc-field input:focus { outline: none; border-color: var(--p); }
+    .sum-disc-field span { font-size: 0.75rem; color: var(--t2); }
+    .notes-area { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border); }
+    .notes-ttl { font-size: 0.72rem; font-weight: 700; color: var(--t2); margin-bottom: 6px; }
+    .notes-list { padding-left: 14px; }
+    .notes-list li { font-size: 0.7rem; color: var(--t3); line-height: 1.9; }
+
+    /* COMPLETION PAGE */
+    #completionPage { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.55); z-index: 200; overflow-y: auto; padding: 40px 16px; }
+    .comp-sheet { max-width: 720px; margin: 0 auto; background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 24px 64px rgba(0,0,0,.25); }
+    .comp-hdr { background: var(--p); color: white; padding: 28px 36px; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .comp-logo-w { font-size: 0.8rem; font-weight: 800; letter-spacing: .06em; margin-bottom: 8px; opacity: .9; }
+    .comp-logo-w span { font-size: 0.62rem; font-weight: 400; opacity: .75; margin-left: 4px; }
+    .comp-ttl { font-size: 1.4rem; font-weight: 800; }
+    .comp-date { font-size: 0.73rem; opacity: .65; margin-top: 4px; }
+    .comp-body { padding: 28px 36px; }
+    .comp-sec-hdr { font-size: 0.67rem; font-weight: 700; letter-spacing: .09em; color: var(--t3); text-transform: uppercase; margin: 20px 0 4px; }
+    .comp-sec-hdr:first-child { margin-top: 0; }
+    .comp-line { display: flex; justify-content: space-between; align-items: baseline; padding: 7px 0; border-bottom: 1px solid var(--border); font-size: 0.85rem; gap: 8px; }
+    .comp-line:last-child { border-bottom: none; }
+    .comp-line.base { font-weight: 700; }
+    .comp-line .comp-ln { flex: 1; }
+    .comp-line .comp-lv { font-weight: 600; white-space: nowrap; }
+    .comp-line.disc { color: var(--red); }
+    .comp-divider { height: 1px; background: var(--border); margin: 16px 0; }
+    .comp-tot-row { display: flex; justify-content: space-between; font-size: 0.85rem; color: var(--t2); padding: 3px 0; }
+    .comp-tot-row.big { font-size: 1.15rem; font-weight: 800; color: var(--t1); padding-top: 8px; }
+    .comp-notes-sec { padding: 20px 36px 24px; background: var(--bg); }
+    .comp-notes-ttl { font-size: 0.75rem; font-weight: 700; color: var(--t2); margin-bottom: 8px; }
+    .comp-notes-sec ul { padding-left: 16px; }
+    .comp-notes-sec li { font-size: 0.78rem; color: var(--t2); line-height: 1.9; }
+    .comp-actions { padding: 20px 36px; display: flex; gap: 12px; justify-content: flex-end; border-top: 1px solid var(--border); }
+    .comp-btn-back { padding: 10px 22px; background: white; color: var(--t1); border: 1px solid var(--border); border-radius: 8px; font-size: 0.85rem; font-weight: 600; cursor: pointer; }
+    .comp-btn-back:hover { background: var(--bg); }
+    .comp-btn-print { padding: 10px 22px; background: var(--p); color: white; border: none; border-radius: 8px; font-size: 0.85rem; font-weight: 700; cursor: pointer; }
+    .comp-btn-print:hover { background: var(--p-hover); }
+    .no-sel { text-align: center; color: var(--t3); font-size: 0.83rem; padding: 16px 0; }
+
+    /* RESPONSIVE */
+    @media (max-width: 1060px) { .sidebar { display: none; } .sum-panel { width: 252px; } }
+    @media (max-width: 760px) {
+      .app { flex-direction: column; padding: 0; gap: 0; }
+      .sum-panel { width: 100%; position: static; }
+      .card { border-radius: 0; border-left: none; border-right: none; }
+      .sum-card { border-radius: 0; border-left: none; border-right: none; }
+      .m-grid { grid-template-columns: 1fr 1fr; }
+      .sel-grid { grid-template-columns: 1fr; }
+      .hdr { flex-wrap: wrap; height: auto; padding: 10px 12px 0; gap: 0; }
+      .btn-pdf { margin-left: auto; }
+      .s-nav { order: 3; width: 100%; flex: none; border-top: 1px solid var(--border); padding: 6px 0; margin-top: 8px; overflow-x: auto; gap: 0; }
+      .s-btn { padding: 5px 10px; font-size: 0.78rem; white-space: nowrap; }
+      .mg-row .qty-btn { width: 36px; height: 36px; font-size: 1rem; }
+      .mg-row .qty-val { font-size: 0.88rem; min-width: 32px; }
     }
-
-    .option-item {
-      display: flex;
-      align-items: flex-start;
-      gap: 12px;
-      padding: 10px 0;
-      border-bottom: 1px solid #f0f0f0;
-      cursor: pointer;
-    }
-    .option-item:last-child { border-bottom: none; }
-    .option-item:hover .option-name { color: #000; }
-
-    .option-item input[type="checkbox"] {
-      width: 18px;
-      height: 18px;
-      flex-shrink: 0;
-      margin-top: 1px;
-      accent-color: #2c2c2c;
-      cursor: pointer;
-    }
-
-    .option-info { flex: 1; }
-    .option-name { font-size: 0.85rem; color: #333; line-height: 1.4; }
-    .option-sub  { font-size: 0.72rem; color: #999; margin-top: 2px; }
-
-    .option-price {
-      font-size: 0.85rem;
-      font-weight: 600;
-      color: #333;
-      white-space: nowrap;
-      margin-top: 1px;
-    }
-
-    /* Size-linked options */
-    .size-note {
-      font-size: 0.72rem;
-      color: #e07b00;
-      margin-top: 4px;
-    }
-
-    /* Select dropdown options */
-    .select-option {
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-      padding: 10px 0;
-      border-bottom: 1px solid #f0f0f0;
-    }
-    .select-option:last-child { border-bottom: none; }
-    .select-label { font-size: 0.85rem; color: #333; }
-    .select-option select {
-      border: 1px solid #ddd;
-      border-radius: 6px;
-      padding: 6px 10px;
-      font-size: 0.82rem;
-      color: #333;
-      background: white;
-      width: 100%;
-    }
-    .select-option select:focus { outline: none; border-color: #999; }
-
-    /* Discount */
-    .discount-row {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-    .discount-row label { font-size: 0.85rem; color: #555; white-space: nowrap; }
-    .discount-row input {
-      flex: 1;
-      border: 1px solid #ddd;
-      border-radius: 6px;
-      padding: 8px 12px;
-      font-size: 0.9rem;
-      text-align: right;
-    }
-    .discount-row input:focus { outline: none; border-color: #999; }
-
-    /* Summary */
-    .summary-series-header {
-      font-size: 0.72rem;
-      font-weight: 700;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      color: #aaa;
-      padding: 8px 0 4px;
-      border-bottom: 1px solid #e8e8e8;
-      margin-bottom: 2px;
-    }
-    .summary-lines {
-      display: flex;
-      flex-direction: column;
-      gap: 0;
-    }
-    .summary-line {
-      display: flex;
-      justify-content: space-between;
-      align-items: baseline;
-      padding: 7px 0;
-      border-bottom: 1px solid #f0f0f0;
-      font-size: 0.82rem;
-      gap: 8px;
-    }
-    .summary-line:last-child { border-bottom: none; }
-    .summary-line .s-name { color: #555; flex: 1; line-height: 1.3; }
-    .summary-line .s-val  { font-weight: 600; white-space: nowrap; }
-    .summary-line.base .s-name { color: #333; }
-
-    .summary-divider {
-      height: 1px;
-      background: #e0e0e0;
-      margin: 8px 0;
-    }
-
-    .summary-total {
-      margin-top: 12px;
-      padding-top: 12px;
-      border-top: 2px solid #2c2c2c;
-    }
-    .total-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: baseline;
-      margin-bottom: 6px;
-    }
-    .total-label { font-size: 0.8rem; color: #666; }
-    .total-amount { font-size: 1.3rem; font-weight: 700; color: #2c2c2c; }
-    .total-tax {
-      display: flex;
-      justify-content: space-between;
-      align-items: baseline;
-    }
-    .total-tax-label { font-size: 0.75rem; color: #888; }
-    .total-tax-amount { font-size: 1.05rem; font-weight: 600; color: #555; }
-
-    .no-model {
-      color: #bbb;
-      font-size: 0.85rem;
-      text-align: center;
-      padding: 20px 0;
-    }
-
-    .btn-print {
-      margin-top: 16px;
-      width: 100%;
-      padding: 12px;
-      background: #2c2c2c;
-      color: white;
-      border: none;
-      border-radius: 8px;
-      font-size: 0.9rem;
-      cursor: pointer;
-      font-weight: 600;
-      letter-spacing: 0.04em;
-    }
-    .btn-print:hover { background: #444; }
-
-    .btn-copy {
-      margin-top: 8px;
-      width: 100%;
-      padding: 12px;
-      background: #f0f0f0;
-      color: #333;
-      border: none;
-      border-radius: 8px;
-      font-size: 0.9rem;
-      cursor: pointer;
-      font-weight: 600;
-      letter-spacing: 0.04em;
-      transition: background 0.15s;
-    }
-    .btn-copy:hover { background: #e0e0e0; }
-    .btn-copy.copied { background: #d4edda; color: #2a6b3c; }
-
-    .btn-reset {
-      margin-top: 8px;
-      width: 100%;
-      padding: 10px;
-      background: white;
-      color: #888;
-      border: 1px solid #ddd;
-      border-radius: 8px;
-      font-size: 0.82rem;
-      cursor: pointer;
-    }
-    .btn-reset:hover { border-color: #999; color: #333; }
-
-    .reg-note {
-      margin-top: 12px;
-      padding: 10px 12px;
-      background: #fafafa;
-      border-radius: 6px;
-      font-size: 0.72rem;
-      color: #888;
-      line-height: 1.6;
-    }
-    .reg-note strong { color: #666; }
-
-    @media (max-width: 768px) {
-      header { padding: 14px 16px; }
-      header h1 { font-size: 1.1rem; }
-
-      .series-tabs { padding: 0 12px; }
-      .series-tab { padding: 10px 14px; font-size: 0.8rem; }
-
-      .layout { flex-direction: column; padding: 12px; gap: 16px; }
-      .summary-panel { width: 100%; position: static; }
-      .card { padding: 16px; }
-
-      .model-grid { grid-template-columns: 1fr; }
-      .model-btn { padding: 12px 10px; font-size: 0.85rem; text-align: left;
-        display: flex; align-items: center; justify-content: space-between; }
-      .model-btn .price { margin-top: 0; font-size: 0.8rem; }
-
-      .option-item { padding: 12px 0; }
-      .option-item input[type="checkbox"] { width: 20px; height: 20px; }
-      .option-name { font-size: 0.9rem; }
-      .option-price { font-size: 0.9rem; }
-
-      .select-option select { padding: 8px 10px; font-size: 0.9rem; }
-
-      .total-amount { font-size: 1.2rem; }
-      .btn-print, .btn-copy, .btn-reset { padding: 14px; font-size: 0.95rem; }
-
-      .custom-price-row input { padding: 9px 10px; font-size: 0.95rem; }
-      .discount-row input { padding: 10px 12px; font-size: 0.95rem; }
-    }
-
-    @media (max-width: 480px) {
-      .series-tab { padding: 9px 12px; font-size: 0.75rem; }
-      .series-tab .tab-dot { display: none; }
-    }
-
+    @media (max-width: 480px) { .m-grid { grid-template-columns: 1fr; } }
     @media print {
-      header { background: #333 !important; -webkit-print-color-adjust: exact; }
-      .btn-print, .btn-reset { display: none; }
-      .summary-panel { position: static; width: 100%; }
-      .layout { flex-direction: column; }
-      .series-tabs-wrapper { display: none; }
+      /* 通常印刷（メインアプリ） */
+      .hdr { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      .btn-a, .btn-b, .btn-c, .btn-pdf, .sidebar { display: none; }
+      .app { flex-direction: column; }
+      .sum-panel { width: 100%; position: static; }
+      #completionPage { display: none !important; }
+      /* 完了ページからの印刷 */
+      body.printing .hdr, body.printing .app { display: none !important; }
+      body.printing #completionPage { display: block !important; position: static !important; background: none !important; padding: 0 !important; }
+      body.printing .comp-actions { display: none !important; }
+      body.printing .comp-sheet { border-radius: 0 !important; box-shadow: none !important; }
     }
   </style>
 </head>
 <body>
 
-<header>
-  <div>
-    <h1>トレーラーハウス 簡単見積もり</h1>
-    <span>YADOKARI</span>
-  </div>
+<header class="hdr">
+  <div class="logo" style="cursor:pointer" onclick="state.active='tinys';update();window.scrollTo({top:0,behavior:'smooth'})">簡単見積もり<span class="logo-by">by YADOKARI</span></div>
+  <nav class="s-nav" id="sNav"></nav>
+  <button class="btn-pdf" onclick="confirmEstimate()">見積もりを確定</button>
 </header>
 
-<div class="series-tabs-wrapper">
-  <div class="series-tabs" id="seriesTabs">
-    <div class="series-tab active" data-series="tinys" onclick="switchSeries('tinys')">
-      <span class="tab-dot"></span>Tinys INSPIRATION
+<div class="app">
+  <aside class="sidebar">
+    <div class="sb-badge">
+      <div class="sb-title" id="sbTitle">見積もり</div>
+      <div class="sb-sub">トレーラーハウス</div>
     </div>
-    <div class="series-tab" data-series="roadie" onclick="switchSeries('roadie')">
-      <span class="tab-dot"></span>ROADIE
+    <nav class="sb-nav">
+      <a class="sb-item" href="#sec-model"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 9l7-6 7 6v8a1 1 0 01-1 1H4a1 1 0 01-1-1V9z"/><path d="M8 19V12h4v7"/></svg>ベースモデル<span class="sb-dot"></span></a>
+      <a class="sb-item" href="#sec-opt"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 5h14M3 10h10M3 15h7"/><circle cx="15" cy="15" r="2.5"/></svg>オプション<span class="sb-dot"></span></a>
+      <a class="sb-item" href="#sec-ship"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="6" width="12" height="9" rx="1"/><path d="M13 9h3l3 3v3h-6V9z"/><circle cx="5" cy="16.5" r="1.5"/><circle cx="15" cy="16.5" r="1.5"/></svg>配送・諸経費<span class="sb-dot"></span></a>
+    </nav>
+  </aside>
+
+  <main class="main" id="mainContent"></main>
+
+  <aside class="sum-panel">
+    <div class="sum-card">
+      <div class="sum-lbl">見積り合計</div>
+      <div class="sum-tax" id="sumTax">（Tax Incl.）</div>
+      <div class="sum-big" id="sumBig">¥0</div>
+      <div class="sum-lines" id="sumLines"><div class="no-sel">モデルを選択してください</div></div>
+      <div class="sum-divider" id="sumDiv" style="display:none"></div>
+      <div class="sum-totals" id="sumTotals" style="display:none">
+        <div class="sum-disc-row">
+          <label>値引き</label>
+          <div class="sum-disc-field">
+            <input type="number" id="discInput" placeholder="0" min="0" step="10000" oninput="state.discount=parseInt(this.value)||0;updateSummary()">
+            <span>円</span>
+          </div>
+        </div>
+        <div class="sum-tot-row"><span>合計（税前）</span><span id="totPre">—</span></div>
+        <div class="sum-tot-row"><span>合計（税込10%）</span><span id="totTax">—</span></div>
+      </div>
+      <div class="prog-hdr"><span class="prog-lbl">シミュレーション完了度</span><span class="prog-pct" id="progPct">0%</span></div>
+      <div class="prog-bg"><div class="prog-fill" id="progFill" style="width:0%"></div></div>
+      <button class="btn-a" onclick="confirmEstimate()">見積もりを確定</button>
+      <button class="btn-b" id="copyBtn" onclick="copyEstimate()">テキストをコピー</button>
+      <button class="btn-c" onclick="resetAll()">リセット</button>
+      <div class="notes-area">
+        <div class="notes-ttl">ナンバー登録費用の目安（別途）</div>
+        <ul class="notes-list">
+          <li>20ft 水回りあり：1台あたり約18万円</li>
+          <li>20ft スケルトン：1台あたり約15万円</li>
+          <li>30ft 水回りあり：1台あたり約25万円</li>
+        </ul>
+      </div>
     </div>
-    <div class="series-tab" data-series="chassis" onclick="switchSeries('chassis')">
-      <span class="tab-dot"></span>シャーシ
-    </div>
-  </div>
+  </aside>
 </div>
 
-<div class="layout">
-  <div class="form-panel" id="formPanel"></div>
-
-  <div class="summary-panel">
-    <div class="card">
-      <div class="card-title">見積もり合計</div>
-      <div id="summaryContent">
-        <div class="no-model">モデルを選択してください</div>
-      </div>
-      <button class="btn-print" onclick="window.print()">印刷 / PDF保存</button>
-      <button class="btn-copy" id="copyBtn" onclick="copyEstimate()">テキストをコピー</button>
-      <button class="btn-reset" onclick="resetAll()">リセット</button>
-      <div class="reg-note">
-        <strong>ナンバー登録費用の目安（別途）</strong><br>
-        20ft 水回りあり：約18万円<br>
-        20ft スケルトン：約15万円<br>
-        30ft 水回りあり：約25万円
-      </div>
+<!-- COMPLETION PAGE -->
+<div id="completionPage">
+  <div class="comp-sheet">
+    <div class="comp-hdr">
+      <div class="comp-logo-w">簡単見積もり<span>by YADOKARI</span></div>
+      <div class="comp-ttl">トレーラーハウス 概算見積もり</div>
+      <div class="comp-date" id="compDate"></div>
+    </div>
+    <div class="comp-body" id="compBody"></div>
+    <div class="comp-notes-sec">
+      <div class="comp-notes-ttl">ナンバー登録費用の目安（別途）</div>
+      <ul>
+        <li>20ft 水回りあり：1台あたり約18万円</li>
+        <li>20ft スケルトン：1台あたり約15万円</li>
+        <li>30ft 水回りあり：1台あたり約25万円</li>
+      </ul>
+    </div>
+    <div class="comp-actions">
+      <button class="comp-btn-back" onclick="closeCompletion()">← 戻って修正</button>
+      <button class="comp-btn-print" onclick="printCompletion()">PDFに書き出す</button>
     </div>
   </div>
 </div>
 
 <script>
 // ============================================================
-// Data — Tinys INSPIRATION
+// Data
 // ============================================================
+const SERIES = [
+  { id:'tinys', label:'Tinys INSPIRATION' },
+  { id:'roadie', label:'ROADIE' },
+  { id:'chassis', label:'シャーシ' },
+];
+
 const TINYS_MODELS = [
-  { id:'t1',  label:'6m｜標準｜水回りあり',      price:7490000, size:'6m' },
-  { id:'t2',  label:'6m｜標準｜水回りなし',      price:6490000, size:'6m' },
-  { id:'t3',  label:'6m｜寒冷地｜水回りあり',    price:8000000, size:'6m' },
-  { id:'t4',  label:'7.2m｜標準｜水回りあり',    price:7990000, size:'7.2m' },
-  { id:'t5',  label:'7.2m｜標準｜水回りなし',    price:6990000, size:'7.2m' },
-  { id:'t6',  label:'7.2m｜寒冷地｜水回りあり',  price:9050000, size:'7.2m' },
-  { id:'t7',  label:'9m｜標準｜水回りあり',      price:8780000, size:'9m' },
-  { id:'t8',  label:'9m｜標準｜水回りなし',      price:7780000, size:'9m' },
-  { id:'t9',  label:'9m｜寒冷地｜水回りあり',    price:9800000, size:'9m' },
-  { id:'t10', label:'実車 7.2m（エアコン込）',    price:7742500, size:'7.2m', note:'エアコン込' },
-  { id:'t11', label:'実車 9m（ロフト付＋エアコン込）', price:9025000, size:'9m', note:'ロフト・エアコン込' },
+  { id:'t1',  label:'6m｜標準｜水回りあり',           shortLabel:'標準｜水回りあり',           price:7490000, size:'6m',   ico:'🏠' },
+  { id:'t2',  label:'6m｜標準｜水回りなし',           shortLabel:'標準｜水回りなし',           price:6490000, size:'6m',   ico:'🏠' },
+  { id:'t3',  label:'6m｜寒冷地｜水回りあり',         shortLabel:'寒冷地｜水回りあり',         price:8000000, size:'6m',   ico:'❄️' },
+  { id:'t4',  label:'7.2m｜標準｜水回りあり',         shortLabel:'標準｜水回りあり',           price:7990000, size:'7.2m', ico:'🏠' },
+  { id:'t5',  label:'7.2m｜標準｜水回りなし',         shortLabel:'標準｜水回りなし',           price:6990000, size:'7.2m', ico:'🏠' },
+  { id:'t6',  label:'7.2m｜寒冷地｜水回りあり',       shortLabel:'寒冷地｜水回りあり',         price:9050000, size:'7.2m', ico:'❄️' },
+  { id:'t7',  label:'9m｜標準｜水回りあり',           shortLabel:'標準｜水回りあり',           price:8780000, size:'9m',   ico:'🏠' },
+  { id:'t8',  label:'9m｜標準｜水回りなし',           shortLabel:'標準｜水回りなし',           price:7780000, size:'9m',   ico:'🏠' },
+  { id:'t9',  label:'9m｜寒冷地｜水回りあり',         shortLabel:'寒冷地｜水回りあり',         price:9800000, size:'9m',   ico:'❄️' },
+  { id:'t10', label:'実車 7.2m（エアコン込）',         shortLabel:'7.2m（エアコン込）',         price:7742500, size:'7.2m', ico:'🚘' },
+  { id:'t11', label:'実車 9m（ロフト付＋エアコン込）', shortLabel:'9m（ロフト付＋エアコン込）', price:9025000, size:'9m',   ico:'🚘' },
+];
+const TINYS_GROUPS = [
+  { size:'6m',   models:['t1','t2','t3'] },
+  { size:'7.2m', models:['t4','t5','t6'] },
+  { size:'9m',   models:['t7','t8','t9'] },
+  { size:'実車',  models:['t10','t11'] },
+];
+const TINYS_SIZE_OPTS = [
+  { id:'ts1', name:'シャーシ塩害対策塗装', sub:'ローバル 亜鉛メッキ塗装', ico:'🛡️', prices:{'6m':350000,'7.2m':370000,'9m':420000} },
+  { id:'ts2', name:'高断熱仕様', sub:'天井GW24K/100mm・壁ミラフォームラムダ/75mm・床/90mm', ico:'🌡️', prices:{'6m':220000,'7.2m':250000,'9m':280000} },
+  { id:'ts3', name:'急勾配屋根（3寸勾配）', sub:'', ico:'🏔️', prices:{'6m':100000,'7.2m':110000,'9m':130000} },
+  { id:'ts4', name:'エアコン', sub:'パナソニック エオリア（6m:8畳 / 7.2m:10畳 / 9m:12畳）', ico:'💨', prices:{'6m':180000,'7.2m':200000,'9m':250000} },
+  { id:'ts5', name:'水平ジャッキ', sub:'', ico:'⚙️', prices:{'6m':100000,'7.2m':170000,'9m':170000} },
+];
+const TINYS_COMMON_OPTS = [
+  { id:'tc1', name:'造作ステップ',    sub:'スチール4段 W670×D1100×H700〜850', ico:'🪜', price:140000 },
+  { id:'tc2', name:'アコーディオン網戸', sub:'LIXIL 18020 W1845×H2030用', ico:'🪟', price:130000 },
+  { id:'tc3', name:'外部照明',        sub:'オーデリック OG254917R1（人感センサー付）', ico:'💡', price:50000 },
+  { id:'tc4', name:'２段ベッド',      sub:'小上がり＋ロフト＋斜めはしご', ico:'🛏️', price:350000 },
+  { id:'tc5', name:'ロフト',          sub:'ロフト＋斜めはしご', ico:'🔼', price:240000 },
+];
+const TINYS_BLIND_OPTS = [
+  { idx:0, label:'なし', price:0 },
+  { idx:1, label:'W3510×H2030（大）', price:120000 },
+  { idx:2, label:'W1690×H2030（中）', price:60000 },
+  { idx:3, label:'W2010×H1800（中）', price:70000 },
+  { idx:4, label:'W1235×H570（小）',  price:40000 },
+];
+const TINYS_MISC_OPTS = [
+  { id:'tm1', name:'設計費用（セミオーダー）', ico:'📐', price:150000 },
+  { id:'tm2', name:'設計費用（フルオーダー）', ico:'📐', price:300000 },
+  { id:'tm3', name:'車両申請書類',             ico:'📋', price:100000 },
+  { id:'tm4', name:'予備車検',                 ico:'🔍', price:80000 },
+  { id:'tm5', name:'設置費用',                 ico:'🏗️', price:50000 },
+  { id:'tm8', name:'新規車両申請費用',         ico:'📄', price:300000 },
 ];
 
-const TINYS_SIZE_OPTIONS = [
-  { id:'ts1', name:'シャーシ塩害対策塗装',   sub:'ローバル 亜鉛メッキ塗装',
-    prices:{ '6m':350000, '7.2m':370000, '9m':420000 } },
-  { id:'ts2', name:'高断熱仕様',
-    sub:'天井GW 24K/100mm・壁ミラフォームラムダ/75mm・床/90mm',
-    prices:{ '6m':220000, '7.2m':250000, '9m':280000 } },
-  { id:'ts3', name:'急勾配屋根（3寸勾配）',  sub:'',
-    prices:{ '6m':100000, '7.2m':110000, '9m':130000 } },
-  { id:'ts4', name:'エアコン',
-    sub:'パナソニック エオリア（6m:8畳用 / 7.2m:10畳用 / 9m:12畳用）',
-    prices:{ '6m':180000, '7.2m':200000, '9m':250000 } },
-  { id:'ts5', name:'水平ジャッキ', sub:'',
-    prices:{ '6m':100000, '7.2m':170000, '9m':170000 } },
-];
-
-const TINYS_COMMON_OPTIONS = [
-  { id:'tc1', name:'造作ステップ',    sub:'スチール4段 W670×D1100×H700〜850', price:140000 },
-  { id:'tc2', name:'アコーディオン網戸', sub:'LIXIL 18020 W1845×H2030用', price:130000 },
-  { id:'tc3', name:'外部照明',        sub:'オーデリック OG254917R1（人感センサー付）', price:50000 },
-  { id:'tc4', name:'２段ベッド',      sub:'小上がり＋ロフト＋斜めはしご', price:350000 },
-  { id:'tc5', name:'ロフト',          sub:'ロフト＋斜めはしご', price:240000 },
-];
-
-const TINYS_BLIND_OPTIONS = [
-  { id:'tb0', label:'なし',                  price:0 },
-  { id:'tb1', label:'W3510×H2030（大）',     price:120000 },
-  { id:'tb2', label:'W1690×H2030（中）',     price:60000 },
-  { id:'tb3', label:'W2010×H1800（中）',     price:70000 },
-  { id:'tb4', label:'W1235×H570（小）',      price:40000 },
-];
-
-const TINYS_MISC_OPTIONS = [
-  { id:'tm1', name:'設計費用（セミオーダー）', price:150000 },
-  { id:'tm2', name:'設計費用（フルオーダー）', price:300000 },
-  { id:'tm3', name:'車両申請書類',             price:100000 },
-  { id:'tm4', name:'予備車検',                 price:80000 },
-  { id:'tm5', name:'設置費用',                 price:50000 },
-  { id:'tm8', name:'新規車両申請費用',         price:300000 },
-];
-
-// ============================================================
-// Data — ROADIE
-// ============================================================
 const ROADIE_MODELS = [
-  { id:'r1', label:'7.2m｜切り妻',                    price:10250000, size:'7.2m' },
-  { id:'r2', label:'7.2m｜片流れ',                    price:10100000, size:'7.2m' },
-  { id:'r3', label:'6m',                              price:7150000,  size:'6m' },
-  { id:'r4', label:'6m｜寒冷地',                      price:7300000,  size:'6m' },
-  { id:'r5', label:'7.2m｜寒冷地｜片流れ',            price:10350000, size:'7.2m' },
-  { id:'r6', label:'mini',                            price:3700000,  size:'mini' },
-  { id:'r7', label:'実車（ロフト付き・エアコン込）',  price:10022500, size:'7.2m', note:'ロフト・エアコン込' },
+  { id:'r1', label:'7.2m｜切り妻',                   shortLabel:'切り妻',                      price:10250000, size:'7.2m', ico:'🏠' },
+  { id:'r2', label:'7.2m｜片流れ',                   shortLabel:'片流れ',                      price:10100000, size:'7.2m', ico:'🏠' },
+  { id:'r3', label:'6m',                             shortLabel:'スタンダード',                 price:7150000,  size:'6m',   ico:'🏠' },
+  { id:'r4', label:'6m｜寒冷地',                     shortLabel:'寒冷地',                      price:7300000,  size:'6m',   ico:'❄️' },
+  { id:'r5', label:'7.2m｜寒冷地｜片流れ',           shortLabel:'寒冷地｜片流れ',              price:10350000, size:'7.2m', ico:'❄️' },
+  { id:'r6', label:'mini',                           shortLabel:'mini',                        price:3700000,  size:'mini', ico:'🏕️' },
+  { id:'r7', label:'実車（ロフト付き・エアコン込）', shortLabel:'実車（ロフト付き・エアコン込）', price:10022500, size:'7.2m', ico:'🚘' },
+];
+const ROADIE_GROUPS = [
+  { size:'6m',    models:['r3','r4'] },
+  { size:'7.2m',  models:['r1','r2','r5','r7'] },
+  { size:'mini',  models:['r6'] },
+];
+const ROADIE_SIZE_OPTS = [
+  { id:'rs1', name:'シャーシ塩害対策塗装', sub:'PPG社 QP-140水性1液防錆プライマー', ico:'🛡️', prices:{'mini':110000,'6m':155000,'7.2m':220000} },
+  { id:'rs2', name:'断熱（寒冷地仕様）', sub:'天井GW32K/90mm・壁GW32K/90mm・床スタイロフォーム/100mm', ico:'🌡️', prices:{'mini':155000,'6m':235000,'7.2m':280000} },
+  { id:'rs3', name:'水平ジャッキ', sub:'', ico:'⚙️', prices:{'mini':null,'6m':100000,'7.2m':120000} },
+];
+const ROADIE_COMMON_OPTS = [
+  { id:'rc1', name:'造作ステップ',    sub:'34段 W1000×D900×H600', ico:'🪜', price:140000 },
+  { id:'rc2', name:'エアコン本体',    sub:'パナソニック エオリア', ico:'💨', price:280000 },
+  { id:'rc3', name:'給湯器本体',      sub:'リンナイ 16号', ico:'🔥', price:110000 },
+  { id:'rc4', name:'アコーディオン網戸', sub:'サーモスL オープンウィンFD4枚建', ico:'🪟', price:90000 },
+  { id:'rc5', name:'外部照明',        sub:'オーデリックOG254917R1', ico:'💡', price:40000 },
+];
+const ROADIE_MISC_OPTS = [
+  { id:'rm1', name:'設計費用（セミオーダー）', ico:'📐', price:150000 },
+  { id:'rm2', name:'設計費用（フルオーダー）', ico:'📐', price:300000 },
+  { id:'rm3', name:'車両申請書類',             ico:'📋', price:100000 },
+  { id:'rm4', name:'予備車検',                 ico:'🔍', price:80000 },
+  { id:'rm5', name:'設置費用',                 ico:'🏗️', price:50000 },
 ];
 
-const ROADIE_SIZE_OPTIONS = [
-  { id:'rs1', name:'シャーシ塩害対策塗装',
-    sub:'PPG社 QP-140水性1液防錆プライマー',
-    prices:{ 'mini':110000, '6m':155000, '7.2m':220000 } },
-  { id:'rs2', name:'断熱（寒冷地仕様）',
-    sub:'天井GW 32K/90mm・壁GW 32K/90mm・床スタイロフォーム/100mm',
-    prices:{ 'mini':155000, '6m':235000, '7.2m':280000 } },
-  { id:'rs3', name:'水平ジャッキ', sub:'',
-    prices:{ 'mini':null, '6m':100000, '7.2m':120000 } },
-];
-
-const ROADIE_COMMON_OPTIONS = [
-  { id:'rc1', name:'造作ステップ',    sub:'34段 W1000×D900×H600', price:140000 },
-  { id:'rc2', name:'エアコン本体',    sub:'パナソニック エオリア', price:280000 },
-  { id:'rc3', name:'給湯器本体',      sub:'リンナイ 16号', price:110000 },
-  { id:'rc4', name:'アコーディオン網戸', sub:'サーモスL オープンウィンFD4枚建', price:90000 },
-  { id:'rc5', name:'外部照明',        sub:'オーデリックOG254917R1', price:40000 },
-];
-
-const ROADIE_MISC_OPTIONS = [
-  { id:'rm1', name:'設計費用（セミオーダー）', price:150000 },
-  { id:'rm2', name:'設計費用（フルオーダー）', price:300000 },
-  { id:'rm3', name:'車両申請書類',             price:100000 },
-  { id:'rm4', name:'予備車検',                 price:80000 },
-  { id:'rm5', name:'設置費用',                 price:50000 },
-];
-
-
-// ============================================================
-// Data — シャーシ
-// ============================================================
 const CHASSIS_MODELS = [
-  { id:'ch1', label:'YCL360（12ft コンテナロック付き）', price:1200000 },
-  { id:'ch2', label:'YCL600（20ft コンテナロック付き）', price:1230000 },
-  { id:'ch3', label:'YNR600（ナローシャーシ 6m）',       price:1270000 },
-  { id:'ch4', label:'YNR720（ナローシャーシ 7.2m）',     price:1380000 },
-  { id:'ch5', label:'YNR900（ナローシャーシ 9m）',       price:1910000 },
-  { id:'ch6', label:'YLW600',                            price:1750000 },
+  { id:'ch1', label:'YCL360（12ft コンテナロック付き）', shortLabel:'12ft コンテナロック付き', price:1200000, ico:'⚙️' },
+  { id:'ch2', label:'YCL600（20ft コンテナロック付き）', shortLabel:'20ft コンテナロック付き', price:1230000, ico:'⚙️' },
+  { id:'ch3', label:'YNR600（ナローシャーシ 6m）',       shortLabel:'6m',                     price:1270000, ico:'🔩' },
+  { id:'ch4', label:'YNR720（ナローシャーシ 7.2m）',     shortLabel:'7.2m',                   price:1380000, ico:'🔩' },
+  { id:'ch5', label:'YNR900（ナローシャーシ 9m）',       shortLabel:'9m',                     price:1910000, ico:'🔩' },
+  { id:'ch6', label:'YLW600',                            shortLabel:'YLW600',                 price:1750000, ico:'🔩' },
+];
+const CHASSIS_GROUPS = [
+  { size:'YCL（コンテナ）', models:['ch1','ch2'] },
+  { size:'YNR（ナロー）',   models:['ch3','ch4','ch5'] },
+  { size:'YLW',             models:['ch6'] },
+];
+const CHASSIS_OPTS = [
+  { id:'co1',  name:'リジットジャッキ YCL360用（4個）',     ico:'⚙️', price:60000 },
+  { id:'co2',  name:'リジットジャッキ YCL/YNR600用（6個）', ico:'⚙️', price:90000 },
+  { id:'co3',  name:'リジットジャッキ YNR720,900用（8個）', ico:'⚙️', price:120000 },
+  { id:'co4',  name:'リジットジャッキ YLW600用（6個）',     ico:'⚙️', price:150000 },
+  { id:'co5',  name:'土台ベース YNR600用',                  ico:'🏗️', price:430000 },
+  { id:'co6',  name:'土台ベース YNR720用',                  ico:'🏗️', price:445000 },
+  { id:'co7',  name:'土台ベース YNR900用',                  ico:'🏗️', price:580000 },
+  { id:'co8',  name:'土台ベース YCL600用',                  ico:'🏗️', price:385000 },
+  { id:'co9',  name:'土台ベース YLW600用',                  ico:'🏗️', price:440000 },
+  { id:'co10', name:'予備車検',                             ico:'🔍', price:80000 },
 ];
 
-const CHASSIS_OPTIONS = [
-  { id:'co1', name:'リジットジャッキ YCL360用（4個）',     price:60000 },
-  { id:'co2', name:'リジットジャッキ YCL/YNR600用（6個）', price:90000 },
-  { id:'co3', name:'リジットジャッキ YNR720,900用（8個）', price:120000 },
-  { id:'co4', name:'リジットジャッキ YLW600用（6個）',     price:150000 },
-  { id:'co5', name:'土台ベース YNR600用',                  price:430000 },
-  { id:'co6', name:'土台ベース YNR720用',                  price:445000 },
-  { id:'co7', name:'土台ベース YNR900用',                  price:580000 },
-  { id:'co8', name:'土台ベース YCL600用',                  price:385000 },
-  { id:'co9', name:'土台ベース YLW600用',                  price:440000 },
-  { id:'co10', name:'予備車検',                            price:80000 },
-];
-
-// ============================================================
-// Data — 共通：配送費用・諸経費
-// ============================================================
-const TRANSPORT_OPTIONS = [
-  { idx:0,  label:'なし',      price:0 },
-  { idx:1,  label:'100km以内', price:190000 },
-  { idx:2,  label:'200km以内', price:260000 },
-  { idx:3,  label:'300km以内', price:330000 },
-  { idx:4,  label:'400km以内', price:400000 },
-  { idx:5,  label:'500km以内', price:470000 },
-  { idx:6,  label:'600km以内', price:540000 },
-  { idx:7,  label:'700km以内', price:620000 },
-  { idx:8,  label:'800km以内', price:690000 },
-  { idx:9,  label:'900km以内', price:760000 },
+const TRANSPORT_OPTS = [
+  { idx:0,  label:'なし',       price:0 },
+  { idx:1,  label:'100km以内',  price:190000 },
+  { idx:2,  label:'200km以内',  price:260000 },
+  { idx:3,  label:'300km以内',  price:330000 },
+  { idx:4,  label:'400km以内',  price:400000 },
+  { idx:5,  label:'500km以内',  price:470000 },
+  { idx:6,  label:'600km以内',  price:540000 },
+  { idx:7,  label:'700km以内',  price:620000 },
+  { idx:8,  label:'800km以内',  price:690000 },
+  { idx:9,  label:'900km以内',  price:760000 },
   { idx:10, label:'1000km以内', price:830000 },
 ];
-
-const REGION_MISC_OPTIONS = [
-  { idx:0, label:'なし',        price:0 },
-  { idx:1, label:'関東',        price:50000 },
-  { idx:2, label:'北陸・中部',  price:70000 },
-  { idx:3, label:'東北・関西',  price:100000 },
-  { idx:4, label:'四国・中国',  price:150000 },
+const REGION_OPTS = [
+  { idx:0, label:'なし',         price:0 },
+  { idx:1, label:'関東',         price:50000 },
+  { idx:2, label:'北陸・中部',   price:70000 },
+  { idx:3, label:'東北・関西',   price:100000 },
+  { idx:4, label:'四国・中国',   price:150000 },
   { idx:5, label:'九州・北海道', price:150000 },
-  { idx:6, label:'沖縄・離島',  price:150000 },
+  { idx:6, label:'沖縄・離島',   price:150000 },
 ];
 
 // ============================================================
 // State
 // ============================================================
 let state = {
-  activeSeries: 'tinys',
+  active: 'tinys',
   transportIdx: 0,
   miscCostIdx: 0,
   discount: 0,
-  tinys: {
-    modelId: null, customPrice: 0,
-    sizeOpts: {}, commonOpts: {}, blindIdx: 0, blindCount: 1, miscOpts: {},
-  },
-  roadie: {
-    modelId: null, customPrice: 0,
-    sizeOpts: {}, commonOpts: {}, miscOpts: {},
-  },
-  chassis: {
-    modelId: null,
-    opts: {},
-  },
+  tinys:   { modelQtys:{}, sizeOpts:{}, commonOpts:{}, blindIdx:0, blindCount:1, miscOpts:{} },
+  roadie:  { modelQtys:{}, sizeOpts:{}, commonOpts:{}, miscOpts:{} },
+  chassis: { modelQtys:{}, opts:{} },
 };
+const hasModel   = (s) => Object.values(s.modelQtys||{}).some(q => q > 0);
+const seriesQty  = (s) => Object.values(s.modelQtys||{}).reduce((a,b) => a+b, 0);
 
 // ============================================================
 // Helpers
 // ============================================================
-function fmt(n) {
-  return '¥' + Math.round(n).toLocaleString('ja-JP');
-}
-
-function getModelPrice(model, customPrice) {
-  if (model.price !== null && model.price !== undefined) return model.price;
-  return customPrice || 0;
-}
+const fmt = n => '¥' + Math.round(n).toLocaleString('ja-JP');
+const getModelPrice = (m, cp) => (m.price !== null && m.price !== undefined) ? m.price : (cp || 0);
 
 // ============================================================
-// Series switch
+// Header tabs
 // ============================================================
-function switchSeries(series) {
-  state.activeSeries = series;
-  document.querySelectorAll('.series-tab').forEach(t => {
-    t.classList.toggle('active', t.dataset.series === series);
+function buildHeader() {
+  const nav = document.getElementById('sNav');
+  nav.innerHTML = '';
+  SERIES.forEach(s => {
+    const btn = document.createElement('button');
+    btn.className = 's-btn' + (state.active === s.id ? ' active' : '');
+    const hasSel = hasModel(state[s.id]);
+    if (hasSel) btn.classList.add('has-sel');
+    btn.dataset.series = s.id;
+    btn.innerHTML = `<span class="dot"></span><span class="label">${s.label}</span>`;
+    btn.onclick = () => { state.active = s.id; update(); };
+    nav.appendChild(btn);
   });
-  renderForm();
-}
-
-function updateTabDots() {
-  const hasSelection = {
-    tinys:   !!state.tinys.modelId,
-    roadie:  !!state.roadie.modelId,
-    chassis: !!state.chassis.modelId,
-  };
-  document.querySelectorAll('.series-tab').forEach(t => {
-    t.classList.toggle('has-selection', !!hasSelection[t.dataset.series]);
-  });
+  const titles = { tinys:'Tinys INSPIRATION', roadie:'ROADIE', chassis:'シャーシ' };
+  document.getElementById('sbTitle').textContent = titles[state.active];
 }
 
 // ============================================================
-// Render Form (dispatches to per-series render)
+// Main form render
 // ============================================================
 function renderForm() {
-  const panel = document.getElementById('formPanel');
-  panel.innerHTML = '';
-  if (state.activeSeries === 'tinys')   renderTinys(panel);
-  if (state.activeSeries === 'roadie')  renderRoadie(panel);
-  if (state.activeSeries === 'chassis') renderChassis(panel);
+  const el = document.getElementById('mainContent');
+  el.innerHTML = '';
+  if (state.active === 'tinys')   renderTinys(el);
+  if (state.active === 'roadie')  renderRoadie(el);
+  if (state.active === 'chassis') renderChassis(el);
+  renderShared(el);
 }
 
-// ============================================================
-// Shared UI builders
-// ============================================================
-function makeCard(title) {
-  const card = document.createElement('div');
-  card.className = 'card';
-  const t = document.createElement('div');
-  t.className = 'card-title';
-  t.textContent = title;
-  card.appendChild(t);
-  return card;
-}
-
-function buildModelGrid(container, models, selectedId, customPrice, onSelect, onCustomPrice) {
-  const grid = document.createElement('div');
-  grid.className = 'model-grid';
-  models.forEach(m => {
-    const btn = document.createElement('button');
-    btn.className = 'model-btn' + (selectedId === m.id ? ' selected' : '');
-    const priceText = m.price !== null && m.price !== undefined
-      ? fmt(m.price)
-      : '価格要確認';
-    const unknownCls = (m.price === null || m.price === undefined) ? ' unknown' : '';
-    btn.innerHTML = `<div>${m.label}</div><div class="price${unknownCls}">${priceText}</div>`;
-    btn.onclick = () => onSelect(m.id);
-    grid.appendChild(btn);
-  });
-  container.appendChild(grid);
-
-  // Custom price input if selected model has no price
-  if (selectedId) {
-    const m = models.find(x => x.id === selectedId);
-    if (m && (m.price === null || m.price === undefined)) {
-      const row = document.createElement('div');
-      row.className = 'custom-price-row';
-      row.innerHTML = `
-        <label>このモデルの価格を入力してください（税前）</label>
-        <div class="price-input-wrap">
-          <input type="number" placeholder="0" min="0" step="10000" value="${customPrice || ''}">
-          <span>円</span>
-        </div>
-      `;
-      row.querySelector('input').addEventListener('input', e => onCustomPrice(parseInt(e.target.value) || 0));
-      container.appendChild(row);
-    }
-  }
-}
-
-function buildSizeLinkedOptions(container, opts, selectedId, models, stateOpts, onChange) {
-  const size = selectedId ? models.find(m => m.id === selectedId)?.size : null;
-  const list = document.createElement('div');
-  list.className = 'option-list';
-  opts.forEach(opt => {
-    const price = size ? opt.prices[size] : null;
-    const checked = !!stateOpts[opt.id];
-    const item = document.createElement('label');
-    item.className = 'option-item';
-    item.innerHTML = `
-      <input type="checkbox" ${checked ? 'checked' : ''} ${(!size || price === null || price === undefined) ? 'disabled' : ''}>
-      <div class="option-info">
-        <div class="option-name">${opt.name}</div>
-        ${opt.sub ? `<div class="option-sub">${opt.sub}</div>` : ''}
-      </div>
-      <div class="option-price">${(price !== null && price !== undefined) ? fmt(price) : '—'}</div>
-    `;
-    item.querySelector('input').addEventListener('change', e => onChange(opt.id, e.target.checked));
-    list.appendChild(item);
-  });
-  container.appendChild(list);
-}
-
-function buildCheckboxOptions(container, opts, stateOpts, onChange) {
-  const list = document.createElement('div');
-  list.className = 'option-list';
-  opts.forEach(opt => {
-    const checked = !!stateOpts[opt.id];
-    const item = document.createElement('label');
-    item.className = 'option-item';
-    item.innerHTML = `
-      <input type="checkbox" ${checked ? 'checked' : ''}>
-      <div class="option-info">
-        <div class="option-name">${opt.name}</div>
-        ${opt.sub ? `<div class="option-sub">${opt.sub}</div>` : ''}
-      </div>
-      <div class="option-price">${fmt(opt.price)}</div>
-    `;
-    item.querySelector('input').addEventListener('change', e => onChange(opt.id, e.target.checked));
-    list.appendChild(item);
-  });
-  container.appendChild(list);
-}
-
-// ============================================================
-// Tinys INSPIRATION form
-// ============================================================
-function renderTinys(panel) {
+// ---- Tinys ----
+function renderTinys(el) {
   const s = state.tinys;
+  el.appendChild(modelListGrouped('ベースモデルを選択', 'サイズ・仕様を選択してください', TINYS_GROUPS, TINYS_MODELS, s));
 
-  // 1. Base model
-  const c1 = makeCard('1. ベースモデルを選択');
-  buildModelGrid(c1, TINYS_MODELS, s.modelId, s.customPrice,
-    id => { s.modelId = id; s.sizeOpts = {}; update(); },
-    v  => { s.customPrice = v; update(); }
-  );
-  panel.appendChild(c1);
-
-  // 2. Size options
-  const c2 = makeCard('2. サイズ連動オプション');
-  const note = document.createElement('p');
-  note.className = 'size-note';
-  note.style.marginBottom = '10px';
-  note.textContent = '※ベースモデルのサイズに合わせて自動選択されます';
-  c2.appendChild(note);
-  buildSizeLinkedOptions(c2, TINYS_SIZE_OPTIONS, s.modelId, TINYS_MODELS, s.sizeOpts,
-    (id, v) => { s.sizeOpts[id] = v; update(); }
-  );
-  panel.appendChild(c2);
-
-  // 3. Common options
-  const c3 = makeCard('3. 共通オプション');
-  buildCheckboxOptions(c3, TINYS_COMMON_OPTIONS, s.commonOpts,
-    (id, v) => { s.commonOpts[id] = v; update(); }
-  );
-  panel.appendChild(c3);
-
-  // 4. Blind
-  const c4 = makeCard('4. ロールスクリーン・ブラインド');
-  const row1 = document.createElement('div');
-  row1.className = 'select-option';
-  row1.innerHTML = `
-    <div class="select-label">TOSOルノファブ 遮光マイテックループ 正面付け</div>
-    <select>
-      ${TINYS_BLIND_OPTIONS.map((b,i)=>`<option value="${i}" ${s.blindIdx===i?'selected':''}>${b.label}${b.price?'　'+fmt(b.price):''}</option>`).join('')}
-    </select>
-  `;
-  row1.querySelector('select').addEventListener('change', e => {
-    s.blindIdx = parseInt(e.target.value); update();
+  const c2 = sectionCard('サイズ連動オプション', 'ベースモデルのサイズに合わせて価格が変わります');
+  c2.id = 'sec-opt';
+  const firstM = TINYS_MODELS.find(m => (s.modelQtys[m.id]||0) > 0);
+  const size = firstM?.size || null;
+  const rows2 = div('opt-rows');
+  TINYS_SIZE_OPTS.forEach(opt => {
+    const p = size ? opt.prices[size] : null;
+    rows2.appendChild(toggleRow(opt, p, !!s.sizeOpts[opt.id], !size || p == null, v => { s.sizeOpts[opt.id] = v; update(); }));
   });
-  c4.appendChild(row1);
-  if (s.blindIdx > 0) {
-    const row2 = document.createElement('div');
-    row2.className = 'select-option';
-    row2.innerHTML = `
-      <div class="select-label">枚数</div>
-      <select>
-        ${[1,2,3,4].map(n=>`<option value="${n}" ${s.blindCount===n?'selected':''}>${n}枚</option>`).join('')}
-      </select>
-    `;
-    row2.querySelector('select').addEventListener('change', e => {
-      s.blindCount = parseInt(e.target.value); update();
-    });
-    c4.appendChild(row2);
-  }
-  panel.appendChild(c4);
+  c2.appendChild(rows2);
+  el.appendChild(c2);
 
-  // 5. Misc
-  const c5 = makeCard('5. 諸費用・手続き');
-  buildCheckboxOptions(c5, TINYS_MISC_OPTIONS, s.miscOpts,
-    (id, v) => { s.miscOpts[id] = v; update(); }
-  );
-  panel.appendChild(c5);
+  const c3 = sectionCard('共通オプション', '');
+  const rows3 = div('opt-rows');
+  TINYS_COMMON_OPTS.forEach(opt => rows3.appendChild(toggleRow(opt, opt.price, !!s.commonOpts[opt.id], false, v => { s.commonOpts[opt.id] = v; update(); })));
+  rows3.appendChild(buildBlindRow(s));
+  c3.appendChild(rows3);
+  el.appendChild(c3);
 
-  // 6. 共通：配送費用・諸経費
-  appendSharedCostCard(panel);
-
-  // 7. Discount
-  appendDiscountCard(panel);
+  const c5 = sectionCard('設計・手続き関連', '');
+  const rows5 = div('opt-rows');
+  TINYS_MISC_OPTS.forEach(opt => rows5.appendChild(toggleRow(opt, opt.price, !!s.miscOpts[opt.id], false, v => { s.miscOpts[opt.id] = v; update(); })));
+  c5.appendChild(rows5);
+  el.appendChild(c5);
 }
 
-// ============================================================
-// ROADIE form
-// ============================================================
-function renderRoadie(panel) {
+// ---- ROADIE ----
+function renderRoadie(el) {
   const s = state.roadie;
+  el.appendChild(modelListGrouped('ベースモデルを選択', 'ROADIEシリーズからモデルを選択', ROADIE_GROUPS, ROADIE_MODELS, s));
 
-  const c1 = makeCard('1. ベースモデルを選択');
-  buildModelGrid(c1, ROADIE_MODELS, s.modelId, s.customPrice,
-    id => { s.modelId = id; s.sizeOpts = {}; update(); },
-    v  => { s.customPrice = v; update(); }
-  );
-  panel.appendChild(c1);
+  const c2 = sectionCard('サイズ連動オプション', 'ベースモデルのサイズに合わせて価格が変わります');
+  c2.id = 'sec-opt';
+  const firstM = ROADIE_MODELS.find(m => (s.modelQtys[m.id]||0) > 0);
+  const size = firstM?.size || null;
+  const rows2 = div('opt-rows');
+  ROADIE_SIZE_OPTS.forEach(opt => {
+    const p = size ? opt.prices[size] : null;
+    rows2.appendChild(toggleRow(opt, p, !!s.sizeOpts[opt.id], !size || p == null, v => { s.sizeOpts[opt.id] = v; update(); }));
+  });
+  c2.appendChild(rows2);
+  el.appendChild(c2);
 
-  const c2 = makeCard('2. サイズ連動オプション');
-  const note = document.createElement('p');
-  note.className = 'size-note';
-  note.style.marginBottom = '10px';
-  note.textContent = '※ベースモデルのサイズに合わせて自動選択されます';
-  c2.appendChild(note);
-  buildSizeLinkedOptions(c2, ROADIE_SIZE_OPTIONS, s.modelId, ROADIE_MODELS, s.sizeOpts,
-    (id, v) => { s.sizeOpts[id] = v; update(); }
-  );
-  panel.appendChild(c2);
+  const c3 = sectionCard('共通オプション', '');
+  const rows3 = div('opt-rows');
+  ROADIE_COMMON_OPTS.forEach(opt => rows3.appendChild(toggleRow(opt, opt.price, !!s.commonOpts[opt.id], false, v => { s.commonOpts[opt.id] = v; update(); })));
+  c3.appendChild(rows3);
+  el.appendChild(c3);
 
-  const c3 = makeCard('3. 共通オプション');
-  buildCheckboxOptions(c3, ROADIE_COMMON_OPTIONS, s.commonOpts,
-    (id, v) => { s.commonOpts[id] = v; update(); }
-  );
-  panel.appendChild(c3);
-
-  const c4 = makeCard('4. 諸費用・手続き');
-  buildCheckboxOptions(c4, ROADIE_MISC_OPTIONS, s.miscOpts,
-    (id, v) => { s.miscOpts[id] = v; update(); }
-  );
-  panel.appendChild(c4);
-
-  appendSharedCostCard(panel);
-  appendDiscountCard(panel);
+  const c4 = sectionCard('設計・手続き関連', '');
+  const rows4 = div('opt-rows');
+  ROADIE_MISC_OPTS.forEach(opt => rows4.appendChild(toggleRow(opt, opt.price, !!s.miscOpts[opt.id], false, v => { s.miscOpts[opt.id] = v; update(); })));
+  c4.appendChild(rows4);
+  el.appendChild(c4);
 }
 
-// ============================================================
-// シャーシ form
-// ============================================================
-function renderChassis(panel) {
+// ---- Chassis ----
+function renderChassis(el) {
   const s = state.chassis;
+  el.appendChild(modelListGrouped('シャーシを選択', '', CHASSIS_GROUPS, CHASSIS_MODELS, s));
 
-  const c1 = makeCard('1. シャーシを選択');
-  buildModelGrid(c1, CHASSIS_MODELS, s.modelId, 0,
-    id => { s.modelId = id; update(); },
-    () => {}
-  );
-  panel.appendChild(c1);
+  const c2 = sectionCard('オプション', '');
+  c2.id = 'sec-opt';
+  const rows = div('opt-rows');
+  CHASSIS_OPTS.forEach(opt => rows.appendChild(toggleRow(opt, opt.price, !!s.opts[opt.id], false, v => { s.opts[opt.id] = v; update(); })));
+  c2.appendChild(rows);
+  el.appendChild(c2);
+}
 
-  const c2 = makeCard('2. オプション');
-  buildCheckboxOptions(c2, CHASSIS_OPTIONS, s.opts,
-    (id, v) => { s.opts[id] = v; update(); }
-  );
-  panel.appendChild(c2);
+// ---- Shared (shipping + discount) ----
+function renderShared(el) {
+  const c = sectionCard('配送設定・諸経費', '');
+  c.id = 'sec-ship';
+  const g = div('sel-grid');
+  const g1 = div('sel-group');
+  g1.innerHTML = `<label>配送費用（距離別）</label><select id="transSelect">${TRANSPORT_OPTS.map(o => `<option value="${o.idx}" ${state.transportIdx===o.idx?'selected':''}>${o.label}${o.price?'　'+fmt(o.price):''}</option>`).join('')}</select>`;
+  g1.querySelector('select').addEventListener('change', e => { state.transportIdx = +e.target.value; updateSummary(); });
+  const g2 = div('sel-group');
+  g2.innerHTML = `<label>諸経費（エリア別）</label><select id="regionSelect">${REGION_OPTS.map(o => `<option value="${o.idx}" ${state.miscCostIdx===o.idx?'selected':''}>${o.label}${o.price?'　'+fmt(o.price):''}</option>`).join('')}</select>`;
+  g2.querySelector('select').addEventListener('change', e => { state.miscCostIdx = +e.target.value; updateSummary(); });
+  g.append(g1, g2); c.appendChild(g); el.appendChild(c);
 
-  appendSharedCostCard(panel);
-  appendDiscountCard(panel);
 }
 
 // ============================================================
-// Shared cost card (配送費用・諸経費) — always appended last before discount
+// UI Component Builders
 // ============================================================
-function appendSharedCostCard(panel) {
-  const card = makeCard('配送費用・諸経費');
+function div(cls) { const d = document.createElement('div'); d.className = cls; return d; }
 
-  const r1 = document.createElement('div');
-  r1.className = 'select-option';
-  r1.innerHTML = `
-    <div class="select-label">配送費用（距離別）</div>
-    <select id="transportSelect">
-      ${TRANSPORT_OPTIONS.map(o =>
-        `<option value="${o.idx}" ${state.transportIdx === o.idx ? 'selected' : ''}>${o.label}${o.price ? '　' + fmt(o.price) : ''}</option>`
-      ).join('')}
-    </select>
-  `;
-  r1.querySelector('select').addEventListener('change', e => {
-    state.transportIdx = parseInt(e.target.value); updateSummary();
-  });
-  card.appendChild(r1);
-
-  const r2 = document.createElement('div');
-  r2.className = 'select-option';
-  r2.innerHTML = `
-    <div class="select-label">諸経費（エリア別）</div>
-    <select id="miscCostSelect">
-      ${REGION_MISC_OPTIONS.map(o =>
-        `<option value="${o.idx}" ${state.miscCostIdx === o.idx ? 'selected' : ''}>${o.label}${o.price ? '　' + fmt(o.price) : ''}</option>`
-      ).join('')}
-    </select>
-  `;
-  r2.querySelector('select').addEventListener('change', e => {
-    state.miscCostIdx = parseInt(e.target.value); updateSummary();
-  });
-  card.appendChild(r2);
-
-  panel.appendChild(card);
+function sectionCard(title, sub) {
+  const c = div('card');
+  c.innerHTML = `<div class="sec-title">${title}</div>${sub ? `<div class="sec-sub">${sub}</div>` : ''}`;
+  return c;
 }
 
-// ============================================================
-// Discount card (shared)
-// ============================================================
-function appendDiscountCard(panel) {
-  const card = makeCard('値引き（税前）');
-  card.innerHTML += `
-    <div class="discount-row">
-      <label>値引き額</label>
-      <input type="number" id="discountInput" placeholder="0" min="0" step="10000" value="${state.discount || ''}">
-      <span style="font-size:0.85rem;color:#555;">円</span>
+function modelListGrouped(title, sub, groups, modelsArr, s) {
+  const c = sectionCard(title, sub);
+  c.id = 'sec-model';
+  const modelMap = Object.fromEntries(modelsArr.map(m => [m.id, m]));
+  groups.forEach(grp => {
+    const grpDiv = div('mg-group');
+    const hdr = div('mg-hdr'); hdr.textContent = grp.size;
+    grpDiv.appendChild(hdr);
+    grp.models.forEach(mid => {
+      const m = modelMap[mid]; if (!m) return;
+      const qty = s.modelQtys[mid] || 0;
+      const row = div('mg-row' + (qty > 0 ? ' on' : ''));
+      const ico = div('mg-ico'); ico.textContent = m.ico;
+      const name = div('mg-name'); name.textContent = m.shortLabel || m.label;
+      const priceEl = div('mg-price');
+      priceEl.textContent = m.price != null ? fmt(m.price) : '要確認';
+      const ctrl = div('qty-ctrl');
+      const btnM = document.createElement('button');
+      btnM.className = 'qty-btn'; btnM.textContent = '−'; btnM.disabled = qty <= 0;
+      btnM.onclick = (e) => { e.stopPropagation(); s.modelQtys[mid] = Math.max(0, qty - 1); update(); };
+      const valSpan = document.createElement('span');
+      valSpan.className = 'qty-val'; valSpan.textContent = qty + '台';
+      const btnP = document.createElement('button');
+      btnP.className = 'qty-btn'; btnP.textContent = '+';
+      btnP.onclick = (e) => { e.stopPropagation(); s.modelQtys[mid] = qty + 1; update(); };
+      ctrl.append(btnM, valSpan, btnP);
+      row.append(ico, name, priceEl, ctrl);
+      grpDiv.appendChild(row);
+    });
+    c.appendChild(grpDiv);
+  });
+  return c;
+}
+
+function toggleRow(opt, price, checked, disabled, onChange) {
+  const row = div('opt-row' + (checked ? ' on' : ''));
+  const id = 'tgl_' + opt.id;
+  const priceHtml = price != null ? `<span>${fmt(price)}</span>` : `<span class="opt-price-dash">—</span>`;
+  row.innerHTML = `
+    <div class="opt-ico">${opt.ico || '•'}</div>
+    <div class="opt-info">
+      <div class="opt-name">${opt.name}</div>
+      ${opt.sub ? `<div class="opt-sub">${opt.sub}</div>` : ''}
     </div>
+    <div class="opt-price">${priceHtml}</div>
+    <label class="tgl"><input type="checkbox" id="${id}" ${checked?'checked':''} ${disabled?'disabled':''}><span class="tgl-track"></span></label>
   `;
-  panel.appendChild(card);
-  card.querySelector('#discountInput').addEventListener('input', e => {
-    state.discount = parseInt(e.target.value) || 0;
-    updateSummary();
+  row.querySelector('input').addEventListener('change', e => { onChange(e.target.checked); });
+  return row;
+}
+
+function buildBlindRow(s) {
+  const blindPrice = s.blindIdx > 0 ? TINYS_BLIND_OPTS[s.blindIdx].price * s.blindCount : null;
+  const isOn = s.blindIdx > 0;
+  const row = div('blind-row');
+  const top = div('blind-row-top');
+  const ico = div('opt-ico'); ico.textContent = '🪟';
+  const info = div('opt-info');
+  info.innerHTML = `<div class="opt-name">ロールスクリーン・ブラインド</div><div class="opt-sub">TOSOルノファブ 遮光マイテックループ 正面付け</div>`;
+  const priceEl = div('opt-price');
+  priceEl.innerHTML = isOn ? `<span>${fmt(blindPrice)}</span>` : `<span class="opt-price-dash">—</span>`;
+  if (isOn) priceEl.style.color = 'var(--p)';
+  top.append(ico, info, priceEl);
+  row.appendChild(top);
+  const sels = div('blind-selects');
+  const sizeSel = document.createElement('select');
+  TINYS_BLIND_OPTS.forEach(b => {
+    const o = document.createElement('option');
+    o.value = b.idx; o.textContent = b.label + (b.price ? '　' + fmt(b.price) : '');
+    if (s.blindIdx === b.idx) o.selected = true;
+    sizeSel.appendChild(o);
   });
+  sizeSel.addEventListener('change', e => { s.blindIdx = +e.target.value; update(); });
+  sels.appendChild(sizeSel);
+  if (s.blindIdx > 0) {
+    const cntSel = document.createElement('select');
+    [1,2,3,4].forEach(n => {
+      const o = document.createElement('option');
+      o.value = n; o.textContent = n + '枚';
+      if (s.blindCount === n) o.selected = true;
+      cntSel.appendChild(o);
+    });
+    cntSel.addEventListener('change', e => { s.blindCount = +e.target.value; update(); });
+    sels.appendChild(cntSel);
+  }
+  row.appendChild(sels);
+  return row;
 }
 
 // ============================================================
-// Collect all selected items across series
+// Collect lines across all series
 // ============================================================
-function collectAllLines() {
+function collectLines() {
   const sections = [];
 
-  // Tinys
-  if (state.tinys.modelId) {
-    const s = state.tinys;
-    const model = TINYS_MODELS.find(m => m.id === s.modelId);
-    const size = model.size;
-    const lines = [];
-    const basePrice = getModelPrice(model, s.customPrice);
-    lines.push({ name:`【ベース】${model.label}`, val:basePrice, cls:'base' });
+  const ql = (qty) => qty > 1 ? ` ×${qty}台` : '';
 
-    TINYS_SIZE_OPTIONS.forEach(opt => {
-      if (s.sizeOpts[opt.id]) {
-        const p = opt.prices[size];
-        if (p) lines.push({ name:opt.name, val:p });
-      }
+  if (hasModel(state.tinys)) {
+    const s = state.tinys;
+    const tq = seriesQty(s);
+    const firstM = TINYS_MODELS.find(m => (s.modelQtys[m.id]||0) > 0);
+    const size = firstM?.size || null;
+    const lines = [];
+    TINYS_MODELS.forEach(m => {
+      const qty = s.modelQtys[m.id]||0; if (!qty) return;
+      lines.push({ name:`【ベース】${m.label}${ql(qty)}`, val:m.price*qty, cls:'base' });
     });
-    TINYS_COMMON_OPTIONS.forEach(opt => {
-      if (s.commonOpts[opt.id]) lines.push({ name:opt.name, val:opt.price });
-    });
-    if (s.blindIdx > 0) {
-      const blind = TINYS_BLIND_OPTIONS[s.blindIdx];
-      const p = blind.price * s.blindCount;
-      lines.push({ name:`ロールスクリーン ${blind.label}×${s.blindCount}枚`, val:p });
-    }
-    TINYS_MISC_OPTIONS.forEach(opt => {
-      if (s.miscOpts[opt.id]) lines.push({ name:opt.name, val:opt.price });
-    });
+    TINYS_SIZE_OPTS.forEach(o => { if (s.sizeOpts[o.id] && size && o.prices[size]) lines.push({ name:o.name+ql(tq), val:o.prices[size]*tq }); });
+    TINYS_COMMON_OPTS.forEach(o => { if (s.commonOpts[o.id]) lines.push({ name:o.name+ql(tq), val:o.price*tq }); });
+    if (s.blindIdx > 0) { const b = TINYS_BLIND_OPTS[s.blindIdx]; lines.push({ name:`ロールスクリーン ${b.label}×${s.blindCount}枚${ql(tq)}`, val:b.price*s.blindCount*tq }); }
+    TINYS_MISC_OPTS.forEach(o => { if (s.miscOpts[o.id]) lines.push({ name:o.name+ql(tq), val:o.price*tq }); });
     sections.push({ title:'Tinys INSPIRATION', lines });
   }
 
-  // ROADIE
-  if (state.roadie.modelId) {
+  if (hasModel(state.roadie)) {
     const s = state.roadie;
-    const model = ROADIE_MODELS.find(m => m.id === s.modelId);
-    const size = model.size;
+    const tq = seriesQty(s);
+    const firstM = ROADIE_MODELS.find(m => (s.modelQtys[m.id]||0) > 0);
+    const size = firstM?.size || null;
     const lines = [];
-    const basePrice = getModelPrice(model, s.customPrice);
-    lines.push({ name:`【ベース】ROADIE ${model.label}`, val:basePrice, cls:'base' });
-
-    ROADIE_SIZE_OPTIONS.forEach(opt => {
-      if (s.sizeOpts[opt.id]) {
-        const p = opt.prices[size];
-        if (p) lines.push({ name:opt.name, val:p });
-      }
+    ROADIE_MODELS.forEach(m => {
+      const qty = s.modelQtys[m.id]||0; if (!qty) return;
+      lines.push({ name:`【ベース】ROADIE ${m.label}${ql(qty)}`, val:m.price*qty, cls:'base' });
     });
-    ROADIE_COMMON_OPTIONS.forEach(opt => {
-      if (s.commonOpts[opt.id]) lines.push({ name:opt.name, val:opt.price });
-    });
-    ROADIE_MISC_OPTIONS.forEach(opt => {
-      if (s.miscOpts[opt.id]) lines.push({ name:opt.name, val:opt.price });
-    });
+    ROADIE_SIZE_OPTS.forEach(o => { if (s.sizeOpts[o.id] && size && o.prices[size]) lines.push({ name:o.name+ql(tq), val:o.prices[size]*tq }); });
+    ROADIE_COMMON_OPTS.forEach(o => { if (s.commonOpts[o.id]) lines.push({ name:o.name+ql(tq), val:o.price*tq }); });
+    ROADIE_MISC_OPTS.forEach(o => { if (s.miscOpts[o.id]) lines.push({ name:o.name+ql(tq), val:o.price*tq }); });
     sections.push({ title:'ROADIE', lines });
   }
 
-  // Chassis
-  if (state.chassis.modelId) {
+  if (hasModel(state.chassis)) {
     const s = state.chassis;
-    const model = CHASSIS_MODELS.find(m => m.id === s.modelId);
+    const tq = seriesQty(s);
     const lines = [];
-    lines.push({ name:`【ベース】${model.label}`, val:model.price, cls:'base' });
-    CHASSIS_OPTIONS.forEach(opt => {
-      if (s.opts[opt.id]) lines.push({ name:opt.name, val:opt.price });
+    CHASSIS_MODELS.forEach(m => {
+      const qty = s.modelQtys[m.id]||0; if (!qty) return;
+      lines.push({ name:`【ベース】${m.label}${ql(qty)}`, val:m.price*qty, cls:'base' });
     });
+    CHASSIS_OPTS.forEach(o => { if (s.opts[o.id]) lines.push({ name:o.name+ql(tq), val:o.price*tq }); });
     sections.push({ title:'シャーシ', lines });
   }
 
-  // 配送費用・諸経費（共通）
-  const transport = TRANSPORT_OPTIONS[state.transportIdx];
-  const miscCost  = REGION_MISC_OPTIONS[state.miscCostIdx];
-  const sharedLines = [];
-  if (transport && transport.price > 0)
-    sharedLines.push({ name:`配送費用（${transport.label}）`, val:transport.price });
-  if (miscCost && miscCost.price > 0)
-    sharedLines.push({ name:`諸経費（${miscCost.label}）`, val:miscCost.price });
-  if (sharedLines.length > 0)
-    sections.push({ title:'配送・諸経費', lines:sharedLines });
+  const tr = TRANSPORT_OPTS[state.transportIdx];
+  const rc = REGION_OPTS[state.miscCostIdx];
+  const shared = [];
+  const activeSeries = [
+    { label:'Tinys INSPIRATION', qty: seriesQty(state.tinys), has: hasModel(state.tinys) },
+    { label:'ROADIE',            qty: seriesQty(state.roadie), has: hasModel(state.roadie) },
+    { label:'シャーシ',          qty: seriesQty(state.chassis), has: hasModel(state.chassis) },
+  ].filter(s => s.has);
+  const multi = activeSeries.length > 1;
+  if (tr?.price > 0) {
+    activeSeries.forEach(s => {
+      shared.push({ name: multi ? `配送費用（${tr.label}）${s.label}${ql(s.qty)}` : `配送費用（${tr.label}）${ql(s.qty)}`, val: tr.price * s.qty });
+    });
+  }
+  if (rc?.price > 0) {
+    activeSeries.forEach(s => {
+      shared.push({ name: multi ? `諸経費（${rc.label}）${s.label}${ql(s.qty)}` : `諸経費（${rc.label}）${ql(s.qty)}`, val: rc.price * s.qty });
+    });
+  }
+  if (shared.length) sections.push({ title:'配送・諸経費', lines:shared });
 
   return sections;
 }
 
 // ============================================================
-// Summary
+// Summary update
 // ============================================================
 function updateSummary() {
-  const el = document.getElementById('summaryContent');
-  const sections = collectAllLines();
+  const sections = collectLines();
+  const hasAny = sections.length > 0;
+  let grand = 0;
+  sections.forEach(s => s.lines.forEach(l => grand += l.val));
+  const disc = state.discount || 0;
+  const pre = grand - disc;
+  const tax = Math.round(pre * 1.1);
 
-  if (sections.length === 0) {
-    el.innerHTML = '<div class="no-model">モデルを選択してください</div>';
-    return;
-  }
+  document.getElementById('sumBig').textContent = hasAny ? fmt(tax) : '¥0';
+  document.getElementById('sumTax').textContent = hasAny ? 'Tax Incl.' : '';
 
-  let grandTotal = 0;
-  let html = '';
-
-  sections.forEach(sec => {
-    const secTotal = sec.lines.reduce((s, l) => s + l.val, 0);
-    grandTotal += secTotal;
-
-    html += `<div class="summary-series-header">${sec.title}</div>`;
-    html += '<div class="summary-lines">';
-    sec.lines.forEach(l => {
-      html += `<div class="summary-line ${l.cls||''}">
-        <span class="s-name">${l.name}</span>
-        <span class="s-val">${fmt(l.val)}</span>
-      </div>`;
+  const linesEl = document.getElementById('sumLines');
+  if (!hasAny) { linesEl.innerHTML = '<div class="no-sel">モデルを選択してください</div>'; }
+  else {
+    let html = '';
+    sections.forEach(sec => {
+      html += `<div class="sl series-hdr"><span>${sec.title}</span></div>`;
+      sec.lines.forEach(l => { html += `<div class="sl ${l.cls||''}"><span class="sl-n">${l.name}</span><span class="sl-v">${fmt(l.val)}</span></div>`; });
     });
-    html += '</div>';
-  });
-
-  const discount = state.discount || 0;
-  const total_pre = grandTotal - discount;
-  const total_tax = Math.round(total_pre * 1.1);
-
-  if (discount > 0) {
-    html += `<div class="summary-line" style="color:#c00;margin-top:4px;display:flex;justify-content:space-between;">
-      <span class="s-name" style="color:#c00;">値引き</span>
-      <span class="s-val" style="color:#c00;">−${fmt(discount)}</span>
-    </div>`;
+    if (disc > 0) html += `<div class="sl disc"><span class="sl-n">値引き</span><span class="sl-v">−${fmt(disc)}</span></div>`;
+    linesEl.innerHTML = html;
   }
 
-  html += `
-    <div class="summary-divider"></div>
-    <div class="summary-total">
-      <div class="total-row">
-        <span class="total-label">合計（税前）</span>
-        <span class="total-amount">${fmt(total_pre)}</span>
-      </div>
-      <div class="total-tax">
-        <span class="total-tax-label">合計（税込10%）</span>
-        <span class="total-tax-amount">${fmt(total_tax)}</span>
-      </div>
-    </div>
-  `;
+  const divEl = document.getElementById('sumDiv');
+  const totEl = document.getElementById('sumTotals');
+  divEl.style.display = hasAny ? '' : 'none';
+  totEl.style.display = hasAny ? '' : 'none';
+  if (hasAny) {
+    document.getElementById('totPre').textContent = fmt(pre);
+    document.getElementById('totTax').textContent = fmt(tax);
+  }
 
-  el.innerHTML = html;
+  // Progress
+  const anyModel = hasModel(state.tinys) || hasModel(state.roadie) || hasModel(state.chassis);
+  const anyOpt = !!(
+    Object.values(state.tinys.sizeOpts).some(Boolean) || Object.values(state.tinys.commonOpts).some(Boolean) || state.tinys.blindIdx > 0 || Object.values(state.tinys.miscOpts).some(Boolean) ||
+    Object.values(state.roadie.sizeOpts).some(Boolean) || Object.values(state.roadie.commonOpts).some(Boolean) || Object.values(state.roadie.miscOpts).some(Boolean) ||
+    Object.values(state.chassis.opts||{}).some(Boolean)
+  );
+  const hasTransport = state.transportIdx > 0;
+  const hasMisc = state.miscCostIdx > 0;
+  const pct = (anyModel?40:0) + (anyOpt?25:0) + (hasTransport?20:0) + (hasMisc?15:0);
+  document.getElementById('progFill').style.width = pct + '%';
+  document.getElementById('progPct').textContent = pct + '%';
+
+  // Sidebar dots
+  document.querySelectorAll('.sb-item').forEach((item, i) => {
+    const done = [anyModel, anyOpt, hasTransport||hasMisc][i];
+    item.classList.toggle('done', !!done);
+  });
 }
 
 // ============================================================
-// Copy as plain text
+// Copy text
 // ============================================================
-function buildEstimateText() {
-  const sections = collectAllLines();
-  if (sections.length === 0) return '';
-
-  const pad = (s, len) => s + ' '.repeat(Math.max(0, len - [...s].length));
-  let grandTotal = 0;
-  let text = '━━━━━━━━━━━━━━━━━━━━━━━━\n';
-  text += 'トレーラーハウス 概算見積もり\n';
-  text += '━━━━━━━━━━━━━━━━━━━━━━━━\n\n';
-
+function copyEstimate() {
+  const sections = collectLines();
+  if (!sections.length) return;
+  let grand = 0;
+  sections.forEach(s => s.lines.forEach(l => grand += l.val));
+  const disc = state.discount || 0;
+  const pre = grand - disc;
+  const tax = Math.round(pre * 1.1);
+  const pad = (s, n) => s + ' '.repeat(Math.max(0, n - [...s].length));
+  let text = '━━━━━━━━━━━━━━━━━━━━━━━━\nトレーラーハウス 概算見積もり\n━━━━━━━━━━━━━━━━━━━━━━━━\n\n';
   sections.forEach(sec => {
     text += `【${sec.title}】\n`;
-    sec.lines.forEach(l => {
-      text += `${pad(l.name, 24)}  ${fmt(l.val)}\n`;
-      grandTotal += l.val;
-    });
+    sec.lines.forEach(l => { text += `${pad(l.name,24)}  ${fmt(l.val)}\n`; });
     text += '\n';
   });
+  if (disc > 0) text += `${pad('値引き',24)}  −${fmt(disc)}\n\n`;
+  text += `────────────────────────\n${pad('合計（税前）',24)}  ${fmt(pre)}\n${pad('合計（税込10%）',24)}  ${fmt(tax)}\n━━━━━━━━━━━━━━━━━━━━━━━━\nナンバー登録費用の目安（別途）\n・20ft 水回りあり：1台あたり約18万円\n・20ft スケルトン：1台あたり約15万円\n・30ft 水回りあり：1台あたり約25万円\n`;
 
-  const discount = state.discount || 0;
-  const total_pre = grandTotal - discount;
-  const total_tax = Math.round(total_pre * 1.1);
-
-  if (discount > 0) {
-    text += `${pad('値引き', 24)}  −${fmt(discount)}\n\n`;
-  }
-  text += '────────────────────────\n';
-  text += `${pad('合計（税前）', 24)}  ${fmt(total_pre)}\n`;
-  text += `${pad('合計（税込10%）', 24)}  ${fmt(total_tax)}\n`;
-  text += '━━━━━━━━━━━━━━━━━━━━━━━━\n';
-  text += '※ ナンバー登録費用は別途\n';
-  return text;
-}
-
-function copyEstimate() {
-  const text = buildEstimateText();
-  if (!text) return;
   const btn = document.getElementById('copyBtn');
   navigator.clipboard.writeText(text).then(() => {
-    btn.textContent = 'コピーしました！';
-    btn.classList.add('copied');
+    btn.textContent = 'コピーしました！'; btn.classList.add('copied');
     setTimeout(() => { btn.textContent = 'テキストをコピー'; btn.classList.remove('copied'); }, 2000);
   }).catch(() => {
-    const ta = document.createElement('textarea');
-    ta.value = text;
-    ta.style.cssText = 'position:fixed;opacity:0';
-    document.body.appendChild(ta);
-    ta.select();
-    document.execCommand('copy');
-    document.body.removeChild(ta);
-    btn.textContent = 'コピーしました！';
-    btn.classList.add('copied');
+    const ta = document.createElement('textarea'); ta.value = text; ta.style.cssText = 'position:fixed;opacity:0';
+    document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta);
+    btn.textContent = 'コピーしました！'; btn.classList.add('copied');
     setTimeout(() => { btn.textContent = 'テキストをコピー'; btn.classList.remove('copied'); }, 2000);
   });
 }
 
 // ============================================================
-// Main update
+// Reset & Main update
 // ============================================================
-function update() {
-  renderForm();
-  updateTabDots();
-  updateSummary();
-}
-
 function resetAll() {
-  state.transportIdx = 0;
-  state.miscCostIdx  = 0;
-  state.discount = 0;
-  state.tinys   = { modelId:null, customPrice:0, sizeOpts:{}, commonOpts:{}, blindIdx:0, blindCount:1, miscOpts:{} };
-  state.roadie  = { modelId:null, customPrice:0, sizeOpts:{}, commonOpts:{}, miscOpts:{} };
-  state.chassis = { modelId:null, opts:{} };
+  state.transportIdx = 0; state.miscCostIdx = 0; state.discount = 0;
+  const di = document.getElementById('discInput'); if (di) di.value = '';
+  state.tinys   = { modelQtys:{}, sizeOpts:{}, commonOpts:{}, blindIdx:0, blindCount:1, miscOpts:{} };
+  state.roadie  = { modelQtys:{}, sizeOpts:{}, commonOpts:{}, miscOpts:{} };
+  state.chassis = { modelQtys:{}, opts:{} };
   update();
 }
 
-// Initial render
+// ============================================================
+// Completion page
+// ============================================================
+function confirmEstimate() {
+  const sections = collectLines();
+  if (!sections.length) { alert('モデルを選択してください'); return; }
+
+  let grand = 0;
+  sections.forEach(s => s.lines.forEach(l => grand += l.val));
+  const disc = state.discount || 0;
+  const pre = grand - disc;
+  const tax = Math.round(pre * 1.1);
+
+  // 発行日
+  const now = new Date();
+  document.getElementById('compDate').textContent = '発行日：' +
+    now.getFullYear() + '/' +
+    String(now.getMonth()+1).padStart(2,'0') + '/' +
+    String(now.getDate()).padStart(2,'0');
+
+  // 明細HTML
+  let html = '';
+  sections.forEach(sec => {
+    html += `<div class="comp-sec-hdr">${sec.title}</div>`;
+    sec.lines.forEach(l => {
+      html += `<div class="comp-line ${l.cls||''}"><span class="comp-ln">${l.name}</span><span class="comp-lv">${fmt(l.val)}</span></div>`;
+    });
+  });
+  if (disc > 0) {
+    html += `<div class="comp-divider"></div>`;
+    html += `<div class="comp-line disc"><span class="comp-ln">値引き</span><span class="comp-lv">−${fmt(disc)}</span></div>`;
+  }
+  html += `<div class="comp-divider"></div>`;
+  html += `<div class="comp-tot-row"><span>合計（税前）</span><span>${fmt(pre)}</span></div>`;
+  html += `<div class="comp-tot-row big"><span>合計（税込10%）</span><span>${fmt(tax)}</span></div>`;
+
+  document.getElementById('compBody').innerHTML = html;
+  document.getElementById('completionPage').style.display = 'block';
+  document.body.classList.add('comp-open');
+  document.body.style.overflow = 'hidden';
+  document.getElementById('completionPage').scrollTop = 0;
+}
+
+function closeCompletion() {
+  document.getElementById('completionPage').style.display = 'none';
+  document.body.classList.remove('comp-open');
+  document.body.style.overflow = '';
+}
+
+function printCompletion() {
+  document.body.classList.add('printing');
+  window.print();
+  setTimeout(() => document.body.classList.remove('printing'), 500);
+}
+
+function update() {
+  buildHeader();
+  renderForm();
+  updateSummary();
+}
+
 update();
 </script>
 </body>
