@@ -212,6 +212,7 @@
     .comp-divider { height: 1px; background: var(--border); margin: 16px 0; }
     .comp-tot-row { display: flex; justify-content: space-between; font-size: 0.85rem; color: var(--t2); padding: 3px 0; }
     .comp-tot-row.big { font-size: 1.15rem; font-weight: 800; color: var(--t1); padding-top: 8px; }
+    .comp-disclaimer { font-size: 0.72rem; color: var(--t3); margin-top: 10px; line-height: 1.6; }
     .comp-notes-sec { padding: 20px 36px 24px; background: var(--bg); }
     .comp-notes-ttl { font-size: 0.75rem; font-weight: 700; color: var(--t2); margin-bottom: 8px; }
     .comp-notes-sec ul { padding-left: 16px; }
@@ -1191,6 +1192,7 @@ function showCompletionFromData(q, saveToHistory) {
   html += `<div class="comp-divider"></div>`;
   html += `<div class="comp-tot-row"><span>合計（税前）</span><span>${fmt(q.totalPre)}</span></div>`;
   html += `<div class="comp-tot-row big"><span>合計（税込10%）</span><span>${fmt(q.totalTax)}</span></div>`;
+  html += `<div class="comp-disclaimer">※概算見積もりになります。正式なお見積もりは詳細ヒアリングの上、別途担当より提出致します。</div>`;
 
   document.getElementById('compBody').innerHTML = html;
   document.getElementById('completionPage').style.display = 'block';
