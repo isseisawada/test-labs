@@ -223,6 +223,81 @@
     .comp-btn-print:hover { background: var(--p-hover); }
     .no-sel { text-align: center; color: var(--t3); font-size: 0.83rem; padding: 16px 0; }
 
+    /* MODE SWITCHER (in header) */
+    .mode-nav { display: flex; gap: 4px; margin-right: 8px; }
+    .mode-btn { padding: 6px 12px; border-radius: 8px; border: 1px solid var(--border); background: white; font-size: 0.78rem; font-weight: 600; color: var(--t2); cursor: pointer; transition: all .15s; white-space: nowrap; }
+    .mode-btn:hover { background: var(--bg); }
+    .mode-btn.active { background: var(--p); color: white; border-color: var(--p); }
+
+    /* CUSTOMER INFO CARD */
+    .cust-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .cust-grid .field-full { grid-column: 1 / -1; }
+    .cust-field label { display: block; font-size: 0.74rem; font-weight: 600; color: var(--t2); margin-bottom: 5px; }
+    .cust-field input { width: 100%; padding: 9px 11px; border: 1px solid var(--border); border-radius: 8px; font-size: 0.85rem; color: var(--t1); background: var(--surface); font-family: inherit; }
+    .cust-field input:focus { outline: none; border-color: var(--p); }
+    .cust-field input::placeholder { color: var(--t3); }
+
+    /* ADMIN VIEW */
+    .admin-wrap { max-width: 1100px; margin: 0 auto; padding: 24px 16px; }
+    .admin-hdr { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; gap: 12px; flex-wrap: wrap; }
+    .admin-hdr h2 { font-size: 1.2rem; font-weight: 800; }
+    .admin-hdr-sub { font-size: 0.78rem; color: var(--t3); margin-top: 2px; }
+    .admin-actions { display: flex; gap: 8px; }
+    .admin-actions .btn { padding: 9px 16px; font-size: 0.82rem; font-weight: 600; border-radius: 8px; border: 1px solid var(--border); background: white; color: var(--t1); cursor: pointer; }
+    .admin-actions .btn:hover { background: var(--bg); }
+    .admin-actions .btn.primary { background: var(--p); color: white; border-color: var(--p); }
+    .admin-actions .btn.primary:hover { background: var(--p-hover); }
+    .admin-section { background: white; border: 1px solid var(--border); border-radius: 14px; padding: 20px 24px; margin-bottom: 14px; }
+    .admin-section h3 { font-size: 0.95rem; font-weight: 700; margin-bottom: 14px; color: var(--t1); }
+    .price-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+    .price-table th { text-align: left; padding: 8px 8px; background: var(--bg); color: var(--t2); font-weight: 600; font-size: 0.72rem; border-bottom: 1px solid var(--border); }
+    .price-table th:nth-child(n+3) { text-align: right; }
+    .price-table td { padding: 9px 8px; border-bottom: 1px solid var(--border); font-size: 0.82rem; vertical-align: middle; }
+    .price-table tr:last-child td { border-bottom: none; }
+    .price-table td:nth-child(n+3) { text-align: right; }
+    .price-table .item-name { font-weight: 500; }
+    .price-table .item-size { font-size: 0.72rem; color: var(--t3); background: var(--bg); padding: 2px 8px; border-radius: 4px; display: inline-block; }
+    .price-table input[type="number"] { width: 120px; padding: 5px 8px; border: 1px solid var(--border); border-radius: 6px; font-size: 0.82rem; text-align: right; font-family: inherit; color: var(--t1); }
+    .price-table input[type="number"]:focus { outline: none; border-color: var(--p); }
+    .margin-cell { font-weight: 700; min-width: 58px; display: inline-block; }
+    .margin-good { color: #059669; }
+    .margin-mid  { color: #D97706; }
+    .margin-bad  { color: var(--red); }
+
+    /* HISTORY VIEW */
+    .hist-wrap { max-width: 1100px; margin: 0 auto; padding: 24px 16px; }
+    .hist-hdr { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 16px; gap: 12px; flex-wrap: wrap; }
+    .hist-hdr h2 { font-size: 1.2rem; font-weight: 800; }
+    .hist-count { font-size: 0.78rem; color: var(--t3); margin-top: 2px; }
+    .hist-search-row { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
+    .hist-search { flex: 1; min-width: 200px; padding: 10px 14px; border: 1px solid var(--border); border-radius: 10px; font-size: 0.85rem; background: white; font-family: inherit; }
+    .hist-search:focus { outline: none; border-color: var(--p); }
+    .hist-filter { padding: 10px 14px; border: 1px solid var(--border); border-radius: 10px; font-size: 0.82rem; background: white; cursor: pointer; font-family: inherit; color: var(--t1); }
+    .hist-export { padding: 10px 18px; background: white; border: 1px solid var(--border); color: var(--t1); border-radius: 10px; font-size: 0.82rem; font-weight: 600; cursor: pointer; }
+    .hist-export:hover { background: var(--bg); }
+    .hist-list { display: flex; flex-direction: column; gap: 10px; }
+    .hist-card { background: white; border: 1px solid var(--border); border-radius: 12px; padding: 16px 20px; }
+    .hist-card-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 10px; flex-wrap: wrap; }
+    .hist-name { font-size: 1rem; font-weight: 700; }
+    .hist-date { font-size: 0.75rem; color: var(--t3); }
+    .hist-meta { display: flex; gap: 18px; flex-wrap: wrap; margin-bottom: 10px; }
+    .hist-meta-item { display: flex; flex-direction: column; gap: 2px; }
+    .hist-meta-lbl { font-size: 0.68rem; color: var(--t3); font-weight: 600; letter-spacing: .04em; }
+    .hist-meta-val { font-size: 0.82rem; color: var(--t1); font-weight: 500; }
+    .hist-series { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
+    .hist-tag { display: inline-block; padding: 3px 9px; background: var(--p-light); color: var(--p); border-radius: 12px; font-size: 0.7rem; font-weight: 600; }
+    .hist-totals { display: flex; justify-content: flex-end; gap: 16px; align-items: baseline; margin-bottom: 10px; }
+    .hist-pre { font-size: 0.78rem; color: var(--t3); }
+    .hist-tax { font-size: 1.1rem; font-weight: 800; color: var(--t1); }
+    .hist-actions { display: flex; gap: 8px; justify-content: flex-end; flex-wrap: wrap; }
+    .hist-btn { padding: 7px 14px; border-radius: 8px; font-size: 0.78rem; font-weight: 600; cursor: pointer; border: 1px solid var(--border); background: white; color: var(--t1); font-family: inherit; }
+    .hist-btn:hover { background: var(--bg); }
+    .hist-btn.primary { background: var(--p); color: white; border-color: var(--p); }
+    .hist-btn.primary:hover { background: var(--p-hover); }
+    .hist-btn.danger { color: var(--red); border-color: #FECACA; }
+    .hist-btn.danger:hover { background: #FEF2F2; }
+    .hist-empty { text-align: center; padding: 60px 20px; color: var(--t3); font-size: 0.88rem; background: white; border: 1px dashed var(--border); border-radius: 12px; }
+
     /* RESPONSIVE */
     @media (max-width: 1060px) { .sidebar { display: none; } .sum-panel { width: 252px; } }
     @media (max-width: 760px) {
@@ -258,12 +333,17 @@
 <body>
 
 <header class="hdr">
-  <div class="logo" style="cursor:pointer" onclick="state.active='tinys';update();window.scrollTo({top:0,behavior:'smooth'})">簡単見積もり<span class="logo-by">by YADOKARI</span></div>
+  <div class="logo" style="cursor:pointer" onclick="switchMode('create')">簡単見積もり<span class="logo-by">by YADOKARI</span></div>
+  <div class="mode-nav">
+    <button class="mode-btn active" id="modeCreate" onclick="switchMode('create')">見積もり作成</button>
+    <button class="mode-btn" id="modeHistory" onclick="switchMode('history')">履歴</button>
+    <button class="mode-btn" id="modeAdmin" onclick="switchMode('admin')">管理</button>
+  </div>
   <nav class="s-nav" id="sNav"></nav>
-  <button class="btn-pdf" onclick="confirmEstimate()">見積もりを確定</button>
+  <button class="btn-pdf" id="hdrConfirmBtn" onclick="confirmEstimate()">見積もりを確定</button>
 </header>
 
-<div class="app">
+<div class="app" id="appCreate">
   <aside class="sidebar">
     <div class="sb-badge">
       <div class="sb-title" id="sbTitle">見積もり</div>
@@ -313,6 +393,42 @@
   </aside>
 </div>
 
+<!-- ADMIN VIEW -->
+<div class="admin-wrap" id="appAdmin" style="display:none">
+  <div class="admin-hdr">
+    <div>
+      <h2>価格管理</h2>
+      <div class="admin-hdr-sub">各項目の売価・原価を編集できます。営業利益率が自動計算されます。</div>
+    </div>
+    <div class="admin-actions">
+      <button class="btn" onclick="resetAdminPrices()">デフォルトに戻す</button>
+      <button class="btn primary" onclick="saveAdminPrices()">保存する</button>
+    </div>
+  </div>
+  <div id="adminContent"></div>
+</div>
+
+<!-- HISTORY VIEW -->
+<div class="hist-wrap" id="appHistory" style="display:none">
+  <div class="hist-hdr">
+    <div>
+      <h2>見積もり履歴</h2>
+      <div class="hist-count" id="histCount">0 件</div>
+    </div>
+    <button class="hist-export" onclick="exportHistoryCSV()">CSVエクスポート</button>
+  </div>
+  <div class="hist-search-row">
+    <input type="text" class="hist-search" id="histSearch" placeholder="顧客名・担当者名・エリア・モデル名などで検索..." oninput="renderHistory()">
+    <select class="hist-filter" id="histFilterSeries" onchange="renderHistory()">
+      <option value="">全シリーズ</option>
+      <option value="tinys">Tinys INSPIRATION</option>
+      <option value="roadie">ROADIE</option>
+      <option value="chassis">シャーシ</option>
+    </select>
+  </div>
+  <div class="hist-list" id="histList"></div>
+</div>
+
 <!-- COMPLETION PAGE -->
 <div id="completionPage">
   <div class="comp-sheet">
@@ -348,17 +464,17 @@ const SERIES = [
 ];
 
 const TINYS_MODELS = [
-  { id:'t1',  label:'6m｜標準｜水回りあり',           shortLabel:'標準｜水回りあり',           price:7490000, size:'6m',   ico:'🏠' },
-  { id:'t2',  label:'6m｜標準｜水回りなし',           shortLabel:'標準｜水回りなし',           price:6490000, size:'6m',   ico:'🏠' },
-  { id:'t3',  label:'6m｜寒冷地｜水回りあり',         shortLabel:'寒冷地｜水回りあり',         price:8000000, size:'6m',   ico:'❄️' },
-  { id:'t4',  label:'7.2m｜標準｜水回りあり',         shortLabel:'標準｜水回りあり',           price:7990000, size:'7.2m', ico:'🏠' },
-  { id:'t5',  label:'7.2m｜標準｜水回りなし',         shortLabel:'標準｜水回りなし',           price:6990000, size:'7.2m', ico:'🏠' },
-  { id:'t6',  label:'7.2m｜寒冷地｜水回りあり',       shortLabel:'寒冷地｜水回りあり',         price:9050000, size:'7.2m', ico:'❄️' },
-  { id:'t7',  label:'9m｜標準｜水回りあり',           shortLabel:'標準｜水回りあり',           price:8780000, size:'9m',   ico:'🏠' },
-  { id:'t8',  label:'9m｜標準｜水回りなし',           shortLabel:'標準｜水回りなし',           price:7780000, size:'9m',   ico:'🏠' },
-  { id:'t9',  label:'9m｜寒冷地｜水回りあり',         shortLabel:'寒冷地｜水回りあり',         price:9800000, size:'9m',   ico:'❄️' },
-  { id:'t10', label:'実車 7.2m（エアコン込）',         shortLabel:'7.2m（エアコン込）',         price:7742500, size:'7.2m', ico:'🚘' },
-  { id:'t11', label:'実車 9m（ロフト付＋エアコン込）', shortLabel:'9m（ロフト付＋エアコン込）', price:9025000, size:'9m',   ico:'🚘' },
+  { id:'t1',  label:'6m｜標準｜水回りあり',           shortLabel:'標準｜水回りあり',           price:7490000, cost:4868000, size:'6m',   ico:'🏠' },
+  { id:'t2',  label:'6m｜標準｜水回りなし',           shortLabel:'標準｜水回りなし',           price:6490000, cost:4045700, size:'6m',   ico:'🏠' },
+  { id:'t3',  label:'6m｜寒冷地｜水回りあり',         shortLabel:'寒冷地｜水回りあり',         price:8000000, cost:5206000, size:'6m',   ico:'❄️' },
+  { id:'t4',  label:'7.2m｜標準｜水回りあり',         shortLabel:'標準｜水回りあり',           price:7990000, cost:5197300, size:'7.2m', ico:'🏠' },
+  { id:'t5',  label:'7.2m｜標準｜水回りなし',         shortLabel:'標準｜水回りなし',           price:6990000, cost:4644300, size:'7.2m', ico:'🏠' },
+  { id:'t6',  label:'7.2m｜寒冷地｜水回りあり',       shortLabel:'寒冷地｜水回りあり',         price:9050000, cost:5842200, size:'7.2m', ico:'❄️' },
+  { id:'t7',  label:'9m｜標準｜水回りあり',           shortLabel:'標準｜水回りあり',           price:8780000, cost:5651700, size:'9m',   ico:'🏠' },
+  { id:'t8',  label:'9m｜標準｜水回りなし',           shortLabel:'標準｜水回りなし',           price:7780000, cost:5080700, size:'9m',   ico:'🏠' },
+  { id:'t9',  label:'9m｜寒冷地｜水回りあり',         shortLabel:'寒冷地｜水回りあり',         price:9800000, cost:6372700, size:'9m',   ico:'❄️' },
+  { id:'t10', label:'実車 7.2m（エアコン込）',         shortLabel:'7.2m（エアコン込）',         price:7742500, cost:5308700, size:'7.2m', ico:'🚘' },
+  { id:'t11', label:'実車 9m（ロフト付＋エアコン込）', shortLabel:'9m（ロフト付＋エアコン込）', price:9025000, cost:6240300, size:'9m',   ico:'🚘' },
 ];
 const TINYS_GROUPS = [
   { size:'6m',   models:['t1','t2','t3'] },
@@ -367,43 +483,48 @@ const TINYS_GROUPS = [
   { size:'実車',  models:['t10','t11'] },
 ];
 const TINYS_SIZE_OPTS = [
-  { id:'ts1', name:'シャーシ塩害対策塗装', sub:'ローバル 亜鉛メッキ塗装', ico:'🛡️', prices:{'6m':350000,'7.2m':370000,'9m':420000} },
-  { id:'ts2', name:'高断熱仕様', sub:'天井GW24K/100mm・壁ミラフォームラムダ/75mm・床/90mm', ico:'🌡️', prices:{'6m':220000,'7.2m':250000,'9m':280000} },
-  { id:'ts3', name:'急勾配屋根（3寸勾配）', sub:'', ico:'🏔️', prices:{'6m':100000,'7.2m':110000,'9m':130000} },
-  { id:'ts4', name:'エアコン', sub:'パナソニック エオリア（6m:8畳 / 7.2m:10畳 / 9m:12畳）', ico:'💨', prices:{'6m':180000,'7.2m':200000,'9m':250000} },
-  { id:'ts5', name:'水平ジャッキ', sub:'', ico:'⚙️', prices:{'6m':100000,'7.2m':170000,'9m':170000} },
+  { id:'ts1', name:'シャーシ塩害対策塗装', sub:'ローバル 亜鉛メッキ塗装', ico:'🛡️',
+    prices:{'6m':350000,'7.2m':370000,'9m':420000}, costs:{'6m':220000,'7.2m':240000,'9m':270000} },
+  { id:'ts2', name:'高断熱仕様', sub:'天井GW24K/100mm・壁ミラフォームラムダ/75mm・床/90mm', ico:'🌡️',
+    prices:{'6m':220000,'7.2m':250000,'9m':280000}, costs:{'6m':137000,'7.2m':156000,'9m':181000} },
+  { id:'ts3', name:'急勾配屋根（3寸勾配）', sub:'', ico:'🏔️',
+    prices:{'6m':100000,'7.2m':110000,'9m':130000}, costs:{'6m':60000,'7.2m':70000,'9m':80000} },
+  { id:'ts4', name:'エアコン', sub:'パナソニック エオリア（6m:8畳 / 7.2m:10畳 / 9m:12畳）', ico:'💨',
+    prices:{'6m':180000,'7.2m':200000,'9m':250000}, costs:{'6m':114000,'7.2m':129000,'9m':152000} },
+  { id:'ts5', name:'水平ジャッキ', sub:'', ico:'⚙️',
+    prices:{'6m':100000,'7.2m':170000,'9m':170000}, costs:{'6m':72000,'7.2m':120000,'9m':120000} },
 ];
 const TINYS_COMMON_OPTS = [
-  { id:'tc1', name:'造作ステップ',    sub:'スチール4段 W670×D1100×H700〜850', ico:'🪜', price:140000 },
-  { id:'tc2', name:'アコーディオン網戸', sub:'LIXIL 18020 W1845×H2030用', ico:'🪟', price:130000 },
-  { id:'tc3', name:'外部照明',        sub:'オーデリック OG254917R1（人感センサー付）', ico:'💡', price:50000 },
-  { id:'tc4', name:'２段ベッド',      sub:'小上がり＋ロフト＋斜めはしご', ico:'🛏️', price:350000 },
-  { id:'tc5', name:'ロフト',          sub:'ロフト＋斜めはしご', ico:'🔼', price:240000 },
+  { id:'tc1', name:'造作ステップ',    sub:'スチール4段 W670×D1100×H700〜850', ico:'🪜', price:140000, cost:90000 },
+  { id:'tc2', name:'アコーディオン網戸', sub:'LIXIL 18020 W1845×H2030用', ico:'🪟', price:130000, cost:82600 },
+  { id:'tc3', name:'外部照明',        sub:'オーデリック OG254917R1（人感センサー付）', ico:'💡', price:50000, cost:32000 },
+  { id:'tc4', name:'２段ベッド',      sub:'小上がり＋ロフト＋斜めはしご', ico:'🛏️', price:350000, cost:220700 },
+  { id:'tc5', name:'ロフト',          sub:'ロフト＋斜めはしご', ico:'🔼', price:240000, cost:150000 },
 ];
 const TINYS_BLIND_OPTS = [
-  { idx:0, label:'なし', price:0 },
-  { idx:1, label:'W3510×H2030（大）', price:120000 },
-  { idx:2, label:'W1690×H2030（中）', price:60000 },
-  { idx:3, label:'W2010×H1800（中）', price:70000 },
-  { idx:4, label:'W1235×H570（小）',  price:40000 },
+  { idx:0, label:'なし', price:0, cost:0 },
+  { idx:1, label:'W3510×H2030（大）', price:120000, cost:71700 },
+  { idx:2, label:'W1690×H2030（中）', price:60000,  cost:35900 },
+  { idx:3, label:'W2010×H1800（中）', price:70000,  cost:44300 },
+  { idx:4, label:'W1235×H570（小）',  price:40000,  cost:23900 },
 ];
 const TINYS_MISC_OPTS = [
-  { id:'tm1', name:'設計費用（セミオーダー）', ico:'📐', price:150000 },
-  { id:'tm2', name:'設計費用（フルオーダー）', ico:'📐', price:300000 },
-  { id:'tm3', name:'車両申請書類',             ico:'📋', price:100000 },
-  { id:'tm4', name:'予備車検',                 ico:'🔍', price:80000 },
-  { id:'tm5', name:'設置費用',                 ico:'🏗️', price:50000 },
-  { id:'tm8', name:'新規車両申請費用',         ico:'📄', price:300000 },
+  { id:'tm1', name:'設計費用（セミオーダー）', ico:'📐', price:150000, cost:0 },
+  { id:'tm2', name:'設計費用（フルオーダー）', ico:'📐', price:300000, cost:0 },
+  { id:'tm3', name:'車両申請書類',             ico:'📋', price:100000, cost:50000 },
+  { id:'tm4', name:'予備車検',                 ico:'🔍', price:80000,  cost:50000 },
+  { id:'tm5', name:'設置費用',                 ico:'🏗️', price:50000,  cost:30000 },
+  { id:'tm8', name:'新規車両申請費用',         ico:'📄', price:300000, cost:200000 },
 ];
 
 const ROADIE_MODELS = [
-  { id:'r1', label:'7.2m｜切り妻',                   shortLabel:'切り妻',                      price:10250000, size:'7.2m', ico:'🏠' },
-  { id:'r2', label:'7.2m｜片流れ',                   shortLabel:'片流れ',                      price:10100000, size:'7.2m', ico:'🏠' },
-  { id:'r3', label:'6m',                             shortLabel:'スタンダード',                 price:7150000,  size:'6m',   ico:'🏠' },
-  { id:'r4', label:'6m｜寒冷地',                     shortLabel:'寒冷地',                      price:7300000,  size:'6m',   ico:'❄️' },
-  { id:'r5', label:'7.2m｜寒冷地｜片流れ',           shortLabel:'寒冷地｜片流れ',              price:10350000, size:'7.2m', ico:'❄️' },
-  { id:'r6', label:'mini',                           shortLabel:'mini',                        price:3700000,  size:'mini', ico:'🏕️' },
-  { id:'r7', label:'実車（ロフト付き・エアコン込）', shortLabel:'実車（ロフト付き・エアコン込）', price:10022500, size:'7.2m', ico:'🚘' },
+  { id:'r1', label:'7.2m｜切り妻',                   shortLabel:'切り妻',                      price:10250000, cost:0, size:'7.2m', ico:'🏠' },
+  { id:'r2', label:'7.2m｜片流れ',                   shortLabel:'片流れ',                      price:10100000, cost:0, size:'7.2m', ico:'🏠' },
+  { id:'r3', label:'6m',                             shortLabel:'スタンダード',                 price:7150000,  cost:0, size:'6m',   ico:'🏠' },
+  { id:'r4', label:'6m｜寒冷地',                     shortLabel:'寒冷地',                      price:7300000,  cost:0, size:'6m',   ico:'❄️' },
+  { id:'r5', label:'7.2m｜寒冷地｜片流れ',           shortLabel:'寒冷地｜片流れ',              price:10350000, cost:0, size:'7.2m', ico:'❄️' },
+  { id:'r6', label:'mini',                           shortLabel:'mini',                        price:3700000,  cost:0, size:'mini', ico:'🏕️' },
+  { id:'r7', label:'実車（ロフト付き・エアコン込）', shortLabel:'実車（ロフト付き・エアコン込）', price:10022500, cost:0, size:'7.2m', ico:'🚘' },
 ];
 const ROADIE_GROUPS = [
   { size:'6m',    models:['r3','r4'] },
@@ -411,32 +532,35 @@ const ROADIE_GROUPS = [
   { size:'mini',  models:['r6'] },
 ];
 const ROADIE_SIZE_OPTS = [
-  { id:'rs1', name:'シャーシ塩害対策塗装', sub:'PPG社 QP-140水性1液防錆プライマー', ico:'🛡️', prices:{'mini':110000,'6m':155000,'7.2m':220000} },
-  { id:'rs2', name:'断熱（寒冷地仕様）', sub:'天井GW32K/90mm・壁GW32K/90mm・床スタイロフォーム/100mm', ico:'🌡️', prices:{'mini':155000,'6m':235000,'7.2m':280000} },
-  { id:'rs3', name:'水平ジャッキ', sub:'', ico:'⚙️', prices:{'mini':null,'6m':100000,'7.2m':120000} },
+  { id:'rs1', name:'シャーシ塩害対策塗装', sub:'PPG社 QP-140水性1液防錆プライマー', ico:'🛡️',
+    prices:{'mini':110000,'6m':155000,'7.2m':220000}, costs:{'mini':0,'6m':0,'7.2m':0} },
+  { id:'rs2', name:'断熱（寒冷地仕様）', sub:'天井GW32K/90mm・壁GW32K/90mm・床スタイロフォーム/100mm', ico:'🌡️',
+    prices:{'mini':155000,'6m':235000,'7.2m':280000}, costs:{'mini':0,'6m':0,'7.2m':0} },
+  { id:'rs3', name:'水平ジャッキ', sub:'', ico:'⚙️',
+    prices:{'mini':null,'6m':100000,'7.2m':120000}, costs:{'mini':0,'6m':0,'7.2m':0} },
 ];
 const ROADIE_COMMON_OPTS = [
-  { id:'rc1', name:'造作ステップ',    sub:'34段 W1000×D900×H600', ico:'🪜', price:140000 },
-  { id:'rc2', name:'エアコン本体',    sub:'パナソニック エオリア', ico:'💨', price:280000 },
-  { id:'rc3', name:'給湯器本体',      sub:'リンナイ 16号', ico:'🔥', price:110000 },
-  { id:'rc4', name:'アコーディオン網戸', sub:'サーモスL オープンウィンFD4枚建', ico:'🪟', price:90000 },
-  { id:'rc5', name:'外部照明',        sub:'オーデリックOG254917R1', ico:'💡', price:40000 },
+  { id:'rc1', name:'造作ステップ',    sub:'34段 W1000×D900×H600', ico:'🪜', price:140000, cost:0 },
+  { id:'rc2', name:'エアコン本体',    sub:'パナソニック エオリア', ico:'💨', price:280000, cost:0 },
+  { id:'rc3', name:'給湯器本体',      sub:'リンナイ 16号', ico:'🔥', price:110000, cost:0 },
+  { id:'rc4', name:'アコーディオン網戸', sub:'サーモスL オープンウィンFD4枚建', ico:'🪟', price:90000, cost:0 },
+  { id:'rc5', name:'外部照明',        sub:'オーデリックOG254917R1', ico:'💡', price:40000, cost:0 },
 ];
 const ROADIE_MISC_OPTS = [
-  { id:'rm1', name:'設計費用（セミオーダー）', ico:'📐', price:150000 },
-  { id:'rm2', name:'設計費用（フルオーダー）', ico:'📐', price:300000 },
-  { id:'rm3', name:'車両申請書類',             ico:'📋', price:100000 },
-  { id:'rm4', name:'予備車検',                 ico:'🔍', price:80000 },
-  { id:'rm5', name:'設置費用',                 ico:'🏗️', price:50000 },
+  { id:'rm1', name:'設計費用(セミオーダー)', ico:'📐', price:150000, cost:0 },
+  { id:'rm2', name:'設計費用(フルオーダー)', ico:'📐', price:300000, cost:0 },
+  { id:'rm3', name:'車両申請書類',             ico:'📋', price:100000, cost:0 },
+  { id:'rm4', name:'予備車検',                 ico:'🔍', price:80000,  cost:0 },
+  { id:'rm5', name:'設置費用',                 ico:'🏗️', price:50000,  cost:0 },
 ];
 
 const CHASSIS_MODELS = [
-  { id:'ch1', label:'YCL360（12ft コンテナロック付き）', shortLabel:'12ft コンテナロック付き', price:1200000, ico:'⚙️' },
-  { id:'ch2', label:'YCL600（20ft コンテナロック付き）', shortLabel:'20ft コンテナロック付き', price:1230000, ico:'⚙️' },
-  { id:'ch3', label:'YNR600（ナローシャーシ 6m）',       shortLabel:'6m',                     price:1270000, ico:'🔩' },
-  { id:'ch4', label:'YNR720（ナローシャーシ 7.2m）',     shortLabel:'7.2m',                   price:1380000, ico:'🔩' },
-  { id:'ch5', label:'YNR900（ナローシャーシ 9m）',       shortLabel:'9m',                     price:1910000, ico:'🔩' },
-  { id:'ch6', label:'YLW600',                            shortLabel:'YLW600',                 price:1750000, ico:'🔩' },
+  { id:'ch1', label:'YCL360（12ft コンテナロック付き）', shortLabel:'12ft コンテナロック付き', price:1200000, cost:0, ico:'⚙️' },
+  { id:'ch2', label:'YCL600（20ft コンテナロック付き）', shortLabel:'20ft コンテナロック付き', price:1230000, cost:0, ico:'⚙️' },
+  { id:'ch3', label:'YNR600（ナローシャーシ 6m）',       shortLabel:'6m',                     price:1270000, cost:0, ico:'🔩' },
+  { id:'ch4', label:'YNR720（ナローシャーシ 7.2m）',     shortLabel:'7.2m',                   price:1380000, cost:0, ico:'🔩' },
+  { id:'ch5', label:'YNR900（ナローシャーシ 9m）',       shortLabel:'9m',                     price:1910000, cost:0, ico:'🔩' },
+  { id:'ch6', label:'YLW600',                            shortLabel:'YLW600',                 price:1750000, cost:0, ico:'🔩' },
 ];
 const CHASSIS_GROUPS = [
   { size:'YCL（コンテナ）', models:['ch1','ch2'] },
@@ -444,16 +568,16 @@ const CHASSIS_GROUPS = [
   { size:'YLW',             models:['ch6'] },
 ];
 const CHASSIS_OPTS = [
-  { id:'co1',  name:'リジットジャッキ YCL360用（4個）',     ico:'⚙️', price:60000 },
-  { id:'co2',  name:'リジットジャッキ YCL/YNR600用（6個）', ico:'⚙️', price:90000 },
-  { id:'co3',  name:'リジットジャッキ YNR720,900用（8個）', ico:'⚙️', price:120000 },
-  { id:'co4',  name:'リジットジャッキ YLW600用（6個）',     ico:'⚙️', price:150000 },
-  { id:'co5',  name:'土台ベース YNR600用',                  ico:'🏗️', price:430000 },
-  { id:'co6',  name:'土台ベース YNR720用',                  ico:'🏗️', price:445000 },
-  { id:'co7',  name:'土台ベース YNR900用',                  ico:'🏗️', price:580000 },
-  { id:'co8',  name:'土台ベース YCL600用',                  ico:'🏗️', price:385000 },
-  { id:'co9',  name:'土台ベース YLW600用',                  ico:'🏗️', price:440000 },
-  { id:'co10', name:'予備車検',                             ico:'🔍', price:80000 },
+  { id:'co1',  name:'リジットジャッキ YCL360用（4個）',     ico:'⚙️', price:60000,  cost:0 },
+  { id:'co2',  name:'リジットジャッキ YCL/YNR600用（6個）', ico:'⚙️', price:90000,  cost:0 },
+  { id:'co3',  name:'リジットジャッキ YNR720,900用（8個）', ico:'⚙️', price:120000, cost:0 },
+  { id:'co4',  name:'リジットジャッキ YLW600用（6個）',     ico:'⚙️', price:150000, cost:0 },
+  { id:'co5',  name:'土台ベース YNR600用',                  ico:'🏗️', price:430000, cost:0 },
+  { id:'co6',  name:'土台ベース YNR720用',                  ico:'🏗️', price:445000, cost:0 },
+  { id:'co7',  name:'土台ベース YNR900用',                  ico:'🏗️', price:580000, cost:0 },
+  { id:'co8',  name:'土台ベース YCL600用',                  ico:'🏗️', price:385000, cost:0 },
+  { id:'co9',  name:'土台ベース YLW600用',                  ico:'🏗️', price:440000, cost:0 },
+  { id:'co10', name:'予備車検',                             ico:'🔍', price:80000,  cost:0 },
 ];
 
 const TRANSPORT_OPTS = [
@@ -483,7 +607,11 @@ const REGION_OPTS = [
 // State
 // ============================================================
 let state = {
+  mode: 'create',  // 'create' | 'admin' | 'history'
   active: 'tinys',
+  customerName: '',
+  staffName: '',
+  area: '',
   transportIdx: 0,
   miscCostIdx: 0,
   discount: 0,
@@ -493,6 +621,44 @@ let state = {
 };
 const hasModel   = (s) => Object.values(s.modelQtys||{}).some(q => q > 0);
 const seriesQty  = (s) => Object.values(s.modelQtys||{}).reduce((a,b) => a+b, 0);
+
+// ============================================================
+// localStorage Keys & Price Overrides
+// ============================================================
+const LS_PRICES = 'yadokari_prices_v1';
+const LS_QUOTES = 'yadokari_quotes_v1';
+
+function loadOverrides() {
+  try { return JSON.parse(localStorage.getItem(LS_PRICES) || '{}'); } catch(e) { return {}; }
+}
+function saveOverrides(data) { localStorage.setItem(LS_PRICES, JSON.stringify(data)); }
+let PRICE_OVR = loadOverrides();
+
+// Apply overrides to a price/cost. key format: "model:t1:price", "sizeOpt:ts1:6m:price", "commonOpt:tc1:cost", etc.
+function ovr(key, fallback) {
+  return (PRICE_OVR[key] !== undefined) ? PRICE_OVR[key] : fallback;
+}
+// Effective getters (use these everywhere the app needs a live price/cost)
+function mPrice(m) { return ovr(`model:${m.id}:price`, m.price); }
+function mCost(m)  { return ovr(`model:${m.id}:cost`,  m.cost || 0); }
+function soPrice(opt, size) { return ovr(`sizeOpt:${opt.id}:${size}:price`, opt.prices?.[size] ?? null); }
+function soCost(opt, size)  { return ovr(`sizeOpt:${opt.id}:${size}:cost`,  opt.costs?.[size]  ?? 0); }
+function coPrice(opt) { return ovr(`commonOpt:${opt.id}:price`, opt.price); }
+function coCost(opt)  { return ovr(`commonOpt:${opt.id}:cost`,  opt.cost || 0); }
+function blPrice(b)   { return ovr(`blind:${b.idx}:price`, b.price); }
+function blCost(b)    { return ovr(`blind:${b.idx}:cost`,  b.cost || 0); }
+function mxPrice(opt) { return ovr(`misc:${opt.id}:price`, opt.price); }
+function mxCost(opt)  { return ovr(`misc:${opt.id}:cost`,  opt.cost || 0); }
+function chPrice(opt) { return ovr(`chopt:${opt.id}:price`, opt.price); }
+function chCost(opt)  { return ovr(`chopt:${opt.id}:cost`,  opt.cost || 0); }
+
+// ============================================================
+// History storage
+// ============================================================
+function loadQuotes() {
+  try { return JSON.parse(localStorage.getItem(LS_QUOTES) || '[]'); } catch(e) { return []; }
+}
+function saveQuotes(arr) { localStorage.setItem(LS_QUOTES, JSON.stringify(arr)); }
 
 // ============================================================
 // Helpers
@@ -526,11 +692,39 @@ function buildHeader() {
 function renderForm() {
   const el = document.getElementById('mainContent');
   el.innerHTML = '';
+  el.appendChild(renderCustomerCard());
   if (state.active === 'tinys')   renderTinys(el);
   if (state.active === 'roadie')  renderRoadie(el);
   if (state.active === 'chassis') renderChassis(el);
   renderShared(el);
 }
+
+function renderCustomerCard() {
+  const c = sectionCard('顧客情報', '未記入でも構いません');
+  const grid = div('cust-grid');
+  grid.innerHTML = `
+    <div class="cust-field">
+      <label>顧客名</label>
+      <input type="text" id="custName" placeholder="（未記入）" value="${escapeAttr(state.customerName)}">
+    </div>
+    <div class="cust-field">
+      <label>担当者名</label>
+      <input type="text" id="staffName" placeholder="（未記入）" value="${escapeAttr(state.staffName)}">
+    </div>
+    <div class="cust-field field-full">
+      <label>エリア</label>
+      <input type="text" id="areaName" placeholder="例：東京都世田谷区、北海道など" value="${escapeAttr(state.area)}">
+    </div>
+  `;
+  grid.querySelector('#custName').addEventListener('input',  e => state.customerName = e.target.value);
+  grid.querySelector('#staffName').addEventListener('input', e => state.staffName    = e.target.value);
+  grid.querySelector('#areaName').addEventListener('input',  e => state.area         = e.target.value);
+  c.appendChild(grid);
+  return c;
+}
+
+function escapeAttr(s) { return (s || '').replace(/"/g, '&quot;').replace(/</g, '&lt;'); }
+function escapeHtml(s) { return (s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
 // ---- Tinys ----
 function renderTinys(el) {
@@ -543,7 +737,7 @@ function renderTinys(el) {
   const size = firstM?.size || null;
   const rows2 = div('opt-rows');
   TINYS_SIZE_OPTS.forEach(opt => {
-    const p = size ? opt.prices[size] : null;
+    const p = size ? soPrice(opt, size) : null;
     rows2.appendChild(toggleRow(opt, p, !!s.sizeOpts[opt.id], !size || p == null, v => { s.sizeOpts[opt.id] = v; update(); }));
   });
   c2.appendChild(rows2);
@@ -551,14 +745,14 @@ function renderTinys(el) {
 
   const c3 = sectionCard('共通オプション', '');
   const rows3 = div('opt-rows');
-  TINYS_COMMON_OPTS.forEach(opt => rows3.appendChild(toggleRow(opt, opt.price, !!s.commonOpts[opt.id], false, v => { s.commonOpts[opt.id] = v; update(); })));
+  TINYS_COMMON_OPTS.forEach(opt => rows3.appendChild(toggleRow(opt, coPrice(opt), !!s.commonOpts[opt.id], false, v => { s.commonOpts[opt.id] = v; update(); })));
   rows3.appendChild(buildBlindRow(s));
   c3.appendChild(rows3);
   el.appendChild(c3);
 
   const c5 = sectionCard('設計・手続き関連', '');
   const rows5 = div('opt-rows');
-  TINYS_MISC_OPTS.forEach(opt => rows5.appendChild(toggleRow(opt, opt.price, !!s.miscOpts[opt.id], false, v => { s.miscOpts[opt.id] = v; update(); })));
+  TINYS_MISC_OPTS.forEach(opt => rows5.appendChild(toggleRow(opt, mxPrice(opt), !!s.miscOpts[opt.id], false, v => { s.miscOpts[opt.id] = v; update(); })));
   c5.appendChild(rows5);
   el.appendChild(c5);
 }
@@ -574,7 +768,7 @@ function renderRoadie(el) {
   const size = firstM?.size || null;
   const rows2 = div('opt-rows');
   ROADIE_SIZE_OPTS.forEach(opt => {
-    const p = size ? opt.prices[size] : null;
+    const p = size ? soPrice(opt, size) : null;
     rows2.appendChild(toggleRow(opt, p, !!s.sizeOpts[opt.id], !size || p == null, v => { s.sizeOpts[opt.id] = v; update(); }));
   });
   c2.appendChild(rows2);
@@ -582,13 +776,13 @@ function renderRoadie(el) {
 
   const c3 = sectionCard('共通オプション', '');
   const rows3 = div('opt-rows');
-  ROADIE_COMMON_OPTS.forEach(opt => rows3.appendChild(toggleRow(opt, opt.price, !!s.commonOpts[opt.id], false, v => { s.commonOpts[opt.id] = v; update(); })));
+  ROADIE_COMMON_OPTS.forEach(opt => rows3.appendChild(toggleRow(opt, coPrice(opt), !!s.commonOpts[opt.id], false, v => { s.commonOpts[opt.id] = v; update(); })));
   c3.appendChild(rows3);
   el.appendChild(c3);
 
   const c4 = sectionCard('設計・手続き関連', '');
   const rows4 = div('opt-rows');
-  ROADIE_MISC_OPTS.forEach(opt => rows4.appendChild(toggleRow(opt, opt.price, !!s.miscOpts[opt.id], false, v => { s.miscOpts[opt.id] = v; update(); })));
+  ROADIE_MISC_OPTS.forEach(opt => rows4.appendChild(toggleRow(opt, mxPrice(opt), !!s.miscOpts[opt.id], false, v => { s.miscOpts[opt.id] = v; update(); })));
   c4.appendChild(rows4);
   el.appendChild(c4);
 }
@@ -601,7 +795,7 @@ function renderChassis(el) {
   const c2 = sectionCard('オプション', '');
   c2.id = 'sec-opt';
   const rows = div('opt-rows');
-  CHASSIS_OPTS.forEach(opt => rows.appendChild(toggleRow(opt, opt.price, !!s.opts[opt.id], false, v => { s.opts[opt.id] = v; update(); })));
+  CHASSIS_OPTS.forEach(opt => rows.appendChild(toggleRow(opt, chPrice(opt), !!s.opts[opt.id], false, v => { s.opts[opt.id] = v; update(); })));
   c2.appendChild(rows);
   el.appendChild(c2);
 }
@@ -647,7 +841,8 @@ function modelListGrouped(title, sub, groups, modelsArr, s) {
       const ico = div('mg-ico'); ico.textContent = m.ico;
       const name = div('mg-name'); name.textContent = m.shortLabel || m.label;
       const priceEl = div('mg-price');
-      priceEl.textContent = m.price != null ? fmt(m.price) : '要確認';
+      const effPrice = mPrice(m);
+      priceEl.textContent = effPrice != null ? fmt(effPrice) : '要確認';
       const ctrl = div('qty-ctrl');
       const btnM = document.createElement('button');
       btnM.className = 'qty-btn'; btnM.textContent = '−'; btnM.disabled = qty <= 0;
@@ -684,7 +879,7 @@ function toggleRow(opt, price, checked, disabled, onChange) {
 }
 
 function buildBlindRow(s) {
-  const blindPrice = s.blindIdx > 0 ? TINYS_BLIND_OPTS[s.blindIdx].price * s.blindCount : null;
+  const blindPrice = s.blindIdx > 0 ? blPrice(TINYS_BLIND_OPTS[s.blindIdx]) * s.blindCount : null;
   const isOn = s.blindIdx > 0;
   const row = div('blind-row');
   const top = div('blind-row-top');
@@ -700,7 +895,8 @@ function buildBlindRow(s) {
   const sizeSel = document.createElement('select');
   TINYS_BLIND_OPTS.forEach(b => {
     const o = document.createElement('option');
-    o.value = b.idx; o.textContent = b.label + (b.price ? '　' + fmt(b.price) : '');
+    const ep = blPrice(b);
+    o.value = b.idx; o.textContent = b.label + (ep ? '　' + fmt(ep) : '');
     if (s.blindIdx === b.idx) o.selected = true;
     sizeSel.appendChild(o);
   });
@@ -737,13 +933,13 @@ function collectLines() {
     const lines = [];
     TINYS_MODELS.forEach(m => {
       const qty = s.modelQtys[m.id]||0; if (!qty) return;
-      lines.push({ name:`【ベース】${m.label}${ql(qty)}`, val:m.price*qty, cls:'base' });
+      lines.push({ name:`【ベース】${m.label}${ql(qty)}`, val:mPrice(m)*qty, cls:'base' });
     });
-    TINYS_SIZE_OPTS.forEach(o => { if (s.sizeOpts[o.id] && size && o.prices[size]) lines.push({ name:o.name+ql(tq), val:o.prices[size]*tq }); });
-    TINYS_COMMON_OPTS.forEach(o => { if (s.commonOpts[o.id]) lines.push({ name:o.name+ql(tq), val:o.price*tq }); });
-    if (s.blindIdx > 0) { const b = TINYS_BLIND_OPTS[s.blindIdx]; lines.push({ name:`ロールスクリーン ${b.label}×${s.blindCount}枚${ql(tq)}`, val:b.price*s.blindCount*tq }); }
-    TINYS_MISC_OPTS.forEach(o => { if (s.miscOpts[o.id]) lines.push({ name:o.name+ql(tq), val:o.price*tq }); });
-    sections.push({ title:'Tinys INSPIRATION', lines });
+    TINYS_SIZE_OPTS.forEach(o => { if (s.sizeOpts[o.id] && size && soPrice(o, size)) lines.push({ name:o.name+ql(tq), val:soPrice(o, size)*tq }); });
+    TINYS_COMMON_OPTS.forEach(o => { if (s.commonOpts[o.id]) lines.push({ name:o.name+ql(tq), val:coPrice(o)*tq }); });
+    if (s.blindIdx > 0) { const b = TINYS_BLIND_OPTS[s.blindIdx]; lines.push({ name:`ロールスクリーン ${b.label}×${s.blindCount}枚${ql(tq)}`, val:blPrice(b)*s.blindCount*tq }); }
+    TINYS_MISC_OPTS.forEach(o => { if (s.miscOpts[o.id]) lines.push({ name:o.name+ql(tq), val:mxPrice(o)*tq }); });
+    sections.push({ title:'Tinys INSPIRATION', key:'tinys', lines });
   }
 
   if (hasModel(state.roadie)) {
@@ -754,12 +950,12 @@ function collectLines() {
     const lines = [];
     ROADIE_MODELS.forEach(m => {
       const qty = s.modelQtys[m.id]||0; if (!qty) return;
-      lines.push({ name:`【ベース】ROADIE ${m.label}${ql(qty)}`, val:m.price*qty, cls:'base' });
+      lines.push({ name:`【ベース】ROADIE ${m.label}${ql(qty)}`, val:mPrice(m)*qty, cls:'base' });
     });
-    ROADIE_SIZE_OPTS.forEach(o => { if (s.sizeOpts[o.id] && size && o.prices[size]) lines.push({ name:o.name+ql(tq), val:o.prices[size]*tq }); });
-    ROADIE_COMMON_OPTS.forEach(o => { if (s.commonOpts[o.id]) lines.push({ name:o.name+ql(tq), val:o.price*tq }); });
-    ROADIE_MISC_OPTS.forEach(o => { if (s.miscOpts[o.id]) lines.push({ name:o.name+ql(tq), val:o.price*tq }); });
-    sections.push({ title:'ROADIE', lines });
+    ROADIE_SIZE_OPTS.forEach(o => { if (s.sizeOpts[o.id] && size && soPrice(o, size)) lines.push({ name:o.name+ql(tq), val:soPrice(o, size)*tq }); });
+    ROADIE_COMMON_OPTS.forEach(o => { if (s.commonOpts[o.id]) lines.push({ name:o.name+ql(tq), val:coPrice(o)*tq }); });
+    ROADIE_MISC_OPTS.forEach(o => { if (s.miscOpts[o.id]) lines.push({ name:o.name+ql(tq), val:mxPrice(o)*tq }); });
+    sections.push({ title:'ROADIE', key:'roadie', lines });
   }
 
   if (hasModel(state.chassis)) {
@@ -768,10 +964,10 @@ function collectLines() {
     const lines = [];
     CHASSIS_MODELS.forEach(m => {
       const qty = s.modelQtys[m.id]||0; if (!qty) return;
-      lines.push({ name:`【ベース】${m.label}${ql(qty)}`, val:m.price*qty, cls:'base' });
+      lines.push({ name:`【ベース】${m.label}${ql(qty)}`, val:mPrice(m)*qty, cls:'base' });
     });
-    CHASSIS_OPTS.forEach(o => { if (s.opts[o.id]) lines.push({ name:o.name+ql(tq), val:o.price*tq }); });
-    sections.push({ title:'シャーシ', lines });
+    CHASSIS_OPTS.forEach(o => { if (s.opts[o.id]) lines.push({ name:o.name+ql(tq), val:chPrice(o)*tq }); });
+    sections.push({ title:'シャーシ', key:'chassis', lines });
   }
 
   const tr = TRANSPORT_OPTS[state.transportIdx];
@@ -892,6 +1088,7 @@ function copyEstimate() {
 // ============================================================
 function resetAll() {
   state.transportIdx = 0; state.miscCostIdx = 0; state.discount = 0;
+  state.customerName = ''; state.staffName = ''; state.area = '';
   const di = document.getElementById('discInput'); if (di) di.value = '';
   state.tinys   = { modelQtys:{}, sizeOpts:{}, commonOpts:{}, blindIdx:0, blindCount:1, miscOpts:{} };
   state.roadie  = { modelQtys:{}, sizeOpts:{}, commonOpts:{}, miscOpts:{} };
@@ -905,41 +1102,75 @@ function resetAll() {
 function confirmEstimate() {
   const sections = collectLines();
   if (!sections.length) { alert('モデルを選択してください'); return; }
+  showCompletionFromData(buildQuoteData(sections), true);
+}
 
+// 集約データを作成（保存と表示の両方で使う）
+function buildQuoteData(sections) {
   let grand = 0;
   sections.forEach(s => s.lines.forEach(l => grand += l.val));
   const disc = state.discount || 0;
   const pre = grand - disc;
   const tax = Math.round(pre * 1.1);
+  return {
+    id: Date.now().toString(36) + Math.random().toString(36).slice(2,6),
+    createdAt: new Date().toISOString(),
+    customerName: state.customerName || '',
+    staffName: state.staffName || '',
+    area: state.area || '',
+    seriesKeys: sections.filter(s => s.key).map(s => s.key),
+    sections,
+    discount: disc,
+    totalPre: pre,
+    totalTax: tax,
+  };
+}
 
-  // 発行日
-  const now = new Date();
+// 完了ページを表示する（保存もする）
+function showCompletionFromData(q, saveToHistory) {
+  const d = new Date(q.createdAt);
   document.getElementById('compDate').textContent = '発行日：' +
-    now.getFullYear() + '/' +
-    String(now.getMonth()+1).padStart(2,'0') + '/' +
-    String(now.getDate()).padStart(2,'0');
+    d.getFullYear() + '/' + String(d.getMonth()+1).padStart(2,'0') + '/' + String(d.getDate()).padStart(2,'0');
 
-  // 明細HTML
   let html = '';
-  sections.forEach(sec => {
+  // 顧客情報
+  const custLines = [];
+  if (q.customerName) custLines.push(`顧客名：${escapeHtml(q.customerName)}`);
+  if (q.staffName)    custLines.push(`担当者：${escapeHtml(q.staffName)}`);
+  if (q.area)         custLines.push(`エリア：${escapeHtml(q.area)}`);
+  if (custLines.length) {
+    html += `<div class="comp-sec-hdr">顧客情報</div>`;
+    custLines.forEach(line => {
+      const [label, val] = line.split('：');
+      html += `<div class="comp-line"><span class="comp-ln">${label}</span><span class="comp-lv">${val}</span></div>`;
+    });
+  }
+
+  q.sections.forEach(sec => {
     html += `<div class="comp-sec-hdr">${sec.title}</div>`;
     sec.lines.forEach(l => {
-      html += `<div class="comp-line ${l.cls||''}"><span class="comp-ln">${l.name}</span><span class="comp-lv">${fmt(l.val)}</span></div>`;
+      html += `<div class="comp-line ${l.cls||''}"><span class="comp-ln">${escapeHtml(l.name)}</span><span class="comp-lv">${fmt(l.val)}</span></div>`;
     });
   });
-  if (disc > 0) {
+  if (q.discount > 0) {
     html += `<div class="comp-divider"></div>`;
-    html += `<div class="comp-line disc"><span class="comp-ln">値引き</span><span class="comp-lv">−${fmt(disc)}</span></div>`;
+    html += `<div class="comp-line disc"><span class="comp-ln">値引き</span><span class="comp-lv">−${fmt(q.discount)}</span></div>`;
   }
   html += `<div class="comp-divider"></div>`;
-  html += `<div class="comp-tot-row"><span>合計（税前）</span><span>${fmt(pre)}</span></div>`;
-  html += `<div class="comp-tot-row big"><span>合計（税込10%）</span><span>${fmt(tax)}</span></div>`;
+  html += `<div class="comp-tot-row"><span>合計（税前）</span><span>${fmt(q.totalPre)}</span></div>`;
+  html += `<div class="comp-tot-row big"><span>合計（税込10%）</span><span>${fmt(q.totalTax)}</span></div>`;
 
   document.getElementById('compBody').innerHTML = html;
   document.getElementById('completionPage').style.display = 'block';
   document.body.classList.add('comp-open');
   document.body.style.overflow = 'hidden';
   document.getElementById('completionPage').scrollTop = 0;
+
+  if (saveToHistory) {
+    const quotes = loadQuotes();
+    quotes.unshift(q);
+    saveQuotes(quotes);
+  }
 }
 
 function closeCompletion() {
@@ -958,6 +1189,273 @@ function update() {
   buildHeader();
   renderForm();
   updateSummary();
+}
+
+// ============================================================
+// Mode switching (create / admin / history)
+// ============================================================
+function switchMode(m) {
+  state.mode = m;
+  document.getElementById('modeCreate').classList.toggle('active',  m === 'create');
+  document.getElementById('modeHistory').classList.toggle('active', m === 'history');
+  document.getElementById('modeAdmin').classList.toggle('active',   m === 'admin');
+  document.getElementById('appCreate').style.display  = (m === 'create')  ? '' : 'none';
+  document.getElementById('appHistory').style.display = (m === 'history') ? '' : 'none';
+  document.getElementById('appAdmin').style.display   = (m === 'admin')   ? '' : 'none';
+  // hide series nav and confirm button when not in create mode
+  document.getElementById('sNav').style.display = (m === 'create') ? '' : 'none';
+  document.getElementById('hdrConfirmBtn').style.display = (m === 'create') ? '' : 'none';
+  if (m === 'admin')   renderAdmin();
+  if (m === 'history') renderHistory();
+  window.scrollTo({ top: 0 });
+}
+
+// ============================================================
+// ADMIN VIEW
+// ============================================================
+function marginCell(price, cost) {
+  if (!price) return '<span class="margin-cell">—</span>';
+  if (!cost)  return '<span class="margin-cell margin-good">100.0%</span>';
+  const m = (price - cost) / price * 100;
+  const cls = m >= 35 ? 'margin-good' : m >= 25 ? 'margin-mid' : 'margin-bad';
+  return `<span class="margin-cell ${cls}">${m.toFixed(1)}%</span>`;
+}
+
+function priceRow(label, size, priceKey, costKey, price, cost) {
+  return `<tr>
+    <td class="item-name">${escapeHtml(label)}</td>
+    <td>${size ? `<span class="item-size">${size}</span>` : ''}</td>
+    <td><input type="number" step="10000" data-key="${priceKey}" value="${price||0}"></td>
+    <td><input type="number" step="10000" data-key="${costKey}" value="${cost||0}"></td>
+    <td class="margin-col">${marginCell(price, cost)}</td>
+  </tr>`;
+}
+
+function renderAdmin() {
+  let html = '';
+  const tableStart = (title, hasSize) => `
+    <div class="admin-section">
+      <h3>${title}</h3>
+      <table class="price-table">
+        <thead><tr>
+          <th style="width:40%">項目</th>
+          <th>${hasSize ? 'サイズ' : ''}</th>
+          <th>売価</th>
+          <th>原価</th>
+          <th>利益率</th>
+        </tr></thead><tbody>`;
+  const tableEnd = `</tbody></table></div>`;
+
+  // Tinys Models
+  html += tableStart('Tinys INSPIRATION｜ベースモデル', false);
+  TINYS_MODELS.forEach(m => {
+    html += priceRow(m.label, '', `model:${m.id}:price`, `model:${m.id}:cost`, mPrice(m), mCost(m));
+  });
+  html += tableEnd;
+
+  // Tinys Size opts
+  html += tableStart('Tinys INSPIRATION｜サイズ連動オプション', true);
+  TINYS_SIZE_OPTS.forEach(opt => {
+    ['6m','7.2m','9m'].forEach(size => {
+      if (opt.prices[size] == null && !PRICE_OVR[`sizeOpt:${opt.id}:${size}:price`]) return;
+      html += priceRow(opt.name, size, `sizeOpt:${opt.id}:${size}:price`, `sizeOpt:${opt.id}:${size}:cost`, soPrice(opt, size), soCost(opt, size));
+    });
+  });
+  html += tableEnd;
+
+  // Tinys Common
+  html += tableStart('Tinys INSPIRATION｜共通オプション', false);
+  TINYS_COMMON_OPTS.forEach(opt => {
+    html += priceRow(opt.name, '', `commonOpt:${opt.id}:price`, `commonOpt:${opt.id}:cost`, coPrice(opt), coCost(opt));
+  });
+  html += tableEnd;
+
+  // Blinds
+  html += tableStart('ロールスクリーン・ブラインド', false);
+  TINYS_BLIND_OPTS.filter(b => b.idx > 0).forEach(b => {
+    html += priceRow(b.label, '', `blind:${b.idx}:price`, `blind:${b.idx}:cost`, blPrice(b), blCost(b));
+  });
+  html += tableEnd;
+
+  // Tinys Misc
+  html += tableStart('Tinys INSPIRATION｜設計・手続き関連', false);
+  TINYS_MISC_OPTS.forEach(opt => {
+    html += priceRow(opt.name, '', `misc:${opt.id}:price`, `misc:${opt.id}:cost`, mxPrice(opt), mxCost(opt));
+  });
+  html += tableEnd;
+
+  // ROADIE Models
+  html += tableStart('ROADIE｜ベースモデル', false);
+  ROADIE_MODELS.forEach(m => {
+    html += priceRow(m.label, '', `model:${m.id}:price`, `model:${m.id}:cost`, mPrice(m), mCost(m));
+  });
+  html += tableEnd;
+
+  // ROADIE Size opts
+  html += tableStart('ROADIE｜サイズ連動オプション', true);
+  ROADIE_SIZE_OPTS.forEach(opt => {
+    ['mini','6m','7.2m'].forEach(size => {
+      if (opt.prices[size] == null) return;
+      html += priceRow(opt.name, size, `sizeOpt:${opt.id}:${size}:price`, `sizeOpt:${opt.id}:${size}:cost`, soPrice(opt, size), soCost(opt, size));
+    });
+  });
+  html += tableEnd;
+
+  // ROADIE Common
+  html += tableStart('ROADIE｜共通オプション', false);
+  ROADIE_COMMON_OPTS.forEach(opt => {
+    html += priceRow(opt.name, '', `commonOpt:${opt.id}:price`, `commonOpt:${opt.id}:cost`, coPrice(opt), coCost(opt));
+  });
+  html += tableEnd;
+
+  // ROADIE Misc
+  html += tableStart('ROADIE｜設計・手続き関連', false);
+  ROADIE_MISC_OPTS.forEach(opt => {
+    html += priceRow(opt.name, '', `misc:${opt.id}:price`, `misc:${opt.id}:cost`, mxPrice(opt), mxCost(opt));
+  });
+  html += tableEnd;
+
+  // Chassis Models
+  html += tableStart('シャーシ｜ベースモデル', false);
+  CHASSIS_MODELS.forEach(m => {
+    html += priceRow(m.label, '', `model:${m.id}:price`, `model:${m.id}:cost`, mPrice(m), mCost(m));
+  });
+  html += tableEnd;
+
+  // Chassis Opts
+  html += tableStart('シャーシ｜オプション', false);
+  CHASSIS_OPTS.forEach(opt => {
+    html += priceRow(opt.name, '', `chopt:${opt.id}:price`, `chopt:${opt.id}:cost`, chPrice(opt), chCost(opt));
+  });
+  html += tableEnd;
+
+  const root = document.getElementById('adminContent');
+  root.innerHTML = html;
+  // Live margin update
+  root.addEventListener('input', e => {
+    const inp = e.target;
+    if (!inp.matches('input[type="number"]')) return;
+    const row = inp.closest('tr');
+    const inputs = row.querySelectorAll('input[type="number"]');
+    const p = parseFloat(inputs[0].value) || 0;
+    const c = parseFloat(inputs[1].value) || 0;
+    row.querySelector('.margin-col').innerHTML = marginCell(p, c);
+  });
+}
+
+function saveAdminPrices() {
+  const data = {};
+  document.querySelectorAll('#adminContent input[type="number"]').forEach(inp => {
+    const key = inp.dataset.key;
+    const v = parseFloat(inp.value);
+    if (!isNaN(v)) data[key] = v;
+  });
+  PRICE_OVR = data;
+  saveOverrides(data);
+  alert('価格を保存しました。');
+  // refresh create view data in background
+  renderAdmin();
+}
+
+function resetAdminPrices() {
+  if (!confirm('全ての価格をデフォルトに戻します。よろしいですか？')) return;
+  localStorage.removeItem(LS_PRICES);
+  PRICE_OVR = {};
+  renderAdmin();
+}
+
+// ============================================================
+// HISTORY VIEW
+// ============================================================
+function renderHistory() {
+  const quotes = loadQuotes();
+  const q = (document.getElementById('histSearch')?.value || '').toLowerCase().trim();
+  const sFilter = document.getElementById('histFilterSeries')?.value || '';
+
+  let filtered = quotes;
+  if (sFilter) filtered = filtered.filter(qt => (qt.seriesKeys || []).includes(sFilter));
+  if (q) filtered = filtered.filter(qt => {
+    const haystack = [
+      qt.customerName, qt.staffName, qt.area,
+      ...(qt.sections || []).map(s => s.title),
+      ...(qt.sections || []).flatMap(s => s.lines.map(l => l.name))
+    ].join(' ').toLowerCase();
+    return haystack.includes(q);
+  });
+
+  document.getElementById('histCount').textContent = `${filtered.length} 件 / 全 ${quotes.length} 件`;
+
+  const list = document.getElementById('histList');
+  if (!filtered.length) {
+    list.innerHTML = `<div class="hist-empty">${quotes.length ? '該当する見積もりがありません' : 'まだ見積もりが保存されていません。見積もりを確定すると履歴に追加されます。'}</div>`;
+    return;
+  }
+
+  const seriesLabel = { tinys:'Tinys INSPIRATION', roadie:'ROADIE', chassis:'シャーシ' };
+
+  list.innerHTML = filtered.map(qt => {
+    const d = new Date(qt.createdAt);
+    const dateStr = `${d.getFullYear()}/${String(d.getMonth()+1).padStart(2,'0')}/${String(d.getDate()).padStart(2,'0')}`;
+    const tags = (qt.seriesKeys || []).map(k => `<span class="hist-tag">${seriesLabel[k] || k}</span>`).join('');
+    return `
+      <div class="hist-card">
+        <div class="hist-card-top">
+          <div class="hist-name">${escapeHtml(qt.customerName) || '<span style="color:#9CA3AF">（未記入）</span>'}</div>
+          <div class="hist-date">${dateStr}</div>
+        </div>
+        <div class="hist-meta">
+          <div class="hist-meta-item"><span class="hist-meta-lbl">担当者</span><span class="hist-meta-val">${escapeHtml(qt.staffName) || '—'}</span></div>
+          <div class="hist-meta-item"><span class="hist-meta-lbl">エリア</span><span class="hist-meta-val">${escapeHtml(qt.area) || '—'}</span></div>
+        </div>
+        <div class="hist-series">${tags}</div>
+        <div class="hist-totals">
+          <span class="hist-pre">税前 ${fmt(qt.totalPre)}</span>
+          <span class="hist-tax">${fmt(qt.totalTax)}（税込）</span>
+        </div>
+        <div class="hist-actions">
+          <button class="hist-btn primary" onclick="viewQuote('${qt.id}')">詳細・PDF</button>
+          <button class="hist-btn danger" onclick="deleteQuote('${qt.id}')">削除</button>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function viewQuote(id) {
+  const qt = loadQuotes().find(q => q.id === id);
+  if (!qt) return;
+  showCompletionFromData(qt, false);
+}
+
+function deleteQuote(id) {
+  if (!confirm('この見積もりを削除しますか？')) return;
+  const quotes = loadQuotes().filter(q => q.id !== id);
+  saveQuotes(quotes);
+  renderHistory();
+}
+
+function exportHistoryCSV() {
+  const quotes = loadQuotes();
+  if (!quotes.length) { alert('履歴がありません'); return; }
+  const seriesLabel = { tinys:'Tinys INSPIRATION', roadie:'ROADIE', chassis:'シャーシ' };
+  const rows = [['作成日','顧客名','担当者名','エリア','シリーズ','合計(税前)','合計(税込)']];
+  quotes.forEach(qt => {
+    const d = new Date(qt.createdAt);
+    const dateStr = `${d.getFullYear()}/${String(d.getMonth()+1).padStart(2,'0')}/${String(d.getDate()).padStart(2,'0')}`;
+    rows.push([
+      dateStr,
+      qt.customerName || '',
+      qt.staffName || '',
+      qt.area || '',
+      (qt.seriesKeys || []).map(k => seriesLabel[k] || k).join(' / '),
+      qt.totalPre, qt.totalTax
+    ]);
+  });
+  const csv = rows.map(r => r.map(v => `"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `yadokari_mitsumori_${new Date().toISOString().slice(0,10)}.csv`;
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
 }
 
 update();
