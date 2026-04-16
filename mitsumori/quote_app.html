@@ -1167,7 +1167,7 @@ function showCompletionFromData(q, saveToHistory) {
   let html = '';
   // 顧客情報
   const custLines = [];
-  if (q.customerName) custLines.push(`顧客名：${escapeHtml(q.customerName)}`);
+  if (q.customerName) custLines.push(`顧客名：${escapeHtml(q.customerName)} 様`);
   if (q.staffName)    custLines.push(`担当者：${escapeHtml(q.staffName)}`);
   if (q.area)         custLines.push(`エリア：${escapeHtml(q.area)}`);
   if (custLines.length) {
