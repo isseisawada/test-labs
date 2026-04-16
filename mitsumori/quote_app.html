@@ -223,11 +223,11 @@
     .comp-btn-print:hover { background: var(--p-hover); }
     .no-sel { text-align: center; color: var(--t3); font-size: 0.83rem; padding: 16px 0; }
 
-    /* MODE SWITCHER (in header) */
-    .mode-nav { display: flex; gap: 4px; margin-right: 8px; }
-    .mode-btn { padding: 6px 12px; border-radius: 8px; border: 1px solid var(--border); background: white; font-size: 0.78rem; font-weight: 600; color: var(--t2); cursor: pointer; transition: all .15s; white-space: nowrap; }
-    .mode-btn:hover { background: var(--bg); }
-    .mode-btn.active { background: var(--p); color: white; border-color: var(--p); }
+    /* MODE SWITCHER */
+    .mode-nav-bar { background: var(--surface); border-top: 1px solid var(--border); display: flex; justify-content: center; gap: 6px; padding: 12px 16px; }
+    .mode-nb { padding: 7px 18px; border: 1px solid var(--border); border-radius: 20px; background: white; font-size: 0.8rem; font-weight: 600; color: var(--t2); cursor: pointer; white-space: nowrap; transition: all .15s; font-family: inherit; }
+    .mode-nb:hover { background: var(--bg); color: var(--t1); }
+    .mode-nb.active { background: var(--p-light); color: var(--p); border-color: var(--p-mid); }
 
     /* CUSTOMER INFO CARD */
     .cust-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
@@ -313,11 +313,13 @@
       .s-btn { padding: 5px 10px; font-size: 0.78rem; white-space: nowrap; }
       .mg-row .qty-btn { width: 36px; height: 36px; font-size: 1rem; }
       .mg-row .qty-val { font-size: 0.88rem; min-width: 32px; }
+      .mode-nav-bar { border-radius: 0; }
     }
     @media (max-width: 480px) { .m-grid { grid-template-columns: 1fr; } }
     @media print {
       /* 通常印刷（メインアプリ） */
       .hdr { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      .mode-nav-bar { display: none; }
       .btn-a, .btn-b, .btn-c, .btn-pdf, .sidebar { display: none; }
       .app { flex-direction: column; }
       .sum-panel { width: 100%; position: static; }
@@ -334,11 +336,6 @@
 
 <header class="hdr">
   <div class="logo" style="cursor:pointer" onclick="switchMode('create')">簡単見積もり<span class="logo-by">by YADOKARI</span></div>
-  <div class="mode-nav">
-    <button class="mode-btn active" id="modeCreate" onclick="switchMode('create')">見積もり作成</button>
-    <button class="mode-btn" id="modeHistory" onclick="switchMode('history')">履歴</button>
-    <button class="mode-btn" id="modeAdmin" onclick="switchMode('admin')">管理</button>
-  </div>
   <nav class="s-nav" id="sNav"></nav>
   <button class="btn-pdf" id="hdrConfirmBtn" onclick="confirmEstimate()">見積もりを確定</button>
 </header>
@@ -392,6 +389,12 @@
     </div>
   </aside>
 </div>
+
+<nav class="mode-nav-bar">
+  <button class="mode-nb active" id="modeCreate" onclick="switchMode('create')">見積もり作成</button>
+  <button class="mode-nb" id="modeHistory" onclick="switchMode('history')">履歴</button>
+  <button class="mode-nb" id="modeAdmin" onclick="switchMode('admin')">管理</button>
+</nav>
 
 <!-- ADMIN VIEW -->
 <div class="admin-wrap" id="appAdmin" style="display:none">
@@ -1196,9 +1199,8 @@ function update() {
 // ============================================================
 function switchMode(m) {
   state.mode = m;
-  document.getElementById('modeCreate').classList.toggle('active',  m === 'create');
-  document.getElementById('modeHistory').classList.toggle('active', m === 'history');
-  document.getElementById('modeAdmin').classList.toggle('active',   m === 'admin');
+  ['modeCreate','modeHistory','modeAdmin'].forEach(id => document.getElementById(id).classList.remove('active'));
+  document.getElementById(m === 'create' ? 'modeCreate' : m === 'history' ? 'modeHistory' : 'modeAdmin').classList.add('active');
   document.getElementById('appCreate').style.display  = (m === 'create')  ? '' : 'none';
   document.getElementById('appHistory').style.display = (m === 'history') ? '' : 'none';
   document.getElementById('appAdmin').style.display   = (m === 'admin')   ? '' : 'none';
