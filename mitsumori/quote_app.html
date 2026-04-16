@@ -240,15 +240,17 @@
     .cust-field input::placeholder { color: var(--t3); }
 
     /* ADMIN VIEW */
-    .admin-wrap { max-width: 1100px; margin: 0 auto; padding: 24px 16px; }
+    .admin-wrap { max-width: 1100px; margin: 0 auto; padding: 24px 16px 90px; }
     .admin-hdr { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; gap: 12px; flex-wrap: wrap; }
     .admin-hdr h2 { font-size: 1.2rem; font-weight: 800; }
     .admin-hdr-sub { font-size: 0.78rem; color: var(--t3); margin-top: 2px; }
     .admin-actions { display: flex; gap: 8px; }
     .admin-actions .btn { padding: 9px 16px; font-size: 0.82rem; font-weight: 600; border-radius: 8px; border: 1px solid var(--border); background: white; color: var(--t1); cursor: pointer; }
     .admin-actions .btn:hover { background: var(--bg); }
-    .admin-actions .btn.primary { background: var(--p); color: white; border-color: var(--p); }
-    .admin-actions .btn.primary:hover { background: var(--p-hover); }
+    .admin-save-bar { position: fixed; bottom: 0; left: 0; right: 0; z-index: 200; background: white; border-top: 1px solid var(--border); padding: 12px 24px; display: none; justify-content: center; box-shadow: 0 -2px 12px rgba(0,0,0,0.08); }
+    .admin-save-bar.visible { display: flex; }
+    .admin-save-bar .btn-save { padding: 12px 40px; font-size: 0.9rem; font-weight: 700; border-radius: 10px; border: none; background: var(--p); color: white; cursor: pointer; font-family: inherit; transition: background .15s; }
+    .admin-save-bar .btn-save:hover { background: var(--p-hover); }
     .admin-section { background: white; border: 1px solid var(--border); border-radius: 14px; padding: 20px 24px; margin-bottom: 14px; }
     .admin-section h3 { font-size: 0.95rem; font-weight: 700; margin-bottom: 14px; color: var(--t1); }
     .price-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
@@ -412,12 +414,15 @@
       <div class="admin-hdr-sub">各項目の売価・原価を編集できます。営業利益率が自動計算されます。</div>
     </div>
     <div class="admin-actions">
-      <button class="btn" onclick="resetAdminPrices()">デフォルトに戻す</button>
+      <input type="file" id="csvUploadInput" accept=".csv" style="display:none" onchange="uploadAdminCSV(event)">
+      <button class="btn" onclick="document.getElementById('csvUploadInput').click()">CSVアップロード</button>
       <button class="btn" onclick="downloadAdminCSV()">CSVダウンロード</button>
-      <button class="btn primary" onclick="saveAdminPrices()">保存する</button>
     </div>
   </div>
   <div id="adminContent"></div>
+</div>
+<div class="admin-save-bar" id="adminSaveBar">
+  <button class="btn-save" onclick="saveAdminPrices()">修正内容を保存する</button>
 </div>
 
 <!-- HISTORY VIEW -->
@@ -1232,6 +1237,7 @@ function switchMode(m) {
   // hide series nav and confirm button when not in create mode
   document.getElementById('sNav').style.display = (m === 'create') ? '' : 'none';
   document.getElementById('hdrConfirmBtn').style.display = (m === 'create') ? '' : 'none';
+  document.getElementById('adminSaveBar').classList.toggle('visible', m === 'admin');
   if (m === 'admin')   renderAdmin();
   if (m === 'history') renderHistory();
   window.scrollTo({ top: 0 });
@@ -1386,6 +1392,87 @@ function renderAdmin() {
     const c = parseFloat(inputs[1].value) || 0;
     row.querySelector('.margin-col').innerHTML = marginCell(p, c);
   });
+}
+
+function uploadAdminCSV(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const text = e.target.result.replace(/^\uFEFF/, ''); // strip BOM
+    const lines = text.split(/\r?\n/).filter(l => l.trim());
+    if (lines.length < 2) { alert('CSVのデータが見つかりません。'); return; }
+
+    // Parse CSV (handles quoted fields)
+    function parseCSVLine(line) {
+      const result = [];
+      let cur = '', inQ = false;
+      for (let i = 0; i < line.length; i++) {
+        const c = line[i];
+        if (c === '"') {
+          if (inQ && line[i+1] === '"') { cur += '"'; i++; }
+          else inQ = !inQ;
+        } else if (c === ',' && !inQ) {
+          result.push(cur); cur = '';
+        } else {
+          cur += c;
+        }
+      }
+      result.push(cur);
+      return result;
+    }
+
+    const headers = parseCSVLine(lines[0]);
+    // Expected: カテゴリ, 項目, サイズ, 売価, 原価, 利益率, メモ
+    const idxPrice = 3, idxCost = 4, idxMemo = 6;
+
+    // Build lookup: label+size -> {priceKey, costKey, memoKey}
+    const lookup = {};
+    function reg(label, size, pk, ck, mk) {
+      lookup[label + '|' + (size || '')] = { pk, ck, mk };
+    }
+    TINYS_MODELS.forEach(m => reg(m.label, '', `model:${m.id}:price`, `model:${m.id}:cost`, `model:${m.id}:memo`));
+    TINYS_SIZE_OPTS.forEach(opt => ['6m','7.2m','9m'].forEach(sz => reg(opt.name, sz, `sizeOpt:${opt.id}:${sz}:price`, `sizeOpt:${opt.id}:${sz}:cost`, `sizeOpt:${opt.id}:${sz}:memo`)));
+    TINYS_COMMON_OPTS.forEach(opt => reg(opt.name, '', `commonOpt:${opt.id}:price`, `commonOpt:${opt.id}:cost`, `commonOpt:${opt.id}:memo`));
+    TINYS_BLIND_OPTS.filter(b => b.idx > 0).forEach(b => reg(b.label, '', `blind:${b.idx}:price`, `blind:${b.idx}:cost`, `blind:${b.idx}:memo`));
+    TINYS_MISC_OPTS.forEach(opt => reg(opt.name, '', `misc:${opt.id}:price`, `misc:${opt.id}:cost`, `misc:${opt.id}:memo`));
+    ROADIE_MODELS.forEach(m => reg(m.label, '', `model:${m.id}:price`, `model:${m.id}:cost`, `model:${m.id}:memo`));
+    ROADIE_SIZE_OPTS.forEach(opt => ['mini','6m','7.2m'].forEach(sz => reg(opt.name, sz, `sizeOpt:${opt.id}:${sz}:price`, `sizeOpt:${opt.id}:${sz}:cost`, `sizeOpt:${opt.id}:${sz}:memo`)));
+    ROADIE_COMMON_OPTS.forEach(opt => reg(opt.name, '', `commonOpt:${opt.id}:price`, `commonOpt:${opt.id}:cost`, `commonOpt:${opt.id}:memo`));
+    ROADIE_MISC_OPTS.forEach(opt => reg(opt.name, '', `misc:${opt.id}:price`, `misc:${opt.id}:cost`, `misc:${opt.id}:memo`));
+    CHASSIS_MODELS.forEach(m => reg(m.label, '', `model:${m.id}:price`, `model:${m.id}:cost`, `model:${m.id}:memo`));
+    CHASSIS_OPTS.forEach(opt => reg(opt.name, '', `chopt:${opt.id}:price`, `chopt:${opt.id}:cost`, `chopt:${opt.id}:memo`));
+    TRANSPORT_OPTS.filter(t => t.idx > 0).forEach(t => reg(t.label, '', `transport:${t.idx}:price`, `transport:${t.idx}:cost`, `transport:${t.idx}:memo`));
+    REGION_OPTS.filter(r => r.idx > 0).forEach(r => reg(r.label, '', `region:${r.idx}:price`, `region:${r.idx}:cost`, `region:${r.idx}:memo`));
+
+    const prices = {}, memos = {};
+    let updated = 0, skipped = 0;
+    for (let i = 1; i < lines.length; i++) {
+      const cols = parseCSVLine(lines[i]);
+      const label = cols[1] || '';
+      const size  = cols[2] || '';
+      const key = label + '|' + size;
+      const entry = lookup[key];
+      if (!entry) { skipped++; continue; }
+      const price = parseFloat(cols[idxPrice]);
+      const cost  = parseFloat(cols[idxCost]);
+      const memo  = (cols[idxMemo] || '').trim();
+      if (!isNaN(price)) prices[entry.pk] = price;
+      if (!isNaN(cost))  prices[entry.ck] = cost;
+      if (memo) memos[entry.mk] = memo;
+      updated++;
+    }
+
+    PRICE_OVR = prices;
+    saveOverrides(prices);
+    MEMO_DATA = memos;
+    saveMemos(memos);
+    renderAdmin();
+    // reset input so same file can be uploaded again
+    event.target.value = '';
+    alert(`${updated}件を読み込みました。${skipped > 0 ? `（${skipped}行スキップ）` : ''}\n保存済みです。`);
+  };
+  reader.readAsText(file, 'UTF-8');
 }
 
 function saveAdminPrices() {
