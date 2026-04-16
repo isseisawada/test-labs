@@ -413,6 +413,7 @@
     </div>
     <div class="admin-actions">
       <button class="btn" onclick="resetAdminPrices()">デフォルトに戻す</button>
+      <button class="btn" onclick="downloadAdminCSV()">CSVダウンロード</button>
       <button class="btn primary" onclick="saveAdminPrices()">保存する</button>
     </div>
   </div>
@@ -1405,6 +1406,119 @@ function saveAdminPrices() {
   saveMemos(memos);
   alert('保存しました。');
   renderAdmin();
+}
+
+function downloadAdminCSV() {
+  const rows = [['カテゴリ', '項目', 'サイズ', '売価', '原価', '利益率', 'メモ']];
+
+  function addRows(title, items) {
+    items.forEach(item => {
+      const priceInp = document.querySelector(`#adminContent input[data-key="${item.pk}"]`);
+      const costInp  = document.querySelector(`#adminContent input[data-key="${item.ck}"]`);
+      const memoInp  = document.querySelector(`#adminContent input[data-memo-key="${item.mk}"]`);
+      const price = priceInp ? parseFloat(priceInp.value) || 0 : item.price;
+      const cost  = costInp  ? parseFloat(costInp.value)  || 0 : item.cost;
+      const margin = price > 0 ? Math.round((price - cost) / price * 1000) / 10 : 0;
+      const memo  = memoInp ? memoInp.value : '';
+      rows.push([title, item.label, item.size || '', price, cost, margin + '%', memo]);
+    });
+  }
+
+  // Tinys Models
+  addRows('Tinys INSPIRATION｜ベースモデル', TINYS_MODELS.map(m => ({
+    label: m.label, size: '', pk: `model:${m.id}:price`, ck: `model:${m.id}:cost`,
+    mk: `model:${m.id}:memo`, price: mPrice(m), cost: mCost(m)
+  })));
+
+  // Tinys Size Opts
+  const tinysSizeItems = [];
+  TINYS_SIZE_OPTS.forEach(opt => {
+    ['6m','7.2m','9m'].forEach(size => {
+      if (opt.prices[size] == null && !PRICE_OVR[`sizeOpt:${opt.id}:${size}:price`]) return;
+      tinysSizeItems.push({ label: opt.name, size, pk: `sizeOpt:${opt.id}:${size}:price`, ck: `sizeOpt:${opt.id}:${size}:cost`, mk: `sizeOpt:${opt.id}:${size}:memo`, price: soPrice(opt, size), cost: soCost(opt, size) });
+    });
+  });
+  addRows('Tinys INSPIRATION｜サイズ連動オプション', tinysSizeItems);
+
+  // Tinys Common
+  addRows('Tinys INSPIRATION｜共通オプション', TINYS_COMMON_OPTS.map(opt => ({
+    label: opt.name, size: '', pk: `commonOpt:${opt.id}:price`, ck: `commonOpt:${opt.id}:cost`,
+    mk: `commonOpt:${opt.id}:memo`, price: coPrice(opt), cost: coCost(opt)
+  })));
+
+  // Blinds
+  addRows('ロールスクリーン・ブラインド', TINYS_BLIND_OPTS.filter(b => b.idx > 0).map(b => ({
+    label: b.label, size: '', pk: `blind:${b.idx}:price`, ck: `blind:${b.idx}:cost`,
+    mk: `blind:${b.idx}:memo`, price: blPrice(b), cost: blCost(b)
+  })));
+
+  // Tinys Misc
+  addRows('Tinys INSPIRATION｜設計・手続き関連', TINYS_MISC_OPTS.map(opt => ({
+    label: opt.name, size: '', pk: `misc:${opt.id}:price`, ck: `misc:${opt.id}:cost`,
+    mk: `misc:${opt.id}:memo`, price: mxPrice(opt), cost: mxCost(opt)
+  })));
+
+  // ROADIE Models
+  addRows('ROADIE｜ベースモデル', ROADIE_MODELS.map(m => ({
+    label: m.label, size: '', pk: `model:${m.id}:price`, ck: `model:${m.id}:cost`,
+    mk: `model:${m.id}:memo`, price: mPrice(m), cost: mCost(m)
+  })));
+
+  // ROADIE Size Opts
+  const roadieSizeItems = [];
+  ROADIE_SIZE_OPTS.forEach(opt => {
+    ['mini','6m','7.2m'].forEach(size => {
+      if (opt.prices[size] == null) return;
+      roadieSizeItems.push({ label: opt.name, size, pk: `sizeOpt:${opt.id}:${size}:price`, ck: `sizeOpt:${opt.id}:${size}:cost`, mk: `sizeOpt:${opt.id}:${size}:memo`, price: soPrice(opt, size), cost: soCost(opt, size) });
+    });
+  });
+  addRows('ROADIE｜サイズ連動オプション', roadieSizeItems);
+
+  // ROADIE Common
+  addRows('ROADIE｜共通オプション', ROADIE_COMMON_OPTS.map(opt => ({
+    label: opt.name, size: '', pk: `commonOpt:${opt.id}:price`, ck: `commonOpt:${opt.id}:cost`,
+    mk: `commonOpt:${opt.id}:memo`, price: coPrice(opt), cost: coCost(opt)
+  })));
+
+  // ROADIE Misc
+  addRows('ROADIE｜設計・手続き関連', ROADIE_MISC_OPTS.map(opt => ({
+    label: opt.name, size: '', pk: `misc:${opt.id}:price`, ck: `misc:${opt.id}:cost`,
+    mk: `misc:${opt.id}:memo`, price: mxPrice(opt), cost: mxCost(opt)
+  })));
+
+  // Chassis Models
+  addRows('シャーシ｜ベースモデル', CHASSIS_MODELS.map(m => ({
+    label: m.label, size: '', pk: `model:${m.id}:price`, ck: `model:${m.id}:cost`,
+    mk: `model:${m.id}:memo`, price: mPrice(m), cost: mCost(m)
+  })));
+
+  // Chassis Opts
+  addRows('シャーシ｜オプション', CHASSIS_OPTS.map(opt => ({
+    label: opt.name, size: '', pk: `chopt:${opt.id}:price`, ck: `chopt:${opt.id}:cost`,
+    mk: `chopt:${opt.id}:memo`, price: chPrice(opt), cost: chCost(opt)
+  })));
+
+  // Transport
+  addRows('配送費用', TRANSPORT_OPTS.filter(t => t.idx > 0).map(t => ({
+    label: t.label, size: '', pk: `transport:${t.idx}:price`, ck: `transport:${t.idx}:cost`,
+    mk: `transport:${t.idx}:memo`, price: trPrice(t), cost: trCost(t)
+  })));
+
+  // Region
+  addRows('諸経費（エリア別）', REGION_OPTS.filter(r => r.idx > 0).map(r => ({
+    label: r.label, size: '', pk: `region:${r.idx}:price`, ck: `region:${r.idx}:cost`,
+    mk: `region:${r.idx}:memo`, price: rgPrice(r), cost: rgCost(r)
+  })));
+
+  const csv = '\uFEFF' + rows.map(r => r.map(v => `"${String(v).replace(/"/g, '""')}"`).join(',')).join('\r\n');
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  const today = new Date().toISOString().slice(0,10).replace(/-/g,'');
+  a.download = `yadokari_prices_${today}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
 }
 
 function resetAdminPrices() {
