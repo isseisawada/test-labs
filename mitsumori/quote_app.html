@@ -271,6 +271,14 @@
     .margin-good { color: #059669; }
     .margin-mid  { color: #D97706; }
     .margin-bad  { color: var(--red); }
+    .design-lv-wrap { padding: 4px 0; }
+    .design-lv-btns { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 6px; }
+    .dlv-btn { padding: 5px 12px; border: 1px solid var(--border); border-radius: 6px; background: white; font-size: 0.78rem; font-weight: 600; color: var(--t2); cursor: pointer; transition: all .15s; font-family: inherit; }
+    .dlv-btn:hover { background: var(--bg); color: var(--t1); }
+    .dlv-btn.active { background: var(--p-light); color: var(--p); border-color: var(--p-mid); }
+    .design-lv-info { margin-top: 10px; font-size: 0.78rem; color: var(--t2); background: var(--bg); border-radius: 8px; padding: 10px 14px; }
+    .dlv-row { display: flex; justify-content: space-between; padding: 2px 0; }
+    .dlv-total { font-weight: 700; color: var(--t1); border-top: 1px solid var(--border); margin-top: 5px; padding-top: 6px; }
 
     /* HISTORY VIEW */
     .hist-wrap { max-width: 1100px; margin: 0 auto; padding: 24px 16px; }
@@ -532,12 +540,10 @@ const TINYS_BLIND_OPTS = [
   { idx:4, label:'W1235×H570（小）',  price:40000,  cost:23900 },
 ];
 const TINYS_MISC_OPTS = [
-  { id:'tm1', name:'設計費用（セミオーダー）', ico:'📐', price:150000, cost:0 },
-  { id:'tm2', name:'設計費用（フルオーダー）', ico:'📐', price:300000, cost:0 },
-  { id:'tm3', name:'車両申請書類',             ico:'📋', price:100000, cost:50000 },
-  { id:'tm4', name:'予備車検',                 ico:'🔍', price:80000,  cost:50000 },
-  { id:'tm5', name:'設置費用',                 ico:'🏗️', price:50000,  cost:30000 },
-  { id:'tm8', name:'新規車両申請費用',         ico:'📄', price:300000, cost:200000 },
+  { id:'tm3', name:'車両申請書類',     ico:'📋', price:100000, cost:50000 },
+  { id:'tm4', name:'予備車検',         ico:'🔍', price:80000,  cost:50000 },
+  { id:'tm5', name:'設置費用',         ico:'🏗️', price:50000,  cost:30000 },
+  { id:'tm8', name:'新規車両申請費用', ico:'📄', price:300000, cost:200000 },
 ];
 
 const ROADIE_MODELS = [
@@ -570,12 +576,18 @@ const ROADIE_COMMON_OPTS = [
   { id:'rc5', name:'外部照明',        sub:'オーデリックOG254917R1', ico:'💡', price:40000, cost:25000 },
 ];
 const ROADIE_MISC_OPTS = [
-  { id:'rm1', name:'設計費用(セミオーダー)', ico:'📐', price:150000, cost:0 },
-  { id:'rm2', name:'設計費用(フルオーダー)', ico:'📐', price:300000, cost:0 },
-  { id:'rm3', name:'車両申請書類',             ico:'📋', price:100000, cost:0 },
-  { id:'rm4', name:'予備車検',                 ico:'🔍', price:80000,  cost:0 },
-  { id:'rm5', name:'設置費用',                 ico:'🏗️', price:50000,  cost:0 },
+  { id:'rm3', name:'車両申請書類', ico:'📋', price:100000, cost:0 },
+  { id:'rm4', name:'予備車検',     ico:'🔍', price:80000,  cost:0 },
+  { id:'rm5', name:'設置費用',     ico:'🏗️', price:50000,  cost:0 },
 ];
+// 難易度係数 Lv1(×0.1) 〜 Lv7(×1.3)
+const DESIGN_LEVELS = [
+  { lv:1, coef:0.1 }, { lv:2, coef:0.3 }, { lv:3, coef:0.5 },
+  { lv:4, coef:0.7 }, { lv:5, coef:0.9 }, { lv:6, coef:1.1 }, { lv:7, coef:1.3 },
+];
+function designQtyCoef(qty) {
+  return qty <= 1 ? 1.0 : qty <= 3 ? 0.8 : qty <= 7 ? 0.6 : 0.4;
+}
 
 const CHASSIS_MODELS = [
   { id:'ch1', label:'YCL360（12ft コンテナロック付き）', shortLabel:'12ft コンテナロック付き', price:1200000, cost:780000,  ico:'⚙️' },
@@ -673,8 +685,8 @@ let state = {
   ylwTransportIdx: 0,
   miscCostIdx: 0,
   discount: 0,
-  tinys:   { modelQtys:{}, sizeOpts:{}, commonOpts:{}, blindIdx:0, blindCount:1, miscOpts:{} },
-  roadie:  { modelQtys:{}, sizeOpts:{}, commonOpts:{}, miscOpts:{} },
+  tinys:   { modelQtys:{}, sizeOpts:{}, commonOpts:{}, blindIdx:0, blindCount:1, miscOpts:{}, designLv:0 },
+  roadie:  { modelQtys:{}, sizeOpts:{}, commonOpts:{}, miscOpts:{}, designLv:0 },
   chassis: { modelQtys:{}, opts:{} },
 };
 const hasModel   = (s) => Object.values(s.modelQtys||{}).some(q => q > 0);
@@ -818,11 +830,7 @@ function renderTinys(el) {
   c3.appendChild(rows3);
   el.appendChild(c3);
 
-  const c5 = sectionCard('設計・手続き関連', '');
-  const rows5 = div('opt-rows');
-  TINYS_MISC_OPTS.forEach(opt => rows5.appendChild(toggleRow(opt, mxPrice(opt), !!s.miscOpts[opt.id], false, v => { s.miscOpts[opt.id] = v; update(); })));
-  c5.appendChild(rows5);
-  el.appendChild(c5);
+  renderDesignLevelCard(s, TINYS_MODELS, el);
 }
 
 // ---- ROADIE ----
@@ -848,11 +856,7 @@ function renderRoadie(el) {
   c3.appendChild(rows3);
   el.appendChild(c3);
 
-  const c4 = sectionCard('設計・手続き関連', '');
-  const rows4 = div('opt-rows');
-  ROADIE_MISC_OPTS.forEach(opt => rows4.appendChild(toggleRow(opt, mxPrice(opt), !!s.miscOpts[opt.id], false, v => { s.miscOpts[opt.id] = v; update(); })));
-  c4.appendChild(rows4);
-  el.appendChild(c4);
+  renderDesignLevelCard(s, ROADIE_MODELS, el);
 }
 
 // ---- Chassis ----
@@ -869,6 +873,59 @@ function renderChassis(el) {
 }
 
 // ---- Shared (shipping + discount) ----
+function renderDesignLevelCard(s, modelsArr, el) {
+  const c = sectionCard('設計・手続き関連', '');
+  const wrap = div('design-lv-wrap');
+
+  const lbl = document.createElement('label');
+  lbl.textContent = '基本設計費・製造管理費（難易度）';
+  lbl.style.cssText = 'font-size:0.78rem;font-weight:600;color:var(--t2);display:block;margin-bottom:2px;';
+  wrap.appendChild(lbl);
+
+  const btnRow = div('design-lv-btns');
+  const mkBtn = (lvVal, label) => {
+    const b = document.createElement('button');
+    b.className = 'dlv-btn' + (s.designLv === lvVal ? ' active' : '');
+    b.textContent = label;
+    b.onclick = () => { s.designLv = lvVal; update(); };
+    return b;
+  };
+  btnRow.appendChild(mkBtn(0, 'なし'));
+  DESIGN_LEVELS.forEach(dl => btnRow.appendChild(mkBtn(dl.lv, `Lv${dl.lv}`)));
+  wrap.appendChild(btnRow);
+
+  if (s.designLv > 0) {
+    const dl = DESIGN_LEVELS[s.designLv - 1];
+    const totalQty = seriesQty(s);
+    const totalBasePrice = modelsArr.reduce((sum, m) => sum + mPrice(m) * (s.modelQtys[m.id]||0), 0);
+    const unitPrice = totalBasePrice / Math.max(1, totalQty);
+    const basicFee = Math.round(unitPrice * 0.1 * dl.coef);
+    const qc = designQtyCoef(totalQty);
+    const mfgFee = totalQty > 1 ? Math.round(basicFee * qc * (totalQty - 1)) : 0;
+    const info = div('design-lv-info');
+    info.innerHTML = `
+      <div class="dlv-row"><span>難易度係数</span><span>×${dl.coef}</span></div>
+      <div class="dlv-row"><span>基本設計費</span><span>${fmt(basicFee)}</span></div>
+      ${totalQty > 1
+        ? `<div class="dlv-row"><span>製造管理費（台数係数×${qc}・${totalQty-1}台分）</span><span>${fmt(mfgFee)}</span></div>`
+        : `<div class="dlv-row" style="color:var(--t3)"><span>製造管理費</span><span>1台目は基本設計費に含む</span></div>`}
+      <div class="dlv-row dlv-total"><span>設計費 合計</span><span>${fmt(basicFee + mfgFee)}</span></div>`;
+    wrap.appendChild(info);
+  }
+
+  // その他の手続き項目（車両申請書類等）
+  const miscOpts = (modelsArr === TINYS_MODELS ? TINYS_MISC_OPTS : ROADIE_MISC_OPTS);
+  if (miscOpts.length > 0) {
+    const rows = div('opt-rows');
+    rows.style.marginTop = '12px';
+    miscOpts.forEach(opt => rows.appendChild(toggleRow(opt, mxPrice(opt), !!s.miscOpts[opt.id], false, v => { s.miscOpts[opt.id] = v; update(); })));
+    wrap.appendChild(rows);
+  }
+
+  c.appendChild(wrap);
+  el.appendChild(c);
+}
+
 function renderShared(el) {
   const isYLW = (state.chassis.modelQtys['ch6'] || 0) > 0;
   const c = sectionCard('配送設定・諸経費', '');
@@ -1017,6 +1074,15 @@ function collectLines() {
     TINYS_COMMON_OPTS.forEach(o => { if (s.commonOpts[o.id]) lines.push({ name:o.name+ql(tq), val:coPrice(o)*tq }); });
     if (s.blindIdx > 0) { const b = TINYS_BLIND_OPTS[s.blindIdx]; lines.push({ name:`ロールスクリーン ${b.label}×${s.blindCount}枚${ql(tq)}`, val:blPrice(b)*s.blindCount*tq }); }
     TINYS_MISC_OPTS.forEach(o => { if (s.miscOpts[o.id]) lines.push({ name:o.name+ql(tq), val:mxPrice(o)*tq }); });
+    if (s.designLv > 0) {
+      const dl = DESIGN_LEVELS[s.designLv - 1];
+      const totalBase = TINYS_MODELS.reduce((sum, m) => sum + mPrice(m)*(s.modelQtys[m.id]||0), 0);
+      const unitPrice = totalBase / Math.max(1, tq);
+      const basicFee = Math.round(unitPrice * 0.1 * dl.coef);
+      const mfgFee = tq > 1 ? Math.round(basicFee * designQtyCoef(tq) * (tq - 1)) : 0;
+      lines.push({ name:`基本設計費（Lv${s.designLv}）`, val: basicFee });
+      if (mfgFee > 0) lines.push({ name:`製造管理費（Lv${s.designLv}・${tq}台）`, val: mfgFee });
+    }
     sections.push({ title:'Tinys INSPIRATION', key:'tinys', lines });
   }
 
@@ -1033,6 +1099,15 @@ function collectLines() {
     ROADIE_SIZE_OPTS.forEach(o => { if (s.sizeOpts[o.id] && size && soPrice(o, size)) lines.push({ name:o.name+ql(tq), val:soPrice(o, size)*tq }); });
     ROADIE_COMMON_OPTS.forEach(o => { if (s.commonOpts[o.id]) lines.push({ name:o.name+ql(tq), val:coPrice(o)*tq }); });
     ROADIE_MISC_OPTS.forEach(o => { if (s.miscOpts[o.id]) lines.push({ name:o.name+ql(tq), val:mxPrice(o)*tq }); });
+    if (s.designLv > 0) {
+      const dl = DESIGN_LEVELS[s.designLv - 1];
+      const totalBase = ROADIE_MODELS.reduce((sum, m) => sum + mPrice(m)*(s.modelQtys[m.id]||0), 0);
+      const unitPrice = totalBase / Math.max(1, tq);
+      const basicFee = Math.round(unitPrice * 0.1 * dl.coef);
+      const mfgFee = tq > 1 ? Math.round(basicFee * designQtyCoef(tq) * (tq - 1)) : 0;
+      lines.push({ name:`基本設計費（Lv${s.designLv}）`, val: basicFee });
+      if (mfgFee > 0) lines.push({ name:`製造管理費（Lv${s.designLv}・${tq}台）`, val: mfgFee });
+    }
     sections.push({ title:'ROADIE', key:'roadie', lines });
   }
 
@@ -1124,8 +1199,8 @@ function updateSummary() {
   // Progress
   const anyModel = hasModel(state.tinys) || hasModel(state.roadie) || hasModel(state.chassis);
   const anyOpt = !!(
-    Object.values(state.tinys.sizeOpts).some(Boolean) || Object.values(state.tinys.commonOpts).some(Boolean) || state.tinys.blindIdx > 0 || Object.values(state.tinys.miscOpts).some(Boolean) ||
-    Object.values(state.roadie.sizeOpts).some(Boolean) || Object.values(state.roadie.commonOpts).some(Boolean) || Object.values(state.roadie.miscOpts).some(Boolean) ||
+    Object.values(state.tinys.sizeOpts).some(Boolean) || Object.values(state.tinys.commonOpts).some(Boolean) || state.tinys.blindIdx > 0 || Object.values(state.tinys.miscOpts).some(Boolean) || state.tinys.designLv > 0 ||
+    Object.values(state.roadie.sizeOpts).some(Boolean) || Object.values(state.roadie.commonOpts).some(Boolean) || Object.values(state.roadie.miscOpts).some(Boolean) || state.roadie.designLv > 0 ||
     Object.values(state.chassis.opts||{}).some(Boolean)
   );
   const hasTransport = state.transportIdx > 0 || state.ylwTransportIdx > 0;
@@ -1181,8 +1256,8 @@ function resetAll() {
   state.transportIdx = 0; state.ylwTransportIdx = 0; state.miscCostIdx = 0; state.discount = 0;
   state.customerName = ''; state.staffName = ''; state.area = '';
   const di = document.getElementById('discInput'); if (di) di.value = '';
-  state.tinys   = { modelQtys:{}, sizeOpts:{}, commonOpts:{}, blindIdx:0, blindCount:1, miscOpts:{} };
-  state.roadie  = { modelQtys:{}, sizeOpts:{}, commonOpts:{}, miscOpts:{} };
+  state.tinys   = { modelQtys:{}, sizeOpts:{}, commonOpts:{}, blindIdx:0, blindCount:1, miscOpts:{}, designLv:0 };
+  state.roadie  = { modelQtys:{}, sizeOpts:{}, commonOpts:{}, miscOpts:{}, designLv:0 };
   state.chassis = { modelQtys:{}, opts:{} };
   update();
 }
