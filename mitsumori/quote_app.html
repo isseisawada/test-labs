@@ -594,26 +594,26 @@ const CHASSIS_OPTS = [
 ];
 
 const TRANSPORT_OPTS = [
-  { idx:0,  label:'なし',       price:0 },
-  { idx:1,  label:'100km以内',  price:190000 },
-  { idx:2,  label:'200km以内',  price:260000 },
-  { idx:3,  label:'300km以内',  price:330000 },
-  { idx:4,  label:'400km以内',  price:400000 },
-  { idx:5,  label:'500km以内',  price:470000 },
-  { idx:6,  label:'600km以内',  price:540000 },
-  { idx:7,  label:'700km以内',  price:620000 },
-  { idx:8,  label:'800km以内',  price:690000 },
-  { idx:9,  label:'900km以内',  price:760000 },
-  { idx:10, label:'1000km以内', price:830000 },
+  { idx:0,  label:'なし',       price:0,      cost:0 },
+  { idx:1,  label:'100km以内',  price:190000, cost:130000 },
+  { idx:2,  label:'200km以内',  price:260000, cost:180000 },
+  { idx:3,  label:'300km以内',  price:330000, cost:230000 },
+  { idx:4,  label:'400km以内',  price:400000, cost:280000 },
+  { idx:5,  label:'500km以内',  price:470000, cost:330000 },
+  { idx:6,  label:'600km以内',  price:540000, cost:380000 },
+  { idx:7,  label:'700km以内',  price:620000, cost:430000 },
+  { idx:8,  label:'800km以内',  price:690000, cost:480000 },
+  { idx:9,  label:'900km以内',  price:760000, cost:530000 },
+  { idx:10, label:'1000km以内', price:830000, cost:580000 },
 ];
 const REGION_OPTS = [
-  { idx:0, label:'なし',         price:0 },
-  { idx:1, label:'関東',         price:50000 },
-  { idx:2, label:'北陸・中部',   price:70000 },
-  { idx:3, label:'東北・関西',   price:100000 },
-  { idx:4, label:'四国・中国',   price:150000 },
-  { idx:5, label:'九州・北海道', price:150000 },
-  { idx:6, label:'沖縄・離島',   price:150000 },
+  { idx:0, label:'なし',         price:0,      cost:0 },
+  { idx:1, label:'関東',         price:50000,  cost:20000 },
+  { idx:2, label:'北陸・中部',   price:70000,  cost:30000 },
+  { idx:3, label:'東北・関西',   price:100000, cost:50000 },
+  { idx:4, label:'四国・中国',   price:150000, cost:90000 },
+  { idx:5, label:'九州・北海道', price:150000, cost:90000 },
+  { idx:6, label:'沖縄・離島',   price:150000, cost:90000 },
 ];
 
 // ============================================================
@@ -664,6 +664,10 @@ function mxPrice(opt) { return ovr(`misc:${opt.id}:price`, opt.price); }
 function mxCost(opt)  { return ovr(`misc:${opt.id}:cost`,  opt.cost || 0); }
 function chPrice(opt) { return ovr(`chopt:${opt.id}:price`, opt.price); }
 function chCost(opt)  { return ovr(`chopt:${opt.id}:cost`,  opt.cost || 0); }
+function trPrice(t)   { return ovr(`transport:${t.idx}:price`, t.price); }
+function trCost(t)    { return ovr(`transport:${t.idx}:cost`,  t.cost || 0); }
+function rgPrice(r)   { return ovr(`region:${r.idx}:price`, r.price); }
+function rgCost(r)    { return ovr(`region:${r.idx}:cost`,  r.cost || 0); }
 
 // ============================================================
 // History storage
@@ -819,10 +823,10 @@ function renderShared(el) {
   c.id = 'sec-ship';
   const g = div('sel-grid');
   const g1 = div('sel-group');
-  g1.innerHTML = `<label>配送費用（距離別）</label><select id="transSelect">${TRANSPORT_OPTS.map(o => `<option value="${o.idx}" ${state.transportIdx===o.idx?'selected':''}>${o.label}${o.price?'　'+fmt(o.price):''}</option>`).join('')}</select>`;
+  g1.innerHTML = `<label>配送費用（距離別）</label><select id="transSelect">${TRANSPORT_OPTS.map(o => `<option value="${o.idx}" ${state.transportIdx===o.idx?'selected':''}>${o.label}${trPrice(o)?'　'+fmt(trPrice(o)):''}</option>`).join('')}</select>`;
   g1.querySelector('select').addEventListener('change', e => { state.transportIdx = +e.target.value; updateSummary(); });
   const g2 = div('sel-group');
-  g2.innerHTML = `<label>諸経費（エリア別）</label><select id="regionSelect">${REGION_OPTS.map(o => `<option value="${o.idx}" ${state.miscCostIdx===o.idx?'selected':''}>${o.label}${o.price?'　'+fmt(o.price):''}</option>`).join('')}</select>`;
+  g2.innerHTML = `<label>諸経費（エリア別）</label><select id="regionSelect">${REGION_OPTS.map(o => `<option value="${o.idx}" ${state.miscCostIdx===o.idx?'selected':''}>${o.label}${rgPrice(o)?'　'+fmt(rgPrice(o)):''}</option>`).join('')}</select>`;
   g2.querySelector('select').addEventListener('change', e => { state.miscCostIdx = +e.target.value; updateSummary(); });
   g.append(g1, g2); c.appendChild(g); el.appendChild(c);
 
@@ -992,14 +996,14 @@ function collectLines() {
     { label:'シャーシ',          qty: seriesQty(state.chassis), has: hasModel(state.chassis) },
   ].filter(s => s.has);
   const multi = activeSeries.length > 1;
-  if (tr?.price > 0) {
+  if (tr && trPrice(tr) > 0) {
     activeSeries.forEach(s => {
-      shared.push({ name: multi ? `配送費用（${tr.label}）${s.label}${ql(s.qty)}` : `配送費用（${tr.label}）${ql(s.qty)}`, val: tr.price * s.qty });
+      shared.push({ name: multi ? `配送費用（${tr.label}）${s.label}${ql(s.qty)}` : `配送費用（${tr.label}）${ql(s.qty)}`, val: trPrice(tr) * s.qty });
     });
   }
-  if (rc?.price > 0) {
+  if (rc && rgPrice(rc) > 0) {
     activeSeries.forEach(s => {
-      shared.push({ name: multi ? `諸経費（${rc.label}）${s.label}${ql(s.qty)}` : `諸経費（${rc.label}）${ql(s.qty)}`, val: rc.price * s.qty });
+      shared.push({ name: multi ? `諸経費（${rc.label}）${s.label}${ql(s.qty)}` : `諸経費（${rc.label}）${ql(s.qty)}`, val: rgPrice(rc) * s.qty });
     });
   }
   if (shared.length) sections.push({ title:'配送・諸経費', lines:shared });
@@ -1339,6 +1343,20 @@ function renderAdmin() {
   html += tableStart('シャーシ｜オプション', false);
   CHASSIS_OPTS.forEach(opt => {
     html += priceRow(opt.name, '', `chopt:${opt.id}:price`, `chopt:${opt.id}:cost`, chPrice(opt), chCost(opt));
+  });
+  html += tableEnd;
+
+  // Transport
+  html += tableStart('配送費用', false);
+  TRANSPORT_OPTS.filter(t => t.idx > 0).forEach(t => {
+    html += priceRow(t.label, '', `transport:${t.idx}:price`, `transport:${t.idx}:cost`, trPrice(t), trCost(t));
+  });
+  html += tableEnd;
+
+  // Region
+  html += tableStart('諸経費（エリア別）', false);
+  REGION_OPTS.filter(r => r.idx > 0).forEach(r => {
+    html += priceRow(r.label, '', `region:${r.idx}:price`, `region:${r.idx}:cost`, rgPrice(r), rgCost(r));
   });
   html += tableEnd;
 
