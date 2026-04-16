@@ -339,8 +339,37 @@
       .s-btn { padding: 5px 10px; font-size: 0.78rem; white-space: nowrap; }
       .mg-row .qty-btn { width: 36px; height: 36px; font-size: 1rem; }
       .mg-row .qty-val { font-size: 0.88rem; min-width: 32px; }
+      /* customer grid: 1 column */
+      .cust-grid { grid-template-columns: 1fr; }
+      /* area inputs: pref+city side by side, sub spans full width */
+      .area-inputs { grid-template-columns: 1fr 1fr; }
+      .area-inputs > *:last-child { grid-column: 1 / -1; }
+      /* blind selects: remove indent, allow wrap */
+      .blind-selects { padding-left: 0; flex-wrap: wrap; }
+      /* completion page: smaller padding */
+      .comp-hdr { padding: 20px 18px; }
+      .comp-body { padding: 20px 18px; }
+      .comp-notes-sec { padding: 16px 18px 20px; }
+      .comp-actions { padding: 14px 18px; flex-wrap: wrap; }
+      .comp-btn-back, .comp-btn-print { flex: 1; text-align: center; }
+      /* admin tables: allow horizontal scroll */
+      .admin-section { overflow-x: auto; }
+      .admin-hdr { flex-direction: column; align-items: flex-start; }
     }
-    @media (max-width: 480px) { .m-grid { grid-template-columns: 1fr; } }
+    @media (max-width: 480px) {
+      .m-grid { grid-template-columns: 1fr; }
+      /* area inputs: stack vertically on small screens */
+      .area-inputs { grid-template-columns: 1fr; }
+      .area-inputs > *:last-child { grid-column: auto; }
+      /* card inner padding */
+      .card { padding: 16px 14px; }
+      /* custom options row: tighter layout */
+      .custom-opt-row { grid-template-columns: 1fr 50px 90px 28px; gap: 4px; }
+      .custom-opt-hdr { grid-template-columns: 1fr 50px 90px 28px; gap: 4px; }
+      /* completion total text */
+      .comp-tot-row.big { font-size: 0.95rem; }
+      .sum-big { font-size: 1.55rem; }
+    }
     @media print {
       /* 通常印刷（メインアプリ） */
       .hdr { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
