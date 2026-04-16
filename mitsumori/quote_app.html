@@ -531,13 +531,13 @@ const TINYS_MISC_OPTS = [
 ];
 
 const ROADIE_MODELS = [
-  { id:'r1', label:'7.2m｜切り妻',                   shortLabel:'切り妻',                      price:10250000, cost:0, size:'7.2m', ico:'🏠' },
-  { id:'r2', label:'7.2m｜片流れ',                   shortLabel:'片流れ',                      price:10100000, cost:0, size:'7.2m', ico:'🏠' },
-  { id:'r3', label:'6m',                             shortLabel:'スタンダード',                 price:7150000,  cost:0, size:'6m',   ico:'🏠' },
-  { id:'r4', label:'6m｜寒冷地',                     shortLabel:'寒冷地',                      price:7300000,  cost:0, size:'6m',   ico:'❄️' },
-  { id:'r5', label:'7.2m｜寒冷地｜片流れ',           shortLabel:'寒冷地｜片流れ',              price:10350000, cost:0, size:'7.2m', ico:'❄️' },
-  { id:'r6', label:'mini',                           shortLabel:'mini',                        price:3700000,  cost:0, size:'mini', ico:'🏕️' },
-  { id:'r7', label:'実車（ロフト付き・エアコン込）', shortLabel:'実車（ロフト付き・エアコン込）', price:10022500, cost:0, size:'7.2m', ico:'🚘' },
+  { id:'r1', label:'7.2m｜切り妻',                   shortLabel:'切り妻',                      price:10250000, cost:6639940, size:'7.2m', ico:'🏠' },
+  { id:'r2', label:'7.2m｜片流れ',                   shortLabel:'片流れ',                      price:10100000, cost:6539940, size:'7.2m', ico:'🏠' },
+  { id:'r3', label:'6m',                             shortLabel:'スタンダード',                 price:7150000,  cost:4556440, size:'6m',   ico:'🏠' },
+  { id:'r4', label:'6m｜寒冷地',                     shortLabel:'寒冷地',                      price:7300000,  cost:4656440, size:'6m',   ico:'❄️' },
+  { id:'r5', label:'7.2m｜寒冷地｜片流れ',           shortLabel:'寒冷地｜片流れ',              price:10350000, cost:6709940, size:'7.2m', ico:'❄️' },
+  { id:'r6', label:'mini',                           shortLabel:'mini',                        price:3700000,  cost:2405440, size:'mini', ico:'🏕️' },
+  { id:'r7', label:'実車（ロフト付き・エアコン込）', shortLabel:'実車（ロフト付き・エアコン込）', price:10022500, cost:6999335, size:'7.2m', ico:'🚘' },
 ];
 const ROADIE_GROUPS = [
   { size:'6m',    models:['r3','r4'] },
@@ -546,18 +546,18 @@ const ROADIE_GROUPS = [
 ];
 const ROADIE_SIZE_OPTS = [
   { id:'rs1', name:'シャーシ塩害対策塗装', sub:'PPG社 QP-140水性1液防錆プライマー', ico:'🛡️',
-    prices:{'mini':110000,'6m':155000,'7.2m':220000}, costs:{'mini':0,'6m':0,'7.2m':0} },
+    prices:{'mini':110000,'6m':155000,'7.2m':220000}, costs:{'mini':70000,'6m':100000,'7.2m':140000} },
   { id:'rs2', name:'断熱（寒冷地仕様）', sub:'天井GW32K/90mm・壁GW32K/90mm・床スタイロフォーム/100mm', ico:'🌡️',
-    prices:{'mini':155000,'6m':235000,'7.2m':280000}, costs:{'mini':0,'6m':0,'7.2m':0} },
+    prices:{'mini':155000,'6m':235000,'7.2m':280000}, costs:{'mini':100000,'6m':150000,'7.2m':180000} },
   { id:'rs3', name:'水平ジャッキ', sub:'', ico:'⚙️',
-    prices:{'mini':null,'6m':100000,'7.2m':120000}, costs:{'mini':0,'6m':0,'7.2m':0} },
+    prices:{'mini':null,'6m':100000,'7.2m':120000}, costs:{'mini':0,'6m':57000,'7.2m':76000} },
 ];
 const ROADIE_COMMON_OPTS = [
-  { id:'rc1', name:'造作ステップ',    sub:'34段 W1000×D900×H600', ico:'🪜', price:140000, cost:0 },
-  { id:'rc2', name:'エアコン本体',    sub:'パナソニック エオリア', ico:'💨', price:280000, cost:0 },
-  { id:'rc3', name:'給湯器本体',      sub:'リンナイ 16号', ico:'🔥', price:110000, cost:0 },
-  { id:'rc4', name:'アコーディオン網戸', sub:'サーモスL オープンウィンFD4枚建', ico:'🪟', price:90000, cost:0 },
-  { id:'rc5', name:'外部照明',        sub:'オーデリックOG254917R1', ico:'💡', price:40000, cost:0 },
+  { id:'rc1', name:'造作ステップ',    sub:'34段 W1000×D900×H600', ico:'🪜', price:140000, cost:86000 },
+  { id:'rc2', name:'エアコン本体',    sub:'パナソニック エオリア', ico:'💨', price:280000, cost:180000 },
+  { id:'rc3', name:'給湯器本体',      sub:'リンナイ 16号', ico:'🔥', price:110000, cost:65000 },
+  { id:'rc4', name:'アコーディオン網戸', sub:'サーモスL オープンウィンFD4枚建', ico:'🪟', price:90000, cost:58000 },
+  { id:'rc5', name:'外部照明',        sub:'オーデリックOG254917R1', ico:'💡', price:40000, cost:25000 },
 ];
 const ROADIE_MISC_OPTS = [
   { id:'rm1', name:'設計費用(セミオーダー)', ico:'📐', price:150000, cost:0 },
