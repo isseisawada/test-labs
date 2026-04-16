@@ -224,10 +224,12 @@
     .no-sel { text-align: center; color: var(--t3); font-size: 0.83rem; padding: 16px 0; }
 
     /* MODE SWITCHER */
-    .mode-nav-bar { background: var(--surface); border-top: 1px solid var(--border); display: flex; justify-content: center; gap: 6px; padding: 12px 16px; }
-    .mode-nb { padding: 7px 18px; border: 1px solid var(--border); border-radius: 20px; background: white; font-size: 0.8rem; font-weight: 600; color: var(--t2); cursor: pointer; white-space: nowrap; transition: all .15s; font-family: inherit; }
+    .mode-nav-bar { display: flex; justify-content: center; gap: 6px; padding: 14px 0 2px; margin-top: 14px; border-top: 1px solid var(--border); }
+    .mode-nb { padding: 7px 16px; border: 1px solid var(--border); border-radius: 20px; background: white; font-size: 0.8rem; font-weight: 600; color: var(--t2); cursor: pointer; white-space: nowrap; transition: all .15s; font-family: inherit; }
     .mode-nb:hover { background: var(--bg); color: var(--t1); }
     .mode-nb.active { background: var(--p-light); color: var(--p); border-color: var(--p-mid); }
+    /* top nav for admin/history views */
+    .mode-nav-top { border-top: none; border-bottom: 1px solid var(--border); padding: 10px 16px 10px; margin-top: 0; margin-bottom: 18px; }
 
     /* CUSTOMER INFO CARD */
     .cust-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
@@ -313,7 +315,6 @@
       .s-btn { padding: 5px 10px; font-size: 0.78rem; white-space: nowrap; }
       .mg-row .qty-btn { width: 36px; height: 36px; font-size: 1rem; }
       .mg-row .qty-val { font-size: 0.88rem; min-width: 32px; }
-      .mode-nav-bar { border-radius: 0; }
     }
     @media (max-width: 480px) { .m-grid { grid-template-columns: 1fr; } }
     @media print {
@@ -386,18 +387,22 @@
           <li>30ft 水回りあり：1台あたり約25万円</li>
         </ul>
       </div>
+      <nav class="mode-nav-bar">
+        <button class="mode-nb active" data-mode-btn="create" onclick="switchMode('create')">見積もり作成</button>
+        <button class="mode-nb" data-mode-btn="history" onclick="switchMode('history')">履歴</button>
+        <button class="mode-nb" data-mode-btn="admin" onclick="switchMode('admin')">管理</button>
+      </nav>
     </div>
   </aside>
 </div>
 
-<nav class="mode-nav-bar">
-  <button class="mode-nb active" id="modeCreate" onclick="switchMode('create')">見積もり作成</button>
-  <button class="mode-nb" id="modeHistory" onclick="switchMode('history')">履歴</button>
-  <button class="mode-nb" id="modeAdmin" onclick="switchMode('admin')">管理</button>
-</nav>
-
 <!-- ADMIN VIEW -->
 <div class="admin-wrap" id="appAdmin" style="display:none">
+  <nav class="mode-nav-bar mode-nav-top">
+    <button class="mode-nb" data-mode-btn="create" onclick="switchMode('create')">見積もり作成</button>
+    <button class="mode-nb" data-mode-btn="history" onclick="switchMode('history')">履歴</button>
+    <button class="mode-nb active" data-mode-btn="admin" onclick="switchMode('admin')">管理</button>
+  </nav>
   <div class="admin-hdr">
     <div>
       <h2>価格管理</h2>
@@ -413,6 +418,11 @@
 
 <!-- HISTORY VIEW -->
 <div class="hist-wrap" id="appHistory" style="display:none">
+  <nav class="mode-nav-bar mode-nav-top">
+    <button class="mode-nb" data-mode-btn="create" onclick="switchMode('create')">見積もり作成</button>
+    <button class="mode-nb active" data-mode-btn="history" onclick="switchMode('history')">履歴</button>
+    <button class="mode-nb" data-mode-btn="admin" onclick="switchMode('admin')">管理</button>
+  </nav>
   <div class="hist-hdr">
     <div>
       <h2>見積もり履歴</h2>
@@ -1199,8 +1209,9 @@ function update() {
 // ============================================================
 function switchMode(m) {
   state.mode = m;
-  ['modeCreate','modeHistory','modeAdmin'].forEach(id => document.getElementById(id).classList.remove('active'));
-  document.getElementById(m === 'create' ? 'modeCreate' : m === 'history' ? 'modeHistory' : 'modeAdmin').classList.add('active');
+  document.querySelectorAll('[data-mode-btn]').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.modeBtn === m);
+  });
   document.getElementById('appCreate').style.display  = (m === 'create')  ? '' : 'none';
   document.getElementById('appHistory').style.display = (m === 'history') ? '' : 'none';
   document.getElementById('appAdmin').style.display   = (m === 'admin')   ? '' : 'none';
