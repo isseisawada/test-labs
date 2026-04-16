@@ -236,9 +236,10 @@
     .cust-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
     .cust-grid .field-full { grid-column: 1 / -1; }
     .cust-field label { display: block; font-size: 0.74rem; font-weight: 600; color: var(--t2); margin-bottom: 5px; }
-    .cust-field input { width: 100%; padding: 9px 11px; border: 1px solid var(--border); border-radius: 8px; font-size: 0.85rem; color: var(--t1); background: var(--surface); font-family: inherit; }
-    .cust-field input:focus { outline: none; border-color: var(--p); }
+    .cust-field input, .cust-field select { width: 100%; padding: 9px 11px; border: 1px solid var(--border); border-radius: 8px; font-size: 0.85rem; color: var(--t1); background: var(--surface); font-family: inherit; }
+    .cust-field input:focus, .cust-field select:focus { outline: none; border-color: var(--p); }
     .cust-field input::placeholder { color: var(--t3); }
+    .area-inputs { display: grid; grid-template-columns: 140px 170px 1fr; gap: 8px; }
 
     /* ADMIN VIEW */
     .admin-wrap { max-width: 1100px; margin: 0 auto; padding: 24px 16px 90px; }
@@ -682,6 +683,60 @@ const YLW_TRANSPORT_OPTS = [
 ];
 
 // ============================================================
+// Prefecture / City data
+// ============================================================
+const PREF_CITIES = {
+  '北海道':['札幌市','函館市','旭川市','釧路市','帯広市','北見市','小樽市','苫小牧市','室蘭市','岩見沢市','その他'],
+  '青森県':['青森市','弘前市','八戸市','十和田市','むつ市','その他'],
+  '岩手県':['盛岡市','一関市','奥州市','花巻市','北上市','その他'],
+  '宮城県':['仙台市','石巻市','大崎市','気仙沼市','登米市','その他'],
+  '秋田県':['秋田市','横手市','大仙市','由利本荘市','能代市','その他'],
+  '山形県':['山形市','鶴岡市','酒田市','米沢市','天童市','その他'],
+  '福島県':['福島市','郡山市','いわき市','会津若松市','白河市','その他'],
+  '茨城県':['水戸市','つくば市','日立市','土浦市','古河市','その他'],
+  '栃木県':['宇都宮市','小山市','栃木市','足利市','那須塩原市','その他'],
+  '群馬県':['前橋市','高崎市','伊勢崎市','太田市','桐生市','その他'],
+  '埼玉県':['さいたま市','川越市','川口市','所沢市','越谷市','熊谷市','春日部市','その他'],
+  '千葉県':['千葉市','船橋市','松戸市','柏市','市川市','成田市','浦安市','その他'],
+  '東京都':['千代田区','中央区','港区','新宿区','文京区','台東区','墨田区','江東区','品川区','目黒区','大田区','世田谷区','渋谷区','中野区','杉並区','豊島区','北区','荒川区','板橋区','練馬区','足立区','葛飾区','江戸川区','八王子市','立川市','武蔵野市','町田市','府中市','調布市','その他'],
+  '神奈川県':['横浜市','川崎市','相模原市','横須賀市','藤沢市','小田原市','平塚市','茅ヶ崎市','その他'],
+  '新潟県':['新潟市','長岡市','上越市','三条市','新発田市','その他'],
+  '富山県':['富山市','高岡市','射水市','魚津市','砺波市','その他'],
+  '石川県':['金沢市','小松市','白山市','加賀市','七尾市','その他'],
+  '福井県':['福井市','越前市','敦賀市','坂井市','その他'],
+  '山梨県':['甲府市','富士吉田市','南アルプス市','甲斐市','その他'],
+  '長野県':['長野市','松本市','上田市','飯田市','諏訪市','その他'],
+  '岐阜県':['岐阜市','大垣市','各務原市','可児市','多治見市','その他'],
+  '静岡県':['静岡市','浜松市','沼津市','富士市','磐田市','焼津市','その他'],
+  '愛知県':['名古屋市','豊田市','岡崎市','一宮市','豊橋市','春日井市','その他'],
+  '三重県':['津市','四日市市','松阪市','伊勢市','鈴鹿市','その他'],
+  '滋賀県':['大津市','草津市','彦根市','長浜市','東近江市','その他'],
+  '京都府':['京都市','宇治市','亀岡市','長岡京市','向日市','その他'],
+  '大阪府':['大阪市','堺市','東大阪市','枚方市','豊中市','吹田市','高槻市','八尾市','その他'],
+  '兵庫県':['神戸市','姫路市','尼崎市','西宮市','明石市','加古川市','宝塚市','その他'],
+  '奈良県':['奈良市','橿原市','生駒市','大和郡山市','その他'],
+  '和歌山県':['和歌山市','田辺市','橋本市','海南市','その他'],
+  '鳥取県':['鳥取市','米子市','倉吉市','境港市','その他'],
+  '島根県':['松江市','出雲市','浜田市','益田市','その他'],
+  '岡山県':['岡山市','倉敷市','津山市','総社市','その他'],
+  '広島県':['広島市','福山市','呉市','東広島市','尾道市','その他'],
+  '山口県':['山口市','下関市','宇部市','周南市','防府市','その他'],
+  '徳島県':['徳島市','阿南市','鳴門市','吉野川市','その他'],
+  '香川県':['高松市','丸亀市','坂出市','さぬき市','その他'],
+  '愛媛県':['松山市','今治市','新居浜市','西条市','宇和島市','その他'],
+  '高知県':['高知市','南国市','四万十市','香南市','その他'],
+  '福岡県':['福岡市','北九州市','久留米市','大牟田市','飯塚市','その他'],
+  '佐賀県':['佐賀市','唐津市','鳥栖市','伊万里市','その他'],
+  '長崎県':['長崎市','佐世保市','諫早市','大村市','その他'],
+  '熊本県':['熊本市','八代市','天草市','荒尾市','玉名市','その他'],
+  '大分県':['大分市','別府市','中津市','佐伯市','日田市','その他'],
+  '宮崎県':['宮崎市','都城市','延岡市','日向市','その他'],
+  '鹿児島県':['鹿児島市','霧島市','薩摩川内市','鹿屋市','姶良市','その他'],
+  '沖縄県':['那覇市','沖縄市','うるま市','浦添市','宮古島市','石垣市','その他'],
+};
+const PREFECTURES = ['北海道','青森県','岩手県','宮城県','秋田県','山形県','福島県','茨城県','栃木県','群馬県','埼玉県','千葉県','東京都','神奈川県','新潟県','富山県','石川県','福井県','山梨県','長野県','岐阜県','静岡県','愛知県','三重県','滋賀県','京都府','大阪府','兵庫県','奈良県','和歌山県','鳥取県','島根県','岡山県','広島県','山口県','徳島県','香川県','愛媛県','高知県','福岡県','佐賀県','長崎県','熊本県','大分県','宮崎県','鹿児島県','沖縄県'];
+
+// ============================================================
 // State
 // ============================================================
 let state = {
@@ -690,6 +745,9 @@ let state = {
   customerName: '',
   staffName: '',
   area: '',
+  areaPref: '',
+  areaCity: '',
+  areaSub: '',
   transportIdx: 0,
   ylwTransportIdx: 0,
   miscCostIdx: 0,
@@ -788,9 +846,26 @@ function renderForm() {
   renderShared(el);
 }
 
+function buildAreaString() {
+  return [state.areaPref, state.areaCity, state.areaSub].filter(Boolean).join(' ');
+}
+function updateCitySelect() {
+  const sel = document.getElementById('areaCitySel');
+  if (!sel) return;
+  const cities = PREF_CITIES[state.areaPref] || [];
+  sel.innerHTML = '<option value="">市区町村を選択</option>' +
+    cities.map(c => `<option value="${c}"${state.areaCity===c?' selected':''}>${c}</option>`).join('');
+}
 function renderCustomerCard() {
   const c = sectionCard('顧客情報', '未記入でも構いません');
   const grid = div('cust-grid');
+
+  const prefOpts = '<option value="">都道府県</option>' +
+    PREFECTURES.map(p => `<option value="${p}"${state.areaPref===p?' selected':''}>${p}</option>`).join('');
+  const cities = PREF_CITIES[state.areaPref] || [];
+  const cityOpts = '<option value="">市区町村を選択</option>' +
+    cities.map(c => `<option value="${c}"${state.areaCity===c?' selected':''}>${c}</option>`).join('');
+
   grid.innerHTML = `
     <div class="cust-field">
       <label>顧客名</label>
@@ -802,12 +877,26 @@ function renderCustomerCard() {
     </div>
     <div class="cust-field field-full">
       <label>エリア</label>
-      <input type="text" id="areaName" placeholder="例：東京都世田谷区、北海道など" value="${escapeAttr(state.area)}">
+      <div class="area-inputs">
+        <select id="areaPrefSel">${prefOpts}</select>
+        <select id="areaCitySel">${cityOpts}</select>
+        <input type="text" id="areaSubInp" placeholder="以降を自由記載" value="${escapeAttr(state.areaSub)}">
+      </div>
     </div>
   `;
-  grid.querySelector('#custName').addEventListener('input',  e => state.customerName = e.target.value);
-  grid.querySelector('#staffName').addEventListener('input', e => state.staffName    = e.target.value);
-  grid.querySelector('#areaName').addEventListener('input',  e => state.area         = e.target.value);
+  grid.querySelector('#custName').addEventListener('input', e => { state.customerName = e.target.value; });
+  grid.querySelector('#staffName').addEventListener('input', e => { state.staffName = e.target.value; });
+  grid.querySelector('#areaPrefSel').addEventListener('change', e => {
+    state.areaPref = e.target.value; state.areaCity = '';
+    updateCitySelect();
+    state.area = buildAreaString(); updateSummary();
+  });
+  grid.querySelector('#areaCitySel').addEventListener('change', e => {
+    state.areaCity = e.target.value; state.area = buildAreaString(); updateSummary();
+  });
+  grid.querySelector('#areaSubInp').addEventListener('input', e => {
+    state.areaSub = e.target.value; state.area = buildAreaString(); updateSummary();
+  });
   c.appendChild(grid);
   return c;
 }
@@ -1318,7 +1407,7 @@ function copyEstimate() {
 // ============================================================
 function resetAll() {
   state.transportIdx = 0; state.ylwTransportIdx = 0; state.miscCostIdx = 0; state.discount = 0;
-  state.customerName = ''; state.staffName = ''; state.area = '';
+  state.customerName = ''; state.staffName = ''; state.area = ''; state.areaPref = ''; state.areaCity = ''; state.areaSub = '';
   const di = document.getElementById('discInput'); if (di) di.value = '';
   state.tinys   = { modelQtys:{}, sizeOpts:{}, commonOpts:{}, blindIdx:0, blindCount:1, miscOpts:{}, designLv:0, customOpts:[] };
   state.roadie  = { modelQtys:{}, sizeOpts:{}, commonOpts:{}, miscOpts:{}, designLv:0, customOpts:[] };
