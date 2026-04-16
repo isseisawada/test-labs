@@ -255,7 +255,7 @@
     .admin-save-bar .btn-save:hover { background: var(--p-hover); }
     .admin-section { background: white; border: 1px solid var(--border); border-radius: 14px; padding: 20px 24px; margin-bottom: 14px; }
     .admin-section h3 { font-size: 0.95rem; font-weight: 700; margin-bottom: 14px; color: var(--t1); }
-    .price-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+    .price-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; min-width: 680px; }
     .price-table th { text-align: left; padding: 8px 8px; background: var(--bg); color: var(--t2); font-weight: 600; font-size: 0.72rem; border-bottom: 1px solid var(--border); }
     .price-table th:nth-child(n+3) { text-align: right; }
     .price-table td { padding: 9px 8px; border-bottom: 1px solid var(--border); font-size: 0.82rem; vertical-align: middle; }
@@ -1591,7 +1591,7 @@ function renderAdmin() {
       <h3>${title}</h3>
       <table class="price-table">
         <thead><tr>
-          <th style="width:40%">項目</th>
+          <th style="min-width:260px">項目</th>
           <th>${hasSize ? 'サイズ' : ''}</th>
           <th>売価</th>
           <th>原価</th>
