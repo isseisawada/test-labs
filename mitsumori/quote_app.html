@@ -1192,7 +1192,7 @@ function showCompletionFromData(q, saveToHistory) {
   html += `<div class="comp-divider"></div>`;
   html += `<div class="comp-tot-row"><span>合計（税前）</span><span>${fmt(q.totalPre)}</span></div>`;
   html += `<div class="comp-tot-row big"><span>合計（税込10%）</span><span>${fmt(q.totalTax)}</span></div>`;
-  html += `<div class="comp-disclaimer">※概算見積もりになります。正式なお見積もりは詳細ヒアリングの上、別途担当より提出致します。</div>`;
+  html += `<div class="comp-disclaimer">※見積もりシミュレーションになります。正式なお見積もりは詳細ヒアリングの上、別途担当より提出致します。</div>`;
 
   document.getElementById('compBody').innerHTML = html;
   document.getElementById('completionPage').style.display = 'block';
