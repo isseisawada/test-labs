@@ -2311,25 +2311,25 @@ function deleteQuote(id) {
 function exportHistoryCSV() {
   const quotes = loadQuotes();
   if (!quotes.length) { alert('履歴がありません'); return; }
-  const seriesLabel = { tinys:'Tinys INSPIRATION', roadie:'ROADIE', chassis:'シャーシ' };
-  const rows = [['作成日','顧客名','担当者名','エリア','シリーズ','合計(税前)','合計(税込)']];
+  const rows = [['見積ID','作成日','顧客名','担当者名','エリア','区分','セクション','項目','金額']];
   quotes.forEach(qt => {
     const d = new Date(qt.createdAt);
     const dateStr = `${d.getFullYear()}/${String(d.getMonth()+1).padStart(2,'0')}/${String(d.getDate()).padStart(2,'0')}`;
-    rows.push([
-      dateStr,
-      qt.customerName || '',
-      qt.staffName || '',
-      qt.area || '',
-      (qt.seriesKeys || []).map(k => seriesLabel[k] || k).join(' / '),
-      qt.totalPre, qt.totalTax
-    ]);
+    const base = [qt.id, dateStr, qt.customerName || '', qt.staffName || '', qt.area || ''];
+    (qt.sections || []).forEach(sec => {
+      (sec.lines || []).forEach(l => {
+        rows.push([...base, '明細', sec.title, l.name, l.val]);
+      });
+    });
+    if (qt.discount > 0) rows.push([...base, '値引き', '', '値引き', -qt.discount]);
+    rows.push([...base, '合計', '', '合計（税前）', qt.totalPre]);
+    rows.push([...base, '合計', '', '合計（税込10%）', qt.totalTax]);
   });
   const csv = rows.map(r => r.map(v => `"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
   const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8' });
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
-  a.download = `yadokari_mitsumori_${new Date().toISOString().slice(0,10)}.csv`;
+  a.download = `yadokari_mitsumori_detail_${new Date().toISOString().slice(0,10)}.csv`;
   document.body.appendChild(a); a.click(); document.body.removeChild(a);
 }
 
