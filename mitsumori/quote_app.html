@@ -179,6 +179,8 @@
     .btn-b { width: 100%; padding: 10px; background: var(--bg); color: var(--t1); border: 1px solid var(--border); border-radius: 10px; font-size: 0.83rem; font-weight: 600; cursor: pointer; transition: all .15s; margin-bottom: 7px; }
     .btn-b:hover { background: #e5e4ec; }
     .btn-b.copied { background: #D1FAE5; color: #065F46; border-color: #6EE7B7; }
+    .btn-internal { width: 100%; padding: 10px; background: #FFF7ED; color: #9A3412; border: 1px solid #FED7AA; border-radius: 10px; font-size: 0.83rem; font-weight: 700; cursor: pointer; transition: all .15s; margin-bottom: 7px; }
+    .btn-internal:hover { background: #FFEDD5; }
     .btn-c { width: 100%; padding: 7px; background: transparent; color: var(--t3); border: none; border-radius: 8px; font-size: 0.78rem; cursor: pointer; }
     .btn-c:hover { color: var(--t2); }
     .sum-disc-row { display: flex; align-items: center; gap: 8px; padding: 8px 0 6px; }
@@ -223,6 +225,28 @@
     .comp-btn-print { padding: 10px 22px; background: var(--p); color: white; border: none; border-radius: 8px; font-size: 0.85rem; font-weight: 700; cursor: pointer; }
     .comp-btn-print:hover { background: var(--p-hover); }
     .no-sel { text-align: center; color: var(--t3); font-size: 0.83rem; padding: 16px 0; }
+
+    /* INTERNAL SIMULATION PAGE */
+    #internalPage { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.55); z-index: 200; overflow-y: auto; padding: 40px 16px; }
+    #internalPage .comp-hdr { background: #9A3412; }
+    .int-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+    .int-table th { background: var(--bg); font-weight: 700; color: var(--t2); text-align: right; padding: 8px 10px; border-bottom: 1px solid var(--border); font-size: 0.75rem; }
+    .int-table th:first-child { text-align: left; }
+    .int-table td { padding: 8px 10px; border-bottom: 1px solid var(--border); text-align: right; vertical-align: top; }
+    .int-table td:first-child { text-align: left; }
+    .int-table tr.base td { font-weight: 700; }
+    .int-table tr.section-hdr td { background: #F9FAFB; color: var(--t3); font-size: 0.7rem; text-transform: uppercase; letter-spacing: .09em; font-weight: 700; padding-top: 14px; }
+    .int-m-good { color: #065F46; font-weight: 700; }
+    .int-m-warn { color: #9A3412; font-weight: 700; }
+    .int-summary { margin-top: 20px; padding: 16px 18px; background: #FFF7ED; border: 1px solid #FED7AA; border-radius: 12px; }
+    .int-sum-row { display: flex; justify-content: space-between; padding: 4px 0; font-size: 0.86rem; color: var(--t2); }
+    .int-sum-row.big { font-size: 1.2rem; font-weight: 800; color: #9A3412; padding-top: 10px; border-top: 1px solid #FED7AA; margin-top: 6px; }
+    @media print {
+      body.printing-internal .hdr, body.printing-internal .app, body.printing-internal .bottom-nav-bar { display: none !important; }
+      body.printing-internal #internalPage { display: block !important; position: static !important; background: none !important; padding: 0 !important; }
+      body.printing-internal .int-actions { display: none !important; }
+      body.printing-internal .comp-sheet { border-radius: 0 !important; box-shadow: none !important; }
+    }
 
     /* MODE SWITCHER */
     .mode-nav-bar { display: flex; justify-content: center; gap: 6px; padding: 14px 0 2px; margin-top: 14px; border-top: 1px solid var(--border); }
@@ -384,7 +408,7 @@
       /* 通常印刷（メインアプリ） */
       .hdr { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
       .mode-nav-bar, .bottom-nav-bar { display: none; }
-      .btn-a, .btn-b, .btn-c, .btn-pdf, .sidebar { display: none; }
+      .btn-a, .btn-b, .btn-c, .btn-internal, .btn-pdf, .sidebar { display: none; }
       .app { flex-direction: column; }
       .sum-panel { width: 100%; position: static; }
       #completionPage { display: none !important; }
@@ -440,6 +464,7 @@
       <div class="prog-hdr"><span class="prog-lbl">シミュレーション完了度</span><span class="prog-pct" id="progPct">0%</span></div>
       <div class="prog-bg"><div class="prog-fill" id="progFill" style="width:0%"></div></div>
       <button class="btn-a" onclick="confirmEstimate()">見積もりを確定</button>
+      <button class="btn-internal" onclick="showInternalSimulation()">【社内用】シミュレーション</button>
       <button class="btn-b" id="copyBtn" onclick="copyEstimate()">テキストをコピー</button>
       <button class="btn-c" onclick="resetAll()">リセット</button>
       <div class="notes-area">
@@ -518,6 +543,22 @@
     <div class="comp-actions">
       <button class="comp-btn-back" onclick="closeCompletion()">← 戻って修正</button>
       <button class="comp-btn-print" onclick="printCompletion()">PDFに書き出す</button>
+    </div>
+  </div>
+</div>
+
+<!-- INTERNAL SIMULATION PAGE -->
+<div id="internalPage">
+  <div class="comp-sheet">
+    <div class="comp-hdr">
+      <div class="comp-logo-w">【社内用】シミュレーション</div>
+      <div class="comp-ttl">売価・原価・利益率 内部確認用</div>
+      <div class="comp-date" id="intDate"></div>
+    </div>
+    <div class="comp-body" id="intBody"></div>
+    <div class="comp-actions int-actions">
+      <button class="comp-btn-back" onclick="closeInternalSimulation()">← 戻って修正</button>
+      <button class="comp-btn-print" onclick="printInternalSimulation()">確定 & PDFに書き出す</button>
     </div>
   </div>
 </div>
@@ -1336,22 +1377,22 @@ function collectLines() {
     const lines = [];
     TINYS_MODELS.forEach(m => {
       const qty = s.modelQtys[m.id]||0; if (!qty) return;
-      lines.push({ name:`【ベース】${m.label}${ql(qty)}`, val:mPrice(m)*qty, cls:'base' });
+      lines.push({ name:`【ベース】${m.label}${ql(qty)}`, val:mPrice(m)*qty, cost:mCost(m)*qty, cls:'base' });
     });
-    TINYS_SIZE_OPTS.forEach(o => { if (s.sizeOpts[o.id] && size && soPrice(o, size)) lines.push({ name:o.name+ql(tq), val:soPrice(o, size)*tq }); });
-    TINYS_COMMON_OPTS.forEach(o => { if (s.commonOpts[o.id]) lines.push({ name:o.name+ql(tq), val:coPrice(o)*tq }); });
-    if (s.blindIdx > 0) { const b = TINYS_BLIND_OPTS[s.blindIdx]; lines.push({ name:`ロールスクリーン ${b.label}×${s.blindCount}枚${ql(tq)}`, val:blPrice(b)*s.blindCount*tq }); }
-    TINYS_MISC_OPTS.forEach(o => { if (s.miscOpts[o.id]) lines.push({ name:o.name+ql(tq), val:mxPrice(o)*tq }); });
+    TINYS_SIZE_OPTS.forEach(o => { if (s.sizeOpts[o.id] && size && soPrice(o, size)) lines.push({ name:o.name+ql(tq), val:soPrice(o, size)*tq, cost:soCost(o, size)*tq }); });
+    TINYS_COMMON_OPTS.forEach(o => { if (s.commonOpts[o.id]) lines.push({ name:o.name+ql(tq), val:coPrice(o)*tq, cost:coCost(o)*tq }); });
+    if (s.blindIdx > 0) { const b = TINYS_BLIND_OPTS[s.blindIdx]; lines.push({ name:`ロールスクリーン ${b.label}×${s.blindCount}枚${ql(tq)}`, val:blPrice(b)*s.blindCount*tq, cost:blCost(b)*s.blindCount*tq }); }
+    TINYS_MISC_OPTS.forEach(o => { if (s.miscOpts[o.id]) lines.push({ name:o.name+ql(tq), val:mxPrice(o)*tq, cost:mxCost(o)*tq }); });
     if (s.designLv > 0) {
       const dl = DESIGN_LEVELS[s.designLv - 1];
       const totalBase = TINYS_MODELS.reduce((sum, m) => sum + mPrice(m)*(s.modelQtys[m.id]||0), 0);
       const unitPrice = totalBase / Math.max(1, tq);
       const basicFee = Math.round(unitPrice * 0.1 * dl.coef);
       const mfgFee = tq > 1 ? Math.round(basicFee * designQtyCoef(tq) * (tq - 1)) : 0;
-      lines.push({ name:`基本設計費（Lv${s.designLv}）`, val: basicFee });
-      if (mfgFee > 0) lines.push({ name:`製造管理費（Lv${s.designLv}・${tq}台）`, val: mfgFee });
+      lines.push({ name:`基本設計費（Lv${s.designLv}）`, val: basicFee, cost: 0 });
+      if (mfgFee > 0) lines.push({ name:`製造管理費（Lv${s.designLv}・${tq}台）`, val: mfgFee, cost: 0 });
     }
-    (s.customOpts||[]).forEach(o => { if (o.name && o.price > 0) lines.push({ name:`${o.name}${o.qty > 1 ? `×${o.qty}` : ''}`, val: o.price * (o.qty||1) }); });
+    (s.customOpts||[]).forEach(o => { if (o.name && o.price > 0) lines.push({ name:`${o.name}${o.qty > 1 ? `×${o.qty}` : ''}`, val: o.price * (o.qty||1), cost: 0 }); });
     sections.push({ title:'Tinys INSPIRATION', key:'tinys', lines });
   }
 
@@ -1363,21 +1404,21 @@ function collectLines() {
     const lines = [];
     ROADIE_MODELS.forEach(m => {
       const qty = s.modelQtys[m.id]||0; if (!qty) return;
-      lines.push({ name:`【ベース】ROADIE ${m.label}${ql(qty)}`, val:mPrice(m)*qty, cls:'base' });
+      lines.push({ name:`【ベース】ROADIE ${m.label}${ql(qty)}`, val:mPrice(m)*qty, cost:mCost(m)*qty, cls:'base' });
     });
-    ROADIE_SIZE_OPTS.forEach(o => { if (s.sizeOpts[o.id] && size && soPrice(o, size)) lines.push({ name:o.name+ql(tq), val:soPrice(o, size)*tq }); });
-    ROADIE_COMMON_OPTS.forEach(o => { if (s.commonOpts[o.id]) lines.push({ name:o.name+ql(tq), val:coPrice(o)*tq }); });
-    ROADIE_MISC_OPTS.forEach(o => { if (s.miscOpts[o.id]) lines.push({ name:o.name+ql(tq), val:mxPrice(o)*tq }); });
+    ROADIE_SIZE_OPTS.forEach(o => { if (s.sizeOpts[o.id] && size && soPrice(o, size)) lines.push({ name:o.name+ql(tq), val:soPrice(o, size)*tq, cost:soCost(o, size)*tq }); });
+    ROADIE_COMMON_OPTS.forEach(o => { if (s.commonOpts[o.id]) lines.push({ name:o.name+ql(tq), val:coPrice(o)*tq, cost:coCost(o)*tq }); });
+    ROADIE_MISC_OPTS.forEach(o => { if (s.miscOpts[o.id]) lines.push({ name:o.name+ql(tq), val:mxPrice(o)*tq, cost:mxCost(o)*tq }); });
     if (s.designLv > 0) {
       const dl = DESIGN_LEVELS[s.designLv - 1];
       const totalBase = ROADIE_MODELS.reduce((sum, m) => sum + mPrice(m)*(s.modelQtys[m.id]||0), 0);
       const unitPrice = totalBase / Math.max(1, tq);
       const basicFee = Math.round(unitPrice * 0.1 * dl.coef);
       const mfgFee = tq > 1 ? Math.round(basicFee * designQtyCoef(tq) * (tq - 1)) : 0;
-      lines.push({ name:`基本設計費（Lv${s.designLv}）`, val: basicFee });
-      if (mfgFee > 0) lines.push({ name:`製造管理費（Lv${s.designLv}・${tq}台）`, val: mfgFee });
+      lines.push({ name:`基本設計費（Lv${s.designLv}）`, val: basicFee, cost: 0 });
+      if (mfgFee > 0) lines.push({ name:`製造管理費（Lv${s.designLv}・${tq}台）`, val: mfgFee, cost: 0 });
     }
-    (s.customOpts||[]).forEach(o => { if (o.name && o.price > 0) lines.push({ name:`${o.name}${o.qty > 1 ? `×${o.qty}` : ''}`, val: o.price * (o.qty||1) }); });
+    (s.customOpts||[]).forEach(o => { if (o.name && o.price > 0) lines.push({ name:`${o.name}${o.qty > 1 ? `×${o.qty}` : ''}`, val: o.price * (o.qty||1), cost: 0 }); });
     sections.push({ title:'ROADIE', key:'roadie', lines });
   }
 
@@ -1387,9 +1428,9 @@ function collectLines() {
     const lines = [];
     CHASSIS_MODELS.forEach(m => {
       const qty = s.modelQtys[m.id]||0; if (!qty) return;
-      lines.push({ name:`【ベース】${m.label}${ql(qty)}`, val:mPrice(m)*qty, cls:'base' });
+      lines.push({ name:`【ベース】${m.label}${ql(qty)}`, val:mPrice(m)*qty, cost:mCost(m)*qty, cls:'base' });
     });
-    CHASSIS_OPTS.forEach(o => { if (s.opts[o.id]) lines.push({ name:o.name+ql(tq), val:chPrice(o)*tq }); });
+    CHASSIS_OPTS.forEach(o => { if (s.opts[o.id]) lines.push({ name:o.name+ql(tq), val:chPrice(o)*tq, cost:chCost(o)*tq }); });
     sections.push({ title:'シャーシ', key:'chassis', lines });
   }
 
@@ -1414,22 +1455,22 @@ function collectLines() {
   // 距離別配送（Tinys / ROADIE 用）
   if (tr && trPrice(tr) > 0) {
     nonChassisSeries.forEach(s => {
-      shared.push({ name: multi ? `配送費用（${tr.label}）${s.label}${ql(s.qty)}` : `配送費用（${tr.label}）${ql(s.qty)}`, val: trPrice(tr) * s.qty });
+      shared.push({ name: multi ? `配送費用（${tr.label}）${s.label}${ql(s.qty)}` : `配送費用（${tr.label}）${ql(s.qty)}`, val: trPrice(tr) * s.qty, cost: trCost(tr) * s.qty });
     });
   }
   // YLW600 エリア別配送
   if (ylw && ylwPrice(ylw) > 0) {
     const label = `${ylw.region ? ylw.region + '/' : ''}${ylw.label}`;
-    shared.push({ name: multi ? `配送費用（${label}）YLW600${ql(ylwQty)}` : `配送費用（${label}）${ql(ylwQty)}`, val: ylwPrice(ylw) * ylwQty });
+    shared.push({ name: multi ? `配送費用（${label}）YLW600${ql(ylwQty)}` : `配送費用（${label}）${ql(ylwQty)}`, val: ylwPrice(ylw) * ylwQty, cost: ylwCost(ylw) * ylwQty });
   }
   // YCL/YNR エリア別配送
   if (ch && chtrPrice(ch) > 0) {
     const label = `${ch.region ? ch.region + '/' : ''}${ch.label}`;
-    shared.push({ name: multi ? `配送費用（${label}）YCL/YNR${ql(yclYnrQty)}` : `配送費用（${label}）${ql(yclYnrQty)}`, val: chtrPrice(ch) * yclYnrQty });
+    shared.push({ name: multi ? `配送費用（${label}）YCL/YNR${ql(yclYnrQty)}` : `配送費用（${label}）${ql(yclYnrQty)}`, val: chtrPrice(ch) * yclYnrQty, cost: chtrCost(ch) * yclYnrQty });
   }
   if (rc && rgPrice(rc) > 0) {
     activeSeries.forEach(s => {
-      shared.push({ name: multi ? `諸経費（${rc.label}）${s.label}${ql(s.qty)}` : `諸経費（${rc.label}）${ql(s.qty)}`, val: rgPrice(rc) * s.qty });
+      shared.push({ name: multi ? `諸経費（${rc.label}）${s.label}${ql(s.qty)}` : `諸経費（${rc.label}）${ql(s.qty)}`, val: rgPrice(rc) * s.qty, cost: rgCost(rc) * s.qty });
     });
   }
   if (shared.length) sections.push({ title:'配送・諸経費', lines:shared });
@@ -1550,11 +1591,13 @@ function confirmEstimate() {
 
 // 集約データを作成（保存と表示の両方で使う）
 function buildQuoteData(sections) {
-  let grand = 0;
-  sections.forEach(s => s.lines.forEach(l => grand += l.val));
+  let grand = 0, grandCost = 0;
+  sections.forEach(s => s.lines.forEach(l => { grand += l.val; grandCost += (l.cost || 0); }));
   const disc = state.discount || 0;
   const pre = grand - disc;
   const tax = Math.round(pre * 1.1);
+  const gross = pre - grandCost;
+  const marginPct = pre > 0 ? gross / pre * 100 : 0;
   return {
     id: Date.now().toString(36) + Math.random().toString(36).slice(2,6),
     createdAt: new Date().toISOString(),
@@ -1566,6 +1609,9 @@ function buildQuoteData(sections) {
     discount: disc,
     totalPre: pre,
     totalTax: tax,
+    totalCost: grandCost,
+    totalGross: gross,
+    marginPct,
   };
 }
 
@@ -1627,6 +1673,102 @@ function printCompletion() {
   document.body.classList.add('printing');
   window.print();
   setTimeout(() => document.body.classList.remove('printing'), 500);
+}
+
+// ============================================================
+// 社内用シミュレーション
+// ============================================================
+function showInternalSimulation() {
+  const sections = collectLines();
+  if (!sections.length) { alert('モデルを選択してください'); return; }
+  const q = buildQuoteData(sections);
+
+  const d = new Date(q.createdAt);
+  document.getElementById('intDate').textContent = '発行日：' +
+    d.getFullYear() + '/' + String(d.getMonth()+1).padStart(2,'0') + '/' + String(d.getDate()).padStart(2,'0');
+
+  const marginCls = (p, c) => {
+    if (!p) return '';
+    const m = (p - c) / p * 100;
+    return m < 20 ? 'int-m-warn' : 'int-m-good';
+  };
+  const marginTxt = (p, c) => {
+    if (!p) return '—';
+    const m = (p - c) / p * 100;
+    return m.toFixed(1) + '%';
+  };
+
+  let html = '';
+  const custLines = [];
+  if (q.customerName) custLines.push(`顧客名：${escapeHtml(q.customerName)} 様`);
+  if (q.staffName)    custLines.push(`担当者：${escapeHtml(q.staffName)}`);
+  if (q.area)         custLines.push(`エリア：${escapeHtml(q.area)}`);
+  if (custLines.length) {
+    html += `<div class="comp-sec-hdr">顧客情報</div>`;
+    custLines.forEach(line => {
+      const [label, val] = line.split('：');
+      html += `<div class="comp-line"><span class="comp-ln">${label}</span><span class="comp-lv">${val}</span></div>`;
+    });
+  }
+
+  html += `<table class="int-table" style="margin-top:16px"><thead><tr><th>項目</th><th>売価</th><th>原価</th><th>粗利</th><th>利益率</th></tr></thead><tbody>`;
+  q.sections.forEach(sec => {
+    html += `<tr class="section-hdr"><td colspan="5">${escapeHtml(sec.title)}</td></tr>`;
+    sec.lines.forEach(l => {
+      const c = l.cost || 0;
+      const gross = l.val - c;
+      html += `<tr class="${l.cls||''}">`+
+        `<td>${escapeHtml(l.name)}</td>`+
+        `<td>${fmt(l.val)}</td>`+
+        `<td>${fmt(c)}</td>`+
+        `<td>${fmt(gross)}</td>`+
+        `<td class="${marginCls(l.val, c)}">${marginTxt(l.val, c)}</td>`+
+        `</tr>`;
+    });
+  });
+  html += `</tbody></table>`;
+
+  const preDisc = q.totalPre + q.discount;
+  const costSum = q.totalCost;
+  html += `<div class="int-summary">`;
+  html += `<div class="int-sum-row"><span>売価合計（値引き前）</span><span>${fmt(preDisc)}</span></div>`;
+  if (q.discount > 0) html += `<div class="int-sum-row" style="color:#9A3412"><span>値引き</span><span>−${fmt(q.discount)}</span></div>`;
+  html += `<div class="int-sum-row"><span>売価合計（値引き後・税前）</span><span>${fmt(q.totalPre)}</span></div>`;
+  html += `<div class="int-sum-row"><span>原価合計</span><span>${fmt(costSum)}</span></div>`;
+  html += `<div class="int-sum-row"><span>粗利</span><span>${fmt(q.totalGross)}</span></div>`;
+  html += `<div class="int-sum-row big"><span>総利益率</span><span class="${marginCls(q.totalPre, costSum)}">${marginTxt(q.totalPre, costSum)}</span></div>`;
+  if (q.discount > 0) {
+    const preMargin = preDisc > 0 ? (preDisc - costSum) / preDisc * 100 : 0;
+    html += `<div class="int-sum-row" style="color:var(--t3);font-size:0.78rem;margin-top:6px"><span>値引き前利益率</span><span>${preMargin.toFixed(1)}%</span></div>`;
+  }
+  html += `</div>`;
+
+  document.getElementById('intBody').innerHTML = html;
+  document.getElementById('internalPage').style.display = 'block';
+  document.body.style.overflow = 'hidden';
+  document.getElementById('internalPage').scrollTop = 0;
+  // 印刷時に保存するため、データを退避しておく
+  window._pendingInternalQuote = q;
+}
+
+function closeInternalSimulation() {
+  document.getElementById('internalPage').style.display = 'none';
+  document.body.style.overflow = '';
+  window._pendingInternalQuote = null;
+}
+
+function printInternalSimulation() {
+  // 確定処理（履歴保存）をここで実行
+  const q = window._pendingInternalQuote;
+  if (q) {
+    const quotes = loadQuotes();
+    quotes.unshift(q);
+    saveQuotes(quotes);
+    window._pendingInternalQuote = null;
+  }
+  document.body.classList.add('printing-internal');
+  window.print();
+  setTimeout(() => document.body.classList.remove('printing-internal'), 500);
 }
 
 function update() {
