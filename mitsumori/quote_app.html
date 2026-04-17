@@ -271,6 +271,7 @@
     .bottom-nav-bar { position: fixed; bottom: 0; left: 0; right: 0; z-index: 200; background: white; border-top: 1px solid var(--border); padding: 10px 16px; display: flex; justify-content: center; align-items: center; gap: 8px; box-shadow: 0 -2px 12px rgba(0,0,0,0.08); }
     .bottom-nav-bar .btn-save { padding: 10px 24px; font-size: 0.85rem; font-weight: 700; border-radius: 10px; border: none; background: var(--p); color: white; cursor: pointer; font-family: inherit; transition: background .15s; margin-left: 12px; }
     .bottom-nav-bar .btn-save:hover { background: var(--p-hover); }
+    .btn-label-short { display: none; }
     body { padding-bottom: 64px; }
     .admin-section { background: white; border: 1px solid var(--border); border-radius: 14px; padding: 20px 24px; margin-bottom: 14px; position: relative; }
     .admin-section h3 { font-size: 0.95rem; font-weight: 700; margin-bottom: 14px; color: var(--t1); display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
@@ -401,6 +402,10 @@
       /* admin/history時はトップヘッダーも56px固定に */
       body[data-mode="admin"] .hdr,
       body[data-mode="history"] .hdr { height: var(--hh); min-height: var(--hh); padding: 0 16px; flex-wrap: nowrap; gap: 12px; }
+      /* 保存ボタンはモバイル短縮表記 */
+      .btn-label-full { display: none; }
+      .btn-label-short { display: inline; }
+      .bottom-nav-bar .btn-save { padding: 10px 18px; }
     }
     @media (max-width: 480px) {
       .m-grid { grid-template-columns: 1fr; }
@@ -532,7 +537,7 @@
   <button class="mode-nb active" data-mode-btn="create" onclick="switchMode('create')">見積もり作成</button>
   <button class="mode-nb" data-mode-btn="history" onclick="switchMode('history')">履歴</button>
   <button class="mode-nb" data-mode-btn="admin" onclick="switchMode('admin')">管理</button>
-  <button class="btn-save" id="adminSaveBtn" onclick="saveAdminPrices()" style="display:none">修正内容を保存する</button>
+  <button class="btn-save" id="adminSaveBtn" onclick="saveAdminPrices()" style="display:none"><span class="btn-label-full">修正内容を保存する</span><span class="btn-label-short">修正を保存</span></button>
 </nav>
 
 <!-- COMPLETION PAGE -->
