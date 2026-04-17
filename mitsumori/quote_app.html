@@ -290,6 +290,16 @@
     .custom-opt-add { display: flex; align-items: center; gap: 6px; padding: 7px 12px; border: 1px dashed var(--border); border-radius: 8px; background: transparent; color: var(--t3); font-size: 0.8rem; font-weight: 600; cursor: pointer; width: 100%; margin-top: 4px; transition: all .15s; font-family: inherit; }
     .custom-opt-add:hover { border-color: var(--p); color: var(--p); background: var(--p-light); }
 
+    /* STAFF MANAGEMENT */
+    .staff-item { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+    .staff-name-input { flex: 1; padding: 6px 8px; border: 1px solid var(--border); border-radius: 6px; font-size: 0.85rem; font-family: inherit; color: var(--t1); }
+    .staff-name-input:focus { outline: none; border-color: var(--p); }
+    .staff-add-row { display: flex; gap: 8px; margin-top: 8px; }
+    .staff-add-row input { flex: 1; padding: 8px 10px; border: 1px solid var(--border); border-radius: 8px; font-size: 0.85rem; font-family: inherit; color: var(--t1); }
+    .staff-add-row input:focus { outline: none; border-color: var(--p); }
+    .staff-add-btn { padding: 8px 16px; background: var(--p); color: white; border: none; border-radius: 8px; font-size: 0.85rem; font-weight: 600; cursor: pointer; font-family: inherit; white-space: nowrap; transition: background .15s; }
+    .staff-add-btn:hover { background: var(--p-hover); }
+
     /* HISTORY VIEW */
     .hist-wrap { max-width: 1100px; margin: 0 auto; padding: 24px 16px; }
     .hist-hdr { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 16px; gap: 12px; flex-wrap: wrap; }
@@ -794,6 +804,11 @@ const seriesQty  = (s) => Object.values(s.modelQtys||{}).reduce((a,b) => a+b, 0)
 const LS_PRICES = 'yadokari_prices_v1';
 const LS_QUOTES = 'yadokari_quotes_v1';
 const LS_MEMOS  = 'yadokari_memos_v1';
+const LS_STAFF  = 'yadokari_staff_v1';
+const DEFAULT_STAFF = ['遠藤美智子','郷優里','小川晃輝','長尾航世'];
+function loadStaff() { try { return JSON.parse(localStorage.getItem(LS_STAFF) || 'null') || DEFAULT_STAFF.slice(); } catch(e) { return DEFAULT_STAFF.slice(); } }
+function saveStaff(arr) { localStorage.setItem(LS_STAFF, JSON.stringify(arr)); }
+let STAFF_LIST = loadStaff();
 
 function loadOverrides() {
   try { return JSON.parse(localStorage.getItem(LS_PRICES) || '{}'); } catch(e) { return {}; }
@@ -902,7 +917,10 @@ function renderCustomerCard() {
     </div>
     <div class="cust-field">
       <label>担当者名</label>
-      <input type="text" id="staffName" placeholder="（未記入）" value="${escapeAttr(state.staffName)}">
+      <select id="staffName">
+        <option value="">（未選択）</option>
+        ${STAFF_LIST.map(s => `<option value="${escapeAttr(s)}"${state.staffName===s?' selected':''}>${escapeHtml(s)}</option>`).join('')}
+      </select>
     </div>
     <div class="cust-field field-full">
       <label>エリア</label>
@@ -914,7 +932,7 @@ function renderCustomerCard() {
     </div>
   `;
   grid.querySelector('#custName').addEventListener('input', e => { state.customerName = e.target.value; });
-  grid.querySelector('#staffName').addEventListener('input', e => { state.staffName = e.target.value; });
+  grid.querySelector('#staffName').addEventListener('change', e => { state.staffName = e.target.value; });
   grid.querySelector('#areaPrefSel').addEventListener('change', e => {
     state.areaPref = e.target.value; state.areaCity = '';
     updateCitySelect();
@@ -1584,8 +1602,66 @@ function priceRow(label, size, priceKey, costKey, price, cost) {
   </tr>`;
 }
 
+function renderStaffSection() {
+  const rows = STAFF_LIST.map((s, i) => `
+    <div class="staff-item">
+      <input type="text" class="staff-name-input" value="${escapeAttr(s)}" data-idx="${i}"
+        onchange="updateStaffName(${i}, this.value)"
+        onblur="updateStaffName(${i}, this.value)">
+      <button class="custom-opt-del" onclick="deleteStaffMember(${i})" title="削除">×</button>
+    </div>`).join('');
+  return `
+    <div class="admin-section">
+      <h3>担当者管理</h3>
+      <div id="staffListContainer">
+        ${rows || '<div style="color:var(--t3);font-size:0.82rem;padding:4px 0">担当者が登録されていません</div>'}
+      </div>
+      <div class="staff-add-row">
+        <input type="text" id="newStaffInput" placeholder="新しい担当者名" maxlength="30">
+        <button class="staff-add-btn" onclick="addStaffMember()">＋ 追加</button>
+      </div>
+    </div>`;
+}
+
+function updateStaffName(idx, name) {
+  name = (name || '').trim();
+  if (!name || STAFF_LIST[idx] === name) return;
+  STAFF_LIST[idx] = name;
+  saveStaff(STAFF_LIST);
+  updateStaffSelect();
+}
+
+function deleteStaffMember(idx) {
+  if (!confirm(`「${STAFF_LIST[idx]}」を削除しますか？`)) return;
+  STAFF_LIST.splice(idx, 1);
+  saveStaff(STAFF_LIST);
+  if (state.staffName === '') { /* already empty */ }
+  updateStaffSelect();
+  renderAdmin();
+}
+
+function addStaffMember() {
+  const input = document.getElementById('newStaffInput');
+  const name = (input ? input.value : '').trim();
+  if (!name) { if (input) input.focus(); return; }
+  if (STAFF_LIST.includes(name)) { alert('その担当者名は既に登録されています'); return; }
+  STAFF_LIST.push(name);
+  saveStaff(STAFF_LIST);
+  if (input) input.value = '';
+  updateStaffSelect();
+  renderAdmin();
+}
+
+function updateStaffSelect() {
+  const sel = document.getElementById('staffName');
+  if (!sel) return;
+  const cur = state.staffName;
+  sel.innerHTML = '<option value="">（未選択）</option>' +
+    STAFF_LIST.map(s => `<option value="${escapeAttr(s)}"${s===cur?' selected':''}>${escapeHtml(s)}</option>`).join('');
+}
+
 function renderAdmin() {
-  let html = '';
+  let html = renderStaffSection();
   const tableStart = (title, hasSize) => `
     <div class="admin-section">
       <h3>${title}</h3>
