@@ -271,8 +271,15 @@
     .bottom-nav-bar .btn-save { padding: 10px 24px; font-size: 0.85rem; font-weight: 700; border-radius: 10px; border: none; background: var(--p); color: white; cursor: pointer; font-family: inherit; transition: background .15s; margin-left: 12px; }
     .bottom-nav-bar .btn-save:hover { background: var(--p-hover); }
     body { padding-bottom: 64px; }
-    .admin-section { background: white; border: 1px solid var(--border); border-radius: 14px; padding: 20px 24px; margin-bottom: 14px; }
-    .admin-section h3 { font-size: 0.95rem; font-weight: 700; margin-bottom: 14px; color: var(--t1); }
+    .admin-section { background: white; border: 1px solid var(--border); border-radius: 14px; padding: 20px 24px; margin-bottom: 14px; position: relative; }
+    .admin-section h3 { font-size: 0.95rem; font-weight: 700; margin-bottom: 14px; color: var(--t1); display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
+    .admin-scroll { overflow-x: auto; }
+    .scroll-hint { font-size: 0.72rem; color: var(--t3); font-weight: 500; opacity: 0; transition: opacity .2s; white-space: nowrap; }
+    .admin-section.has-overflow .scroll-hint { opacity: 1; }
+    .admin-section.has-overflow.scrolled-end .scroll-hint { opacity: 0; }
+    .admin-section::after { content: ''; position: absolute; top: 56px; right: 0; bottom: 0; width: 56px; background: linear-gradient(to right, rgba(255,255,255,0), rgba(255,255,255,0.98)); pointer-events: none; opacity: 0; transition: opacity .2s; border-top-right-radius: 14px; border-bottom-right-radius: 14px; }
+    .admin-section.has-overflow::after { opacity: 1; }
+    .admin-section.has-overflow.scrolled-end::after { opacity: 0; }
     .price-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; min-width: 680px; }
     .price-table th { text-align: left; padding: 8px 8px; background: var(--bg); color: var(--t2); font-weight: 600; font-size: 0.72rem; border-bottom: 1px solid var(--border); }
     .price-table th:nth-child(n+3) { text-align: right; }
@@ -383,7 +390,7 @@
       .comp-actions { padding: 14px 18px; flex-wrap: wrap; }
       .comp-btn-back, .comp-btn-print { flex: 1; text-align: center; }
       /* admin tables: allow horizontal scroll */
-      .admin-section { overflow-x: auto; }
+      .admin-section { padding: 14px 16px; }
       .admin-hdr { flex-direction: column; align-items: flex-start; }
     }
     @media (max-width: 480px) {
@@ -1861,7 +1868,8 @@ function renderAdmin() {
   let html = renderStaffSection();
   const tableStart = (title, hasSize) => `
     <div class="admin-section">
-      <h3>${title}</h3>
+      <h3><span>${title}</span><span class="scroll-hint">横にスクロールできます →</span></h3>
+      <div class="admin-scroll">
       <table class="price-table">
         <thead><tr>
           <th style="min-width:140px">項目</th>
@@ -1871,7 +1879,7 @@ function renderAdmin() {
           <th>利益率</th>
           <th>メモ</th>
         </tr></thead><tbody>`;
-  const tableEnd = `</tbody></table></div>`;
+  const tableEnd = `</tbody></table></div></div>`;
 
   // Tinys Models
   html += tableStart('Tinys INSPIRATION｜ベースモデル', false);
@@ -1998,6 +2006,29 @@ function renderAdmin() {
     const c = parseFloat(inputs[1].value) || 0;
     row.querySelector('.margin-col').innerHTML = marginCell(p, c);
   });
+  // Scroll hints
+  setupAdminScrollHints();
+}
+
+function setupAdminScrollHints() {
+  const updateOne = (sc) => {
+    const section = sc.closest('.admin-section');
+    const hasOverflow = sc.scrollWidth > sc.clientWidth + 1;
+    section.classList.toggle('has-overflow', hasOverflow);
+    const atEnd = sc.scrollLeft + sc.clientWidth >= sc.scrollWidth - 2;
+    section.classList.toggle('scrolled-end', atEnd);
+  };
+  const scrolls = document.querySelectorAll('#adminContent .admin-scroll');
+  scrolls.forEach(sc => {
+    updateOne(sc);
+    sc.addEventListener('scroll', () => updateOne(sc), { passive: true });
+  });
+  if (!window._adminResizeBound) {
+    window.addEventListener('resize', () => {
+      document.querySelectorAll('#adminContent .admin-scroll').forEach(updateOne);
+    });
+    window._adminResizeBound = true;
+  }
 }
 
 function uploadAdminCSV(event) {
