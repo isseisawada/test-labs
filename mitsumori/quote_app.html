@@ -842,6 +842,8 @@ function trPrice(t)   { return ovr(`transport:${t.idx}:price`, t.price); }
 function trCost(t)    { return ovr(`transport:${t.idx}:cost`,  t.cost || 0); }
 function rgPrice(r)   { return ovr(`region:${r.idx}:price`, r.price); }
 function rgCost(r)    { return ovr(`region:${r.idx}:cost`,  r.cost || 0); }
+function ylwPrice(o)  { return ovr(`ylwTransport:${o.idx}:price`, o.price); }
+function ylwCost(o)   { return ovr(`ylwTransport:${o.idx}:cost`,  o.cost || 0); }
 
 // ============================================================
 // History storage
@@ -1133,7 +1135,8 @@ function renderShared(el) {
   if (isYLW) {
     const opts = YLW_TRANSPORT_OPTS.map(o => {
       const prefix = o.region ? `【${o.region}】` : '';
-      const price  = o.price  ? '　' + fmt(o.price) : '';
+      const p      = ylwPrice(o);
+      const price  = p ? '　' + fmt(p) : '';
       return `<option value="${o.idx}" ${state.ylwTransportIdx===o.idx?'selected':''}>${prefix}${o.label}${price}</option>`;
     }).join('');
     g1.innerHTML = `<label>YLW600 配送費用（エリア別）</label><select id="transSelect">${opts}</select>`;
@@ -1345,10 +1348,10 @@ function collectLines() {
     });
   }
   // YLW600 エリア別配送
-  if (ylw && ylw.price > 0) {
+  if (ylw && ylwPrice(ylw) > 0) {
     const qty = seriesQty(state.chassis);
     const label = `${ylw.region ? ylw.region + '/' : ''}${ylw.label}`;
-    shared.push({ name: multi ? `配送費用（${label}）シャーシ${ql(qty)}` : `配送費用（${label}）${ql(qty)}`, val: ylw.price * qty });
+    shared.push({ name: multi ? `配送費用（${label}）シャーシ${ql(qty)}` : `配送費用（${label}）${ql(qty)}`, val: ylwPrice(ylw) * qty });
   }
   if (rc && rgPrice(rc) > 0) {
     activeSeries.forEach(s => {
@@ -1766,6 +1769,14 @@ function renderAdmin() {
   });
   html += tableEnd;
 
+  // YLW Transport
+  html += tableStart('配送費用（YLW600 エリア別）', false);
+  YLW_TRANSPORT_OPTS.filter(o => o.idx > 0).forEach(o => {
+    const lbl = o.region ? `【${o.region}】${o.label}` : o.label;
+    html += priceRow(lbl, '', `ylwTransport:${o.idx}:price`, `ylwTransport:${o.idx}:cost`, ylwPrice(o), ylwCost(o));
+  });
+  html += tableEnd;
+
   // Region
   html += tableStart('諸経費（エリア別）', false);
   REGION_OPTS.filter(r => r.idx > 0).forEach(r => {
@@ -1982,6 +1993,13 @@ function downloadAdminCSV() {
   addRows('配送費用', TRANSPORT_OPTS.filter(t => t.idx > 0).map(t => ({
     label: t.label, size: '', pk: `transport:${t.idx}:price`, ck: `transport:${t.idx}:cost`,
     mk: `transport:${t.idx}:memo`, price: trPrice(t), cost: trCost(t)
+  })));
+
+  // YLW Transport
+  addRows('配送費用（YLW600 エリア別）', YLW_TRANSPORT_OPTS.filter(o => o.idx > 0).map(o => ({
+    label: o.region ? `【${o.region}】${o.label}` : o.label, size: '',
+    pk: `ylwTransport:${o.idx}:price`, ck: `ylwTransport:${o.idx}:cost`,
+    mk: `ylwTransport:${o.idx}:memo`, price: ylwPrice(o), cost: ylwCost(o)
   })));
 
   // Region
