@@ -309,9 +309,11 @@
     .custom-opt-add:hover { border-color: var(--p); color: var(--p); background: var(--p-light); }
 
     /* STAFF MANAGEMENT */
-    .staff-item { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
-    .staff-name-input { flex: 1; padding: 6px 8px; border: 1px solid var(--border); border-radius: 6px; font-size: 0.85rem; font-family: inherit; color: var(--t1); }
+    #staffListContainer { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 6px; margin-bottom: 8px; }
+    .staff-item { display: flex; align-items: center; gap: 4px; margin-bottom: 0; }
+    .staff-name-input { flex: 1; min-width: 0; padding: 5px 8px; border: 1px solid var(--border); border-radius: 6px; font-size: 0.8rem; font-family: inherit; color: var(--t1); }
     .staff-name-input:focus { outline: none; border-color: var(--p); }
+    .staff-item .custom-opt-del { flex-shrink: 0; }
     .staff-add-row { display: flex; gap: 8px; margin-top: 8px; }
     .staff-add-row input { flex: 1; padding: 8px 10px; border: 1px solid var(--border); border-radius: 8px; font-size: 0.85rem; font-family: inherit; color: var(--t1); }
     .staff-add-row input:focus { outline: none; border-color: var(--p); }
