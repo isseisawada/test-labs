@@ -249,10 +249,10 @@
     .admin-actions { display: flex; gap: 8px; }
     .admin-actions .btn { padding: 9px 16px; font-size: 0.82rem; font-weight: 600; border-radius: 8px; border: 1px solid var(--border); background: white; color: var(--t1); cursor: pointer; }
     .admin-actions .btn:hover { background: var(--bg); }
-    .admin-save-bar { position: fixed; bottom: 0; left: 0; right: 0; z-index: 200; background: white; border-top: 1px solid var(--border); padding: 12px 24px; display: none; justify-content: center; box-shadow: 0 -2px 12px rgba(0,0,0,0.08); }
-    .admin-save-bar.visible { display: flex; }
-    .admin-save-bar .btn-save { padding: 12px 40px; font-size: 0.9rem; font-weight: 700; border-radius: 10px; border: none; background: var(--p); color: white; cursor: pointer; font-family: inherit; transition: background .15s; }
-    .admin-save-bar .btn-save:hover { background: var(--p-hover); }
+    .bottom-nav-bar { position: fixed; bottom: 0; left: 0; right: 0; z-index: 200; background: white; border-top: 1px solid var(--border); padding: 10px 16px; display: flex; justify-content: center; align-items: center; gap: 8px; box-shadow: 0 -2px 12px rgba(0,0,0,0.08); }
+    .bottom-nav-bar .btn-save { padding: 10px 24px; font-size: 0.85rem; font-weight: 700; border-radius: 10px; border: none; background: var(--p); color: white; cursor: pointer; font-family: inherit; transition: background .15s; margin-left: 12px; }
+    .bottom-nav-bar .btn-save:hover { background: var(--p-hover); }
+    body { padding-bottom: 64px; }
     .admin-section { background: white; border: 1px solid var(--border); border-radius: 14px; padding: 20px 24px; margin-bottom: 14px; }
     .admin-section h3 { font-size: 0.95rem; font-weight: 700; margin-bottom: 14px; color: var(--t1); }
     .price-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; min-width: 680px; }
@@ -383,7 +383,7 @@
     @media print {
       /* 通常印刷（メインアプリ） */
       .hdr { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-      .mode-nav-bar { display: none; }
+      .mode-nav-bar, .bottom-nav-bar { display: none; }
       .btn-a, .btn-b, .btn-c, .btn-pdf, .sidebar { display: none; }
       .app { flex-direction: column; }
       .sum-panel { width: 100%; position: static; }
@@ -450,22 +450,12 @@
           <li>30ft 水回りあり：1台あたり約25万円</li>
         </ul>
       </div>
-      <nav class="mode-nav-bar">
-        <button class="mode-nb active" data-mode-btn="create" onclick="switchMode('create')">見積もり作成</button>
-        <button class="mode-nb" data-mode-btn="history" onclick="switchMode('history')">履歴</button>
-        <button class="mode-nb" data-mode-btn="admin" onclick="switchMode('admin')">管理</button>
-      </nav>
     </div>
   </aside>
 </div>
 
 <!-- ADMIN VIEW -->
 <div class="admin-wrap" id="appAdmin" style="display:none">
-  <nav class="mode-nav-bar mode-nav-top">
-    <button class="mode-nb" data-mode-btn="create" onclick="switchMode('create')">見積もり作成</button>
-    <button class="mode-nb" data-mode-btn="history" onclick="switchMode('history')">履歴</button>
-    <button class="mode-nb active" data-mode-btn="admin" onclick="switchMode('admin')">管理</button>
-  </nav>
   <div class="admin-hdr">
     <div>
       <h2>価格管理</h2>
@@ -479,17 +469,8 @@
   </div>
   <div id="adminContent"></div>
 </div>
-<div class="admin-save-bar" id="adminSaveBar">
-  <button class="btn-save" onclick="saveAdminPrices()">修正内容を保存する</button>
-</div>
-
 <!-- HISTORY VIEW -->
 <div class="hist-wrap" id="appHistory" style="display:none">
-  <nav class="mode-nav-bar mode-nav-top">
-    <button class="mode-nb" data-mode-btn="create" onclick="switchMode('create')">見積もり作成</button>
-    <button class="mode-nb active" data-mode-btn="history" onclick="switchMode('history')">履歴</button>
-    <button class="mode-nb" data-mode-btn="admin" onclick="switchMode('admin')">管理</button>
-  </nav>
   <div class="hist-hdr">
     <div>
       <h2>見積もり履歴</h2>
@@ -508,6 +489,14 @@
   </div>
   <div class="hist-list" id="histList"></div>
 </div>
+
+<!-- BOTTOM NAV BAR (always visible) -->
+<nav class="bottom-nav-bar" id="bottomNav">
+  <button class="mode-nb active" data-mode-btn="create" onclick="switchMode('create')">見積もり作成</button>
+  <button class="mode-nb" data-mode-btn="history" onclick="switchMode('history')">履歴</button>
+  <button class="mode-nb" data-mode-btn="admin" onclick="switchMode('admin')">管理</button>
+  <button class="btn-save" id="adminSaveBtn" onclick="saveAdminPrices()" style="display:none">修正内容を保存する</button>
+</nav>
 
 <!-- COMPLETION PAGE -->
 <div id="completionPage">
@@ -1660,7 +1649,7 @@ function switchMode(m) {
   // hide series nav and confirm button when not in create mode
   document.getElementById('sNav').style.display = (m === 'create') ? '' : 'none';
   document.getElementById('hdrConfirmBtn').style.display = (m === 'create') ? '' : 'none';
-  document.getElementById('adminSaveBar').classList.toggle('visible', m === 'admin');
+  document.getElementById('adminSaveBtn').style.display = (m === 'admin') ? '' : 'none';
   if (m === 'admin')   renderAdmin();
   if (m === 'history') renderHistory();
   window.scrollTo({ top: 0 });
