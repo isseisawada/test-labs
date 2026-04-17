@@ -261,9 +261,10 @@
 
     /* ADMIN VIEW */
     .admin-wrap { max-width: 1100px; margin: 0 auto; padding: 24px 16px 90px; }
-    .admin-hdr { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; gap: 12px; flex-wrap: wrap; }
-    .admin-hdr h2 { font-size: 1.2rem; font-weight: 800; }
-    .admin-hdr-sub { font-size: 0.78rem; color: var(--t3); margin-top: 2px; }
+    .admin-hdr { height: var(--hh); display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; gap: 12px; }
+    .admin-hdr > div:first-child { display: flex; align-items: baseline; gap: 12px; min-width: 0; flex-wrap: wrap; }
+    .admin-hdr h2 { font-size: 1rem; font-weight: 800; white-space: nowrap; }
+    .admin-hdr-sub { font-size: 0.75rem; color: var(--t3); margin-top: 0; }
     .admin-actions { display: flex; gap: 8px; }
     .admin-actions .btn { padding: 9px 16px; font-size: 0.82rem; font-weight: 600; border-radius: 8px; border: 1px solid var(--border); background: white; color: var(--t1); cursor: pointer; }
     .admin-actions .btn:hover { background: var(--bg); }
@@ -329,8 +330,9 @@
 
     /* HISTORY VIEW */
     .hist-wrap { max-width: 1100px; margin: 0 auto; padding: 24px 16px; }
-    .hist-hdr { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 16px; gap: 12px; flex-wrap: wrap; }
-    .hist-hdr h2 { font-size: 1.2rem; font-weight: 800; }
+    .hist-hdr { height: var(--hh); display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; gap: 12px; }
+    .hist-hdr > div:first-child { display: flex; align-items: baseline; gap: 12px; min-width: 0; flex-wrap: wrap; }
+    .hist-hdr h2 { font-size: 1rem; font-weight: 800; white-space: nowrap; }
     .hist-count { font-size: 0.78rem; color: var(--t3); margin-top: 2px; }
     .hist-search-row { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
     .hist-search { flex: 1; min-width: 200px; padding: 10px 14px; border: 1px solid var(--border); border-radius: 10px; font-size: 0.85rem; background: white; font-family: inherit; }
