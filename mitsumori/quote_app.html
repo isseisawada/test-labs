@@ -518,7 +518,7 @@
 </nav>
 
 <!-- COMPLETION PAGE -->
-<div id="completionPage">
+<div id="completionPage" onclick="if(event.target===this)closeCompletion()">
   <div class="comp-sheet">
     <div class="comp-hdr">
       <div class="comp-logo-w">簡単見積もりシミュレーション</div>
@@ -542,7 +542,7 @@
 </div>
 
 <!-- INTERNAL SIMULATION PAGE -->
-<div id="internalPage">
+<div id="internalPage" onclick="if(event.target===this)closeInternalSimulation()">
   <div class="comp-sheet">
     <div class="comp-hdr">
       <div class="comp-logo-w">【社内用】シミュレーション</div>
