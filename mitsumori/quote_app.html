@@ -395,9 +395,12 @@
       .admin-section { padding: 14px 16px; }
       .admin-hdr-sub, .hist-count { display: none; }
       .admin-hdr .btn, .hist-export { padding: 6px 12px; font-size: 0.78rem; }
-      .admin-hdr, .hist-hdr { height: auto; min-height: 0; margin-bottom: 10px; padding: 2px 0; }
-      .admin-hdr h2, .hist-hdr h2 { font-size: 0.9rem; }
+      .admin-hdr, .hist-hdr { height: var(--hh); min-height: var(--hh); margin-bottom: 12px; padding: 0; }
+      .admin-hdr h2, .hist-hdr h2 { font-size: 0.95rem; }
       .admin-wrap, .hist-wrap { padding: 14px 12px 90px; }
+      /* admin/history時はトップヘッダーも56px固定に */
+      body[data-mode="admin"] .hdr,
+      body[data-mode="history"] .hdr { height: var(--hh); min-height: var(--hh); padding: 0 16px; flex-wrap: nowrap; gap: 12px; }
     }
     @media (max-width: 480px) {
       .m-grid { grid-template-columns: 1fr; }
@@ -429,7 +432,7 @@
     }
   </style>
 </head>
-<body>
+<body data-mode="create">
 
 <header class="hdr">
   <div class="logo" style="cursor:pointer" onclick="switchMode('create')">簡単見積もりシミュレーション</div>
@@ -1773,6 +1776,7 @@ function update() {
 // ============================================================
 function switchMode(m) {
   state.mode = m;
+  document.body.dataset.mode = m;
   document.querySelectorAll('[data-mode-btn]').forEach(btn => {
     btn.classList.toggle('active', btn.dataset.modeBtn === m);
   });
