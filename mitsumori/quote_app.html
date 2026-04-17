@@ -192,54 +192,6 @@
     .notes-list { padding-left: 14px; }
     .notes-list li { font-size: 0.7rem; color: var(--t3); line-height: 1.9; }
 
-    /* VIEW TABS */
-    .v-nav { display: flex; gap: 2px; }
-    .v-btn { padding: 6px 14px; border-radius: 8px; border: none; background: transparent; font-size: 0.83rem; font-weight: 600; color: var(--t2); cursor: pointer; transition: all .15s; white-space: nowrap; }
-    .v-btn:hover { background: var(--bg); color: var(--t1); }
-    .v-btn.active { background: var(--t1); color: #fff; }
-    .hdr-divider { width: 1px; height: 22px; background: var(--border); }
-
-    /* CUSTOMER CARD */
-    .cust-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
-    .cust-field label { display: block; font-size: 0.75rem; font-weight: 600; color: var(--t2); margin-bottom: 6px; }
-    .cust-field input { width: 100%; padding: 9px 11px; border: 1px solid var(--border); border-radius: 8px; font-size: 0.85rem; color: var(--t1); font-family: inherit; background: var(--surface); }
-    .cust-field input:focus { outline: none; border-color: var(--p); }
-
-    /* TABLE (admin + history) */
-    .tbl-wrap { overflow-x: auto; }
-    .tbl { width: 100%; border-collapse: collapse; font-size: 0.83rem; }
-    .tbl th, .tbl td { padding: 10px 12px; text-align: left; border-bottom: 1px solid var(--border); vertical-align: middle; }
-    .tbl th { font-size: 0.7rem; font-weight: 700; color: var(--t3); letter-spacing: .05em; text-transform: uppercase; background: var(--bg); }
-    .tbl td.num, .tbl th.num { text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
-    .tbl input.cell-input { width: 120px; padding: 6px 8px; border: 1px solid var(--border); border-radius: 6px; font-size: 0.85rem; text-align: right; font-family: inherit; background: var(--surface); }
-    .tbl input.cell-input:focus { outline: none; border-color: var(--p); }
-    .tbl tr.group-hdr td { background: var(--p-light); color: var(--p); font-weight: 700; font-size: 0.7rem; letter-spacing: .06em; }
-    .margin-pos { color: #047857; font-weight: 700; }
-    .margin-neg { color: var(--red); font-weight: 700; }
-    .margin-zero { color: var(--t3); }
-
-    /* TOOLBAR (admin + history) */
-    .tbar { display: flex; gap: 10px; margin-bottom: 14px; align-items: center; flex-wrap: wrap; }
-    .tbar .tbar-hint { flex: 1; font-size: 0.78rem; color: var(--t3); }
-    .tbar input[type=search] { flex: 1; min-width: 200px; padding: 9px 12px; border: 1px solid var(--border); border-radius: 8px; font-size: 0.85rem; font-family: inherit; }
-    .tbar input[type=search]:focus { outline: none; border-color: var(--p); }
-    .btn-sec { padding: 9px 14px; background: var(--p); color: #fff; border: none; border-radius: 8px; font-size: 0.82rem; font-weight: 600; cursor: pointer; transition: background .15s; }
-    .btn-sec:hover { background: var(--p-hover); }
-    .btn-sec.gray { background: var(--bg); color: var(--t1); border: 1px solid var(--border); }
-    .btn-sec.gray:hover { background: #e5e4ec; }
-    .tbl .row-actions { display: flex; gap: 6px; }
-    .tbl .row-actions button { padding: 6px 10px; font-size: 0.78rem; border-radius: 6px; cursor: pointer; border: 1px solid var(--border); background: #fff; color: var(--t2); font-family: inherit; }
-    .tbl .row-actions button:hover { background: var(--bg); color: var(--t1); }
-    .tbl .row-actions button.danger { border-color: #FCA5A5; color: var(--red); }
-    .tbl .row-actions button.danger:hover { background: #FEF2F2; }
-    .empty-state { text-align: center; color: var(--t3); padding: 40px 0; font-size: 0.88rem; }
-
-    /* Hide sidebar/sum-panel in non-quote views */
-    body.view-history .sidebar, body.view-history .sum-panel,
-    body.view-admin .sidebar, body.view-admin .sum-panel { display: none; }
-    body.view-history .btn-pdf, body.view-admin .btn-pdf { display: none; }
-    body.view-history .s-nav, body.view-admin .s-nav { display: none; }
-
     /* COMPLETION PAGE */
     #completionPage { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.55); z-index: 200; overflow-y: auto; padding: 40px 16px; }
     .comp-sheet { max-width: 720px; margin: 0 auto; background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 24px 64px rgba(0,0,0,.25); }
@@ -260,6 +212,7 @@
     .comp-divider { height: 1px; background: var(--border); margin: 16px 0; }
     .comp-tot-row { display: flex; justify-content: space-between; font-size: 0.85rem; color: var(--t2); padding: 3px 0; }
     .comp-tot-row.big { font-size: 1.15rem; font-weight: 800; color: var(--t1); padding-top: 8px; }
+    .comp-disclaimer { font-size: 0.72rem; color: var(--t3); margin-top: 10px; line-height: 1.6; }
     .comp-notes-sec { padding: 20px 36px 24px; background: var(--bg); }
     .comp-notes-ttl { font-size: 0.75rem; font-weight: 700; color: var(--t2); margin-bottom: 8px; }
     .comp-notes-sec ul { padding-left: 16px; }
@@ -270,6 +223,116 @@
     .comp-btn-print { padding: 10px 22px; background: var(--p); color: white; border: none; border-radius: 8px; font-size: 0.85rem; font-weight: 700; cursor: pointer; }
     .comp-btn-print:hover { background: var(--p-hover); }
     .no-sel { text-align: center; color: var(--t3); font-size: 0.83rem; padding: 16px 0; }
+
+    /* MODE SWITCHER */
+    .mode-nav-bar { display: flex; justify-content: center; gap: 6px; padding: 14px 0 2px; margin-top: 14px; border-top: 1px solid var(--border); }
+    .mode-nb { padding: 7px 16px; border: 1px solid var(--border); border-radius: 20px; background: white; font-size: 0.8rem; font-weight: 600; color: var(--t2); cursor: pointer; white-space: nowrap; transition: all .15s; font-family: inherit; }
+    .mode-nb:hover { background: var(--bg); color: var(--t1); }
+    .mode-nb.active { background: var(--p-light); color: var(--p); border-color: var(--p-mid); }
+    /* top nav for admin/history views */
+    .mode-nav-top { border-top: none; border-bottom: 1px solid var(--border); padding: 10px 16px 10px; margin-top: 0; margin-bottom: 18px; }
+
+    /* CUSTOMER INFO CARD */
+    .cust-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .cust-grid .field-full { grid-column: 1 / -1; }
+    .cust-field label { display: block; font-size: 0.74rem; font-weight: 600; color: var(--t2); margin-bottom: 5px; }
+    .cust-field input, .cust-field select { width: 100%; padding: 9px 11px; border: 1px solid var(--border); border-radius: 8px; font-size: 0.85rem; color: var(--t1); background: var(--surface); font-family: inherit; }
+    .cust-field input:focus, .cust-field select:focus { outline: none; border-color: var(--p); }
+    .cust-field input::placeholder { color: var(--t3); }
+    .area-inputs { display: grid; grid-template-columns: 140px 170px 1fr; gap: 8px; }
+
+    /* ADMIN VIEW */
+    .admin-wrap { max-width: 1100px; margin: 0 auto; padding: 24px 16px 90px; }
+    .admin-hdr { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; gap: 12px; flex-wrap: wrap; }
+    .admin-hdr h2 { font-size: 1.2rem; font-weight: 800; }
+    .admin-hdr-sub { font-size: 0.78rem; color: var(--t3); margin-top: 2px; }
+    .admin-actions { display: flex; gap: 8px; }
+    .admin-actions .btn { padding: 9px 16px; font-size: 0.82rem; font-weight: 600; border-radius: 8px; border: 1px solid var(--border); background: white; color: var(--t1); cursor: pointer; }
+    .admin-actions .btn:hover { background: var(--bg); }
+    .admin-save-bar { position: fixed; bottom: 0; left: 0; right: 0; z-index: 200; background: white; border-top: 1px solid var(--border); padding: 12px 24px; display: none; justify-content: center; box-shadow: 0 -2px 12px rgba(0,0,0,0.08); }
+    .admin-save-bar.visible { display: flex; }
+    .admin-save-bar .btn-save { padding: 12px 40px; font-size: 0.9rem; font-weight: 700; border-radius: 10px; border: none; background: var(--p); color: white; cursor: pointer; font-family: inherit; transition: background .15s; }
+    .admin-save-bar .btn-save:hover { background: var(--p-hover); }
+    .admin-section { background: white; border: 1px solid var(--border); border-radius: 14px; padding: 20px 24px; margin-bottom: 14px; }
+    .admin-section h3 { font-size: 0.95rem; font-weight: 700; margin-bottom: 14px; color: var(--t1); }
+    .price-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; min-width: 680px; }
+    .price-table th { text-align: left; padding: 8px 8px; background: var(--bg); color: var(--t2); font-weight: 600; font-size: 0.72rem; border-bottom: 1px solid var(--border); }
+    .price-table th:nth-child(n+3) { text-align: right; }
+    .price-table td { padding: 9px 8px; border-bottom: 1px solid var(--border); font-size: 0.82rem; vertical-align: middle; }
+    .price-table tr:last-child td { border-bottom: none; }
+    .price-table td:nth-child(n+3) { text-align: right; }
+    .price-table .item-name { font-weight: 500; }
+    .price-table .item-size { font-size: 0.72rem; color: var(--t3); background: var(--bg); padding: 2px 8px; border-radius: 4px; display: inline-block; }
+    .price-table input[type="number"] { width: 90px; padding: 5px 8px; border: 1px solid var(--border); border-radius: 6px; font-size: 0.82rem; text-align: right; font-family: inherit; color: var(--t1); }
+    .price-table input[type="number"]:focus { outline: none; border-color: var(--p); }
+    .price-table input[type="text"].memo-inp { width: 150px; padding: 5px 8px; border: 1px solid var(--border); border-radius: 6px; font-size: 0.78rem; color: var(--t2); font-family: inherit; background: var(--bg); }
+    .price-table input[type="text"].memo-inp:focus { outline: none; border-color: var(--p); color: var(--t1); background: white; }
+    .price-table input[type="text"].memo-inp::placeholder { color: var(--t3); }
+    .margin-cell { font-weight: 700; min-width: 58px; display: inline-block; }
+    .margin-good { color: #059669; }
+    .margin-mid  { color: #D97706; }
+    .margin-bad  { color: var(--red); }
+    .design-lv-wrap { padding: 4px 0; }
+    .design-lv-btns { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 6px; }
+    .dlv-btn { padding: 5px 12px; border: 1px solid var(--border); border-radius: 6px; background: white; font-size: 0.78rem; font-weight: 600; color: var(--t2); cursor: pointer; transition: all .15s; font-family: inherit; }
+    .dlv-btn:hover { background: var(--bg); color: var(--t1); }
+    .dlv-btn.active { background: var(--p-light); color: var(--p); border-color: var(--p-mid); }
+    .design-lv-info { margin-top: 10px; font-size: 0.78rem; color: var(--t2); background: var(--bg); border-radius: 8px; padding: 10px 14px; }
+    .dlv-row { display: flex; justify-content: space-between; padding: 2px 0; }
+    .dlv-total { font-weight: 700; color: var(--t1); border-top: 1px solid var(--border); margin-top: 5px; padding-top: 6px; }
+    .custom-opt-row { display: grid; grid-template-columns: 1fr 72px 120px 32px; gap: 6px; align-items: center; margin-bottom: 6px; }
+    .custom-opt-row input[type="text"]   { padding: 6px 8px; border: 1px solid var(--border); border-radius: 6px; font-size: 0.82rem; font-family: inherit; color: var(--t1); }
+    .custom-opt-row input[type="number"] { padding: 6px 8px; border: 1px solid var(--border); border-radius: 6px; font-size: 0.82rem; font-family: inherit; color: var(--t1); text-align: right; }
+    .custom-opt-row input:focus { outline: none; border-color: var(--p); }
+    .custom-opt-del { width: 28px; height: 28px; border: 1px solid var(--border); border-radius: 6px; background: white; color: var(--t3); font-size: 1rem; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all .15s; }
+    .custom-opt-del:hover { background: #FEE2E2; border-color: var(--red); color: var(--red); }
+    .custom-opt-hdr { display: grid; grid-template-columns: 1fr 72px 120px 32px; gap: 6px; font-size: 0.7rem; font-weight: 600; color: var(--t3); margin-bottom: 4px; padding: 0 2px; }
+    .custom-opt-add { display: flex; align-items: center; gap: 6px; padding: 7px 12px; border: 1px dashed var(--border); border-radius: 8px; background: transparent; color: var(--t3); font-size: 0.8rem; font-weight: 600; cursor: pointer; width: 100%; margin-top: 4px; transition: all .15s; font-family: inherit; }
+    .custom-opt-add:hover { border-color: var(--p); color: var(--p); background: var(--p-light); }
+
+    /* STAFF MANAGEMENT */
+    .staff-item { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+    .staff-name-input { flex: 1; padding: 6px 8px; border: 1px solid var(--border); border-radius: 6px; font-size: 0.85rem; font-family: inherit; color: var(--t1); }
+    .staff-name-input:focus { outline: none; border-color: var(--p); }
+    .staff-add-row { display: flex; gap: 8px; margin-top: 8px; }
+    .staff-add-row input { flex: 1; padding: 8px 10px; border: 1px solid var(--border); border-radius: 8px; font-size: 0.85rem; font-family: inherit; color: var(--t1); }
+    .staff-add-row input:focus { outline: none; border-color: var(--p); }
+    .staff-add-btn { padding: 8px 16px; background: var(--p); color: white; border: none; border-radius: 8px; font-size: 0.85rem; font-weight: 600; cursor: pointer; font-family: inherit; white-space: nowrap; transition: background .15s; }
+    .staff-add-btn:hover { background: var(--p-hover); }
+
+    /* HISTORY VIEW */
+    .hist-wrap { max-width: 1100px; margin: 0 auto; padding: 24px 16px; }
+    .hist-hdr { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 16px; gap: 12px; flex-wrap: wrap; }
+    .hist-hdr h2 { font-size: 1.2rem; font-weight: 800; }
+    .hist-count { font-size: 0.78rem; color: var(--t3); margin-top: 2px; }
+    .hist-search-row { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
+    .hist-search { flex: 1; min-width: 200px; padding: 10px 14px; border: 1px solid var(--border); border-radius: 10px; font-size: 0.85rem; background: white; font-family: inherit; }
+    .hist-search:focus { outline: none; border-color: var(--p); }
+    .hist-filter { padding: 10px 14px; border: 1px solid var(--border); border-radius: 10px; font-size: 0.82rem; background: white; cursor: pointer; font-family: inherit; color: var(--t1); }
+    .hist-export { padding: 10px 18px; background: white; border: 1px solid var(--border); color: var(--t1); border-radius: 10px; font-size: 0.82rem; font-weight: 600; cursor: pointer; }
+    .hist-export:hover { background: var(--bg); }
+    .hist-list { display: flex; flex-direction: column; gap: 10px; }
+    .hist-card { background: white; border: 1px solid var(--border); border-radius: 12px; padding: 16px 20px; }
+    .hist-card-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 10px; flex-wrap: wrap; }
+    .hist-name { font-size: 1rem; font-weight: 700; }
+    .hist-date { font-size: 0.75rem; color: var(--t3); }
+    .hist-meta { display: flex; gap: 18px; flex-wrap: wrap; margin-bottom: 10px; }
+    .hist-meta-item { display: flex; flex-direction: column; gap: 2px; }
+    .hist-meta-lbl { font-size: 0.68rem; color: var(--t3); font-weight: 600; letter-spacing: .04em; }
+    .hist-meta-val { font-size: 0.82rem; color: var(--t1); font-weight: 500; }
+    .hist-series { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
+    .hist-tag { display: inline-block; padding: 3px 9px; background: var(--p-light); color: var(--p); border-radius: 12px; font-size: 0.7rem; font-weight: 600; }
+    .hist-totals { display: flex; justify-content: flex-end; gap: 16px; align-items: baseline; margin-bottom: 10px; }
+    .hist-pre { font-size: 0.78rem; color: var(--t3); }
+    .hist-tax { font-size: 1.1rem; font-weight: 800; color: var(--t1); }
+    .hist-actions { display: flex; gap: 8px; justify-content: flex-end; flex-wrap: wrap; }
+    .hist-btn { padding: 7px 14px; border-radius: 8px; font-size: 0.78rem; font-weight: 600; cursor: pointer; border: 1px solid var(--border); background: white; color: var(--t1); font-family: inherit; }
+    .hist-btn:hover { background: var(--bg); }
+    .hist-btn.primary { background: var(--p); color: white; border-color: var(--p); }
+    .hist-btn.primary:hover { background: var(--p-hover); }
+    .hist-btn.danger { color: var(--red); border-color: #FECACA; }
+    .hist-btn.danger:hover { background: #FEF2F2; }
+    .hist-empty { text-align: center; padding: 60px 20px; color: var(--t3); font-size: 0.88rem; background: white; border: 1px dashed var(--border); border-radius: 12px; }
 
     /* RESPONSIVE */
     @media (max-width: 1060px) { .sidebar { display: none; } .sum-panel { width: 252px; } }
@@ -286,14 +349,41 @@
       .s-btn { padding: 5px 10px; font-size: 0.78rem; white-space: nowrap; }
       .mg-row .qty-btn { width: 36px; height: 36px; font-size: 1rem; }
       .mg-row .qty-val { font-size: 0.88rem; min-width: 32px; }
+      /* customer grid: 1 column */
       .cust-grid { grid-template-columns: 1fr; }
-      .v-nav { order: 2; width: 100%; padding-top: 6px; }
-      .tbar input[type=search] { min-width: 140px; }
+      /* area inputs: pref+city side by side, sub spans full width */
+      .area-inputs { grid-template-columns: 1fr 1fr; }
+      .area-inputs > *:last-child { grid-column: 1 / -1; }
+      /* blind selects: remove indent, allow wrap */
+      .blind-selects { padding-left: 0; flex-wrap: wrap; }
+      /* completion page: smaller padding */
+      .comp-hdr { padding: 20px 18px; }
+      .comp-body { padding: 20px 18px; }
+      .comp-notes-sec { padding: 16px 18px 20px; }
+      .comp-actions { padding: 14px 18px; flex-wrap: wrap; }
+      .comp-btn-back, .comp-btn-print { flex: 1; text-align: center; }
+      /* admin tables: allow horizontal scroll */
+      .admin-section { overflow-x: auto; }
+      .admin-hdr { flex-direction: column; align-items: flex-start; }
     }
-    @media (max-width: 480px) { .m-grid { grid-template-columns: 1fr; } }
+    @media (max-width: 480px) {
+      .m-grid { grid-template-columns: 1fr; }
+      /* area inputs: stack vertically on small screens */
+      .area-inputs { grid-template-columns: 1fr; }
+      .area-inputs > *:last-child { grid-column: auto; }
+      /* card inner padding */
+      .card { padding: 16px 14px; }
+      /* custom options row: tighter layout */
+      .custom-opt-row { grid-template-columns: 1fr 50px 90px 28px; gap: 4px; }
+      .custom-opt-hdr { grid-template-columns: 1fr 50px 90px 28px; gap: 4px; }
+      /* completion total text */
+      .comp-tot-row.big { font-size: 0.95rem; }
+      .sum-big { font-size: 1.55rem; }
+    }
     @media print {
       /* 通常印刷（メインアプリ） */
       .hdr { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      .mode-nav-bar { display: none; }
       .btn-a, .btn-b, .btn-c, .btn-pdf, .sidebar { display: none; }
       .app { flex-direction: column; }
       .sum-panel { width: 100%; position: static; }
@@ -309,14 +399,12 @@
 <body>
 
 <header class="hdr">
-  <div class="logo" style="cursor:pointer" onclick="goView('quote')">簡単見積もり<span class="logo-by">by YADOKARI</span></div>
-  <nav class="v-nav" id="vNav"></nav>
-  <div class="hdr-divider"></div>
+  <div class="logo" style="cursor:pointer" onclick="switchMode('create')">簡単見積もりシミュレーション</div>
   <nav class="s-nav" id="sNav"></nav>
-  <button class="btn-pdf" onclick="confirmEstimate()">見積もりを確定</button>
+  <button class="btn-pdf" id="hdrConfirmBtn" onclick="confirmEstimate()">見積もりを確定</button>
 </header>
 
-<div class="app">
+<div class="app" id="appCreate">
   <aside class="sidebar">
     <div class="sb-badge">
       <div class="sb-title" id="sbTitle">見積もり</div>
@@ -362,15 +450,70 @@
           <li>30ft 水回りあり：1台あたり約25万円</li>
         </ul>
       </div>
+      <nav class="mode-nav-bar">
+        <button class="mode-nb active" data-mode-btn="create" onclick="switchMode('create')">見積もり作成</button>
+        <button class="mode-nb" data-mode-btn="history" onclick="switchMode('history')">履歴</button>
+        <button class="mode-nb" data-mode-btn="admin" onclick="switchMode('admin')">管理</button>
+      </nav>
     </div>
   </aside>
+</div>
+
+<!-- ADMIN VIEW -->
+<div class="admin-wrap" id="appAdmin" style="display:none">
+  <nav class="mode-nav-bar mode-nav-top">
+    <button class="mode-nb" data-mode-btn="create" onclick="switchMode('create')">見積もり作成</button>
+    <button class="mode-nb" data-mode-btn="history" onclick="switchMode('history')">履歴</button>
+    <button class="mode-nb active" data-mode-btn="admin" onclick="switchMode('admin')">管理</button>
+  </nav>
+  <div class="admin-hdr">
+    <div>
+      <h2>価格管理</h2>
+      <div class="admin-hdr-sub">各項目の売価・原価を編集できます。営業利益率が自動計算されます。</div>
+    </div>
+    <div class="admin-actions">
+      <input type="file" id="csvUploadInput" accept=".csv" style="display:none" onchange="uploadAdminCSV(event)">
+      <button class="btn" onclick="document.getElementById('csvUploadInput').click()">CSVアップロード</button>
+      <button class="btn" onclick="downloadAdminCSV()">CSVダウンロード</button>
+    </div>
+  </div>
+  <div id="adminContent"></div>
+</div>
+<div class="admin-save-bar" id="adminSaveBar">
+  <button class="btn-save" onclick="saveAdminPrices()">修正内容を保存する</button>
+</div>
+
+<!-- HISTORY VIEW -->
+<div class="hist-wrap" id="appHistory" style="display:none">
+  <nav class="mode-nav-bar mode-nav-top">
+    <button class="mode-nb" data-mode-btn="create" onclick="switchMode('create')">見積もり作成</button>
+    <button class="mode-nb active" data-mode-btn="history" onclick="switchMode('history')">履歴</button>
+    <button class="mode-nb" data-mode-btn="admin" onclick="switchMode('admin')">管理</button>
+  </nav>
+  <div class="hist-hdr">
+    <div>
+      <h2>見積もり履歴</h2>
+      <div class="hist-count" id="histCount">0 件</div>
+    </div>
+    <button class="hist-export" onclick="exportHistoryCSV()">CSVエクスポート</button>
+  </div>
+  <div class="hist-search-row">
+    <input type="text" class="hist-search" id="histSearch" placeholder="顧客名・担当者名・エリア・モデル名などで検索..." oninput="renderHistory()">
+    <select class="hist-filter" id="histFilterSeries" onchange="renderHistory()">
+      <option value="">全シリーズ</option>
+      <option value="tinys">Tinys INSPIRATION</option>
+      <option value="roadie">ROADIE</option>
+      <option value="chassis">シャーシ</option>
+    </select>
+  </div>
+  <div class="hist-list" id="histList"></div>
 </div>
 
 <!-- COMPLETION PAGE -->
 <div id="completionPage">
   <div class="comp-sheet">
     <div class="comp-hdr">
-      <div class="comp-logo-w">簡単見積もり<span>by YADOKARI</span></div>
+      <div class="comp-logo-w">簡単見積もりシミュレーション</div>
       <div class="comp-ttl">トレーラーハウス 概算見積もり</div>
       <div class="comp-date" id="compDate"></div>
     </div>
@@ -401,17 +544,17 @@ const SERIES = [
 ];
 
 const TINYS_MODELS = [
-  { id:'t1',  label:'6m｜標準｜水回りあり',           shortLabel:'標準｜水回りあり',           price:7490000, size:'6m',   ico:'🏠' },
-  { id:'t2',  label:'6m｜標準｜水回りなし',           shortLabel:'標準｜水回りなし',           price:6490000, size:'6m',   ico:'🏠' },
-  { id:'t3',  label:'6m｜寒冷地｜水回りあり',         shortLabel:'寒冷地｜水回りあり',         price:8000000, size:'6m',   ico:'❄️' },
-  { id:'t4',  label:'7.2m｜標準｜水回りあり',         shortLabel:'標準｜水回りあり',           price:7990000, size:'7.2m', ico:'🏠' },
-  { id:'t5',  label:'7.2m｜標準｜水回りなし',         shortLabel:'標準｜水回りなし',           price:6990000, size:'7.2m', ico:'🏠' },
-  { id:'t6',  label:'7.2m｜寒冷地｜水回りあり',       shortLabel:'寒冷地｜水回りあり',         price:9050000, size:'7.2m', ico:'❄️' },
-  { id:'t7',  label:'9m｜標準｜水回りあり',           shortLabel:'標準｜水回りあり',           price:8780000, size:'9m',   ico:'🏠' },
-  { id:'t8',  label:'9m｜標準｜水回りなし',           shortLabel:'標準｜水回りなし',           price:7780000, size:'9m',   ico:'🏠' },
-  { id:'t9',  label:'9m｜寒冷地｜水回りあり',         shortLabel:'寒冷地｜水回りあり',         price:9800000, size:'9m',   ico:'❄️' },
-  { id:'t10', label:'実車 7.2m（エアコン込）',         shortLabel:'7.2m（エアコン込）',         price:7742500, size:'7.2m', ico:'🚘' },
-  { id:'t11', label:'実車 9m（ロフト付＋エアコン込）', shortLabel:'9m（ロフト付＋エアコン込）', price:9025000, size:'9m',   ico:'🚘' },
+  { id:'t1',  label:'6m｜標準｜水回りあり',           shortLabel:'標準｜水回りあり',           price:7490000, cost:4868000, size:'6m',   ico:'🏠' },
+  { id:'t2',  label:'6m｜標準｜水回りなし',           shortLabel:'標準｜水回りなし',           price:6490000, cost:4045700, size:'6m',   ico:'🏠' },
+  { id:'t3',  label:'6m｜寒冷地｜水回りあり',         shortLabel:'寒冷地｜水回りあり',         price:8000000, cost:5206000, size:'6m',   ico:'❄️' },
+  { id:'t4',  label:'7.2m｜標準｜水回りあり',         shortLabel:'標準｜水回りあり',           price:7990000, cost:5197300, size:'7.2m', ico:'🏠' },
+  { id:'t5',  label:'7.2m｜標準｜水回りなし',         shortLabel:'標準｜水回りなし',           price:6990000, cost:4644300, size:'7.2m', ico:'🏠' },
+  { id:'t6',  label:'7.2m｜寒冷地｜水回りあり',       shortLabel:'寒冷地｜水回りあり',         price:9050000, cost:5842200, size:'7.2m', ico:'❄️' },
+  { id:'t7',  label:'9m｜標準｜水回りあり',           shortLabel:'標準｜水回りあり',           price:8780000, cost:5651700, size:'9m',   ico:'🏠' },
+  { id:'t8',  label:'9m｜標準｜水回りなし',           shortLabel:'標準｜水回りなし',           price:7780000, cost:5080700, size:'9m',   ico:'🏠' },
+  { id:'t9',  label:'9m｜寒冷地｜水回りあり',         shortLabel:'寒冷地｜水回りあり',         price:9800000, cost:6372700, size:'9m',   ico:'❄️' },
+  { id:'t10', label:'実車 7.2m（エアコン込）',         shortLabel:'7.2m（エアコン込）',         price:7742500, cost:5308700, size:'7.2m', ico:'🚘' },
+  { id:'t11', label:'実車 9m（ロフト付＋エアコン込）', shortLabel:'9m（ロフト付＋エアコン込）', price:9025000, cost:6240300, size:'9m',   ico:'🚘' },
 ];
 const TINYS_GROUPS = [
   { size:'6m',   models:['t1','t2','t3'] },
@@ -420,43 +563,46 @@ const TINYS_GROUPS = [
   { size:'実車',  models:['t10','t11'] },
 ];
 const TINYS_SIZE_OPTS = [
-  { id:'ts1', name:'シャーシ塩害対策塗装', sub:'ローバル 亜鉛メッキ塗装', ico:'🛡️', prices:{'6m':350000,'7.2m':370000,'9m':420000} },
-  { id:'ts2', name:'高断熱仕様', sub:'天井GW24K/100mm・壁ミラフォームラムダ/75mm・床/90mm', ico:'🌡️', prices:{'6m':220000,'7.2m':250000,'9m':280000} },
-  { id:'ts3', name:'急勾配屋根（3寸勾配）', sub:'', ico:'🏔️', prices:{'6m':100000,'7.2m':110000,'9m':130000} },
-  { id:'ts4', name:'エアコン', sub:'パナソニック エオリア（6m:8畳 / 7.2m:10畳 / 9m:12畳）', ico:'💨', prices:{'6m':180000,'7.2m':200000,'9m':250000} },
-  { id:'ts5', name:'水平ジャッキ', sub:'', ico:'⚙️', prices:{'6m':100000,'7.2m':170000,'9m':170000} },
+  { id:'ts1', name:'シャーシ塩害対策塗装', sub:'ローバル 亜鉛メッキ塗装', ico:'🛡️',
+    prices:{'6m':350000,'7.2m':370000,'9m':420000}, costs:{'6m':220000,'7.2m':240000,'9m':270000} },
+  { id:'ts2', name:'高断熱仕様', sub:'天井GW24K/100mm・壁ミラフォームラムダ/75mm・床/90mm', ico:'🌡️',
+    prices:{'6m':220000,'7.2m':250000,'9m':280000}, costs:{'6m':137000,'7.2m':156000,'9m':181000} },
+  { id:'ts3', name:'急勾配屋根（3寸勾配）', sub:'', ico:'🏔️',
+    prices:{'6m':100000,'7.2m':110000,'9m':130000}, costs:{'6m':60000,'7.2m':70000,'9m':80000} },
+  { id:'ts4', name:'エアコン', sub:'パナソニック エオリア（6m:8畳 / 7.2m:10畳 / 9m:12畳）', ico:'💨',
+    prices:{'6m':180000,'7.2m':200000,'9m':250000}, costs:{'6m':114000,'7.2m':129000,'9m':152000} },
+  { id:'ts5', name:'水平ジャッキ', sub:'', ico:'⚙️',
+    prices:{'6m':100000,'7.2m':170000,'9m':170000}, costs:{'6m':72000,'7.2m':120000,'9m':120000} },
 ];
 const TINYS_COMMON_OPTS = [
-  { id:'tc1', name:'造作ステップ',    sub:'スチール4段 W670×D1100×H700〜850', ico:'🪜', price:140000 },
-  { id:'tc2', name:'アコーディオン網戸', sub:'LIXIL 18020 W1845×H2030用', ico:'🪟', price:130000 },
-  { id:'tc3', name:'外部照明',        sub:'オーデリック OG254917R1（人感センサー付）', ico:'💡', price:50000 },
-  { id:'tc4', name:'２段ベッド',      sub:'小上がり＋ロフト＋斜めはしご', ico:'🛏️', price:350000 },
-  { id:'tc5', name:'ロフト',          sub:'ロフト＋斜めはしご', ico:'🔼', price:240000 },
+  { id:'tc1', name:'造作ステップ',    sub:'スチール4段 W670×D1100×H700〜850', ico:'🪜', price:140000, cost:90000 },
+  { id:'tc2', name:'アコーディオン網戸', sub:'LIXIL 18020 W1845×H2030用', ico:'🪟', price:130000, cost:82600 },
+  { id:'tc3', name:'外部照明',        sub:'オーデリック OG254917R1（人感センサー付）', ico:'💡', price:50000, cost:32000 },
+  { id:'tc4', name:'２段ベッド',      sub:'小上がり＋ロフト＋斜めはしご', ico:'🛏️', price:350000, cost:220700 },
+  { id:'tc5', name:'ロフト',          sub:'ロフト＋斜めはしご', ico:'🔼', price:240000, cost:150000 },
 ];
 const TINYS_BLIND_OPTS = [
-  { idx:0, label:'なし', price:0 },
-  { idx:1, label:'W3510×H2030（大）', price:120000 },
-  { idx:2, label:'W1690×H2030（中）', price:60000 },
-  { idx:3, label:'W2010×H1800（中）', price:70000 },
-  { idx:4, label:'W1235×H570（小）',  price:40000 },
+  { idx:0, label:'なし', price:0, cost:0 },
+  { idx:1, label:'W3510×H2030（大）', price:120000, cost:71700 },
+  { idx:2, label:'W1690×H2030（中）', price:60000,  cost:35900 },
+  { idx:3, label:'W2010×H1800（中）', price:70000,  cost:44300 },
+  { idx:4, label:'W1235×H570（小）',  price:40000,  cost:23900 },
 ];
 const TINYS_MISC_OPTS = [
-  { id:'tm1', name:'設計費用（セミオーダー）', ico:'📐', price:150000 },
-  { id:'tm2', name:'設計費用（フルオーダー）', ico:'📐', price:300000 },
-  { id:'tm3', name:'車両申請書類',             ico:'📋', price:100000 },
-  { id:'tm4', name:'予備車検',                 ico:'🔍', price:80000 },
-  { id:'tm5', name:'設置費用',                 ico:'🏗️', price:50000 },
-  { id:'tm8', name:'新規車両申請費用',         ico:'📄', price:300000 },
+  { id:'tm3', name:'車両申請書類',     ico:'📋', price:100000, cost:50000 },
+  { id:'tm4', name:'予備車検',         ico:'🔍', price:80000,  cost:50000 },
+  { id:'tm5', name:'設置費用',         ico:'🏗️', price:50000,  cost:30000 },
+  { id:'tm8', name:'新規車両申請費用', ico:'📄', price:300000, cost:200000 },
 ];
 
 const ROADIE_MODELS = [
-  { id:'r1', label:'7.2m｜切り妻',                   shortLabel:'切り妻',                      price:10250000, size:'7.2m', ico:'🏠' },
-  { id:'r2', label:'7.2m｜片流れ',                   shortLabel:'片流れ',                      price:10100000, size:'7.2m', ico:'🏠' },
-  { id:'r3', label:'6m',                             shortLabel:'スタンダード',                 price:7150000,  size:'6m',   ico:'🏠' },
-  { id:'r4', label:'6m｜寒冷地',                     shortLabel:'寒冷地',                      price:7300000,  size:'6m',   ico:'❄️' },
-  { id:'r5', label:'7.2m｜寒冷地｜片流れ',           shortLabel:'寒冷地｜片流れ',              price:10350000, size:'7.2m', ico:'❄️' },
-  { id:'r6', label:'mini',                           shortLabel:'mini',                        price:3700000,  size:'mini', ico:'🏕️' },
-  { id:'r7', label:'実車（ロフト付き・エアコン込）', shortLabel:'実車（ロフト付き・エアコン込）', price:10022500, size:'7.2m', ico:'🚘' },
+  { id:'r1', label:'7.2m｜切り妻',                   shortLabel:'切り妻',                      price:10250000, cost:6639940, size:'7.2m', ico:'🏠' },
+  { id:'r2', label:'7.2m｜片流れ',                   shortLabel:'片流れ',                      price:10100000, cost:6539940, size:'7.2m', ico:'🏠' },
+  { id:'r3', label:'6m',                             shortLabel:'スタンダード',                 price:7150000,  cost:4556440, size:'6m',   ico:'🏠' },
+  { id:'r4', label:'6m｜寒冷地',                     shortLabel:'寒冷地',                      price:7300000,  cost:4656440, size:'6m',   ico:'❄️' },
+  { id:'r5', label:'7.2m｜寒冷地｜片流れ',           shortLabel:'寒冷地｜片流れ',              price:10350000, cost:6709940, size:'7.2m', ico:'❄️' },
+  { id:'r6', label:'mini',                           shortLabel:'mini',                        price:3700000,  cost:2405440, size:'mini', ico:'🏕️' },
+  { id:'r7', label:'実車（ロフト付き・エアコン込）', shortLabel:'実車（ロフト付き・エアコン込）', price:10022500, cost:6999335, size:'7.2m', ico:'🚘' },
 ];
 const ROADIE_GROUPS = [
   { size:'6m',    models:['r3','r4'] },
@@ -464,32 +610,41 @@ const ROADIE_GROUPS = [
   { size:'mini',  models:['r6'] },
 ];
 const ROADIE_SIZE_OPTS = [
-  { id:'rs1', name:'シャーシ塩害対策塗装', sub:'PPG社 QP-140水性1液防錆プライマー', ico:'🛡️', prices:{'mini':110000,'6m':155000,'7.2m':220000} },
-  { id:'rs2', name:'断熱（寒冷地仕様）', sub:'天井GW32K/90mm・壁GW32K/90mm・床スタイロフォーム/100mm', ico:'🌡️', prices:{'mini':155000,'6m':235000,'7.2m':280000} },
-  { id:'rs3', name:'水平ジャッキ', sub:'', ico:'⚙️', prices:{'mini':null,'6m':100000,'7.2m':120000} },
+  { id:'rs1', name:'シャーシ塩害対策塗装', sub:'PPG社 QP-140水性1液防錆プライマー', ico:'🛡️',
+    prices:{'mini':110000,'6m':155000,'7.2m':220000}, costs:{'mini':70000,'6m':100000,'7.2m':140000} },
+  { id:'rs2', name:'断熱（寒冷地仕様）', sub:'天井GW32K/90mm・壁GW32K/90mm・床スタイロフォーム/100mm', ico:'🌡️',
+    prices:{'mini':155000,'6m':235000,'7.2m':280000}, costs:{'mini':100000,'6m':150000,'7.2m':180000} },
+  { id:'rs3', name:'水平ジャッキ', sub:'', ico:'⚙️',
+    prices:{'mini':null,'6m':100000,'7.2m':120000}, costs:{'mini':0,'6m':57000,'7.2m':76000} },
 ];
 const ROADIE_COMMON_OPTS = [
-  { id:'rc1', name:'造作ステップ',    sub:'34段 W1000×D900×H600', ico:'🪜', price:140000 },
-  { id:'rc2', name:'エアコン本体',    sub:'パナソニック エオリア', ico:'💨', price:280000 },
-  { id:'rc3', name:'給湯器本体',      sub:'リンナイ 16号', ico:'🔥', price:110000 },
-  { id:'rc4', name:'アコーディオン網戸', sub:'サーモスL オープンウィンFD4枚建', ico:'🪟', price:90000 },
-  { id:'rc5', name:'外部照明',        sub:'オーデリックOG254917R1', ico:'💡', price:40000 },
+  { id:'rc1', name:'造作ステップ',    sub:'34段 W1000×D900×H600', ico:'🪜', price:140000, cost:86000 },
+  { id:'rc2', name:'エアコン本体',    sub:'パナソニック エオリア', ico:'💨', price:280000, cost:180000 },
+  { id:'rc3', name:'給湯器本体',      sub:'リンナイ 16号', ico:'🔥', price:110000, cost:65000 },
+  { id:'rc4', name:'アコーディオン網戸', sub:'サーモスL オープンウィンFD4枚建', ico:'🪟', price:90000, cost:58000 },
+  { id:'rc5', name:'外部照明',        sub:'オーデリックOG254917R1', ico:'💡', price:40000, cost:25000 },
 ];
 const ROADIE_MISC_OPTS = [
-  { id:'rm1', name:'設計費用（セミオーダー）', ico:'📐', price:150000 },
-  { id:'rm2', name:'設計費用（フルオーダー）', ico:'📐', price:300000 },
-  { id:'rm3', name:'車両申請書類',             ico:'📋', price:100000 },
-  { id:'rm4', name:'予備車検',                 ico:'🔍', price:80000 },
-  { id:'rm5', name:'設置費用',                 ico:'🏗️', price:50000 },
+  { id:'rm3', name:'車両申請書類', ico:'📋', price:100000, cost:0 },
+  { id:'rm4', name:'予備車検',     ico:'🔍', price:80000,  cost:0 },
+  { id:'rm5', name:'設置費用',     ico:'🏗️', price:50000,  cost:0 },
 ];
+// 難易度係数 Lv1(×0.1) 〜 Lv7(×1.3)
+const DESIGN_LEVELS = [
+  { lv:1, coef:0.1 }, { lv:2, coef:0.3 }, { lv:3, coef:0.5 },
+  { lv:4, coef:0.7 }, { lv:5, coef:0.9 }, { lv:6, coef:1.1 }, { lv:7, coef:1.3 },
+];
+function designQtyCoef(qty) {
+  return qty <= 1 ? 1.0 : qty <= 3 ? 0.8 : qty <= 7 ? 0.6 : 0.4;
+}
 
 const CHASSIS_MODELS = [
-  { id:'ch1', label:'YCL360（12ft コンテナロック付き）', shortLabel:'12ft コンテナロック付き', price:1200000, ico:'⚙️' },
-  { id:'ch2', label:'YCL600（20ft コンテナロック付き）', shortLabel:'20ft コンテナロック付き', price:1230000, ico:'⚙️' },
-  { id:'ch3', label:'YNR600（ナローシャーシ 6m）',       shortLabel:'6m',                     price:1270000, ico:'🔩' },
-  { id:'ch4', label:'YNR720（ナローシャーシ 7.2m）',     shortLabel:'7.2m',                   price:1380000, ico:'🔩' },
-  { id:'ch5', label:'YNR900（ナローシャーシ 9m）',       shortLabel:'9m',                     price:1910000, ico:'🔩' },
-  { id:'ch6', label:'YLW600',                            shortLabel:'YLW600',                 price:1750000, ico:'🔩' },
+  { id:'ch1', label:'YCL360（12ft コンテナロック付き）', shortLabel:'12ft コンテナロック付き', price:1200000, cost:780000,  ico:'⚙️' },
+  { id:'ch2', label:'YCL600（20ft コンテナロック付き）', shortLabel:'20ft コンテナロック付き', price:1230000, cost:800000,  ico:'⚙️' },
+  { id:'ch3', label:'YNR600（ナローシャーシ 6m）',       shortLabel:'6m',                     price:1270000, cost:830000,  ico:'🔩' },
+  { id:'ch4', label:'YNR720（ナローシャーシ 7.2m）',     shortLabel:'7.2m',                   price:1380000, cost:900000,  ico:'🔩' },
+  { id:'ch5', label:'YNR900（ナローシャーシ 9m）',       shortLabel:'9m',                     price:1910000, cost:1250000, ico:'🔩' },
+  { id:'ch6', label:'YLW600',                            shortLabel:'YLW600',                 price:1750000, cost:1137900, ico:'🔩' },
 ];
 const CHASSIS_GROUPS = [
   { size:'YCL（コンテナ）', models:['ch1','ch2'] },
@@ -497,382 +652,304 @@ const CHASSIS_GROUPS = [
   { size:'YLW',             models:['ch6'] },
 ];
 const CHASSIS_OPTS = [
-  { id:'co1',  name:'リジットジャッキ YCL360用（4個）',     ico:'⚙️', price:60000 },
-  { id:'co2',  name:'リジットジャッキ YCL/YNR600用（6個）', ico:'⚙️', price:90000 },
-  { id:'co3',  name:'リジットジャッキ YNR720,900用（8個）', ico:'⚙️', price:120000 },
-  { id:'co4',  name:'リジットジャッキ YLW600用（6個）',     ico:'⚙️', price:150000 },
-  { id:'co5',  name:'土台ベース YNR600用',                  ico:'🏗️', price:430000 },
-  { id:'co6',  name:'土台ベース YNR720用',                  ico:'🏗️', price:445000 },
-  { id:'co7',  name:'土台ベース YNR900用',                  ico:'🏗️', price:580000 },
-  { id:'co8',  name:'土台ベース YCL600用',                  ico:'🏗️', price:385000 },
-  { id:'co9',  name:'土台ベース YLW600用',                  ico:'🏗️', price:440000 },
-  { id:'co10', name:'予備車検',                             ico:'🔍', price:80000 },
+  { id:'co1',  name:'リジットジャッキ YCL360用（4個）',     ico:'⚙️', price:60000,  cost:38000 },
+  { id:'co2',  name:'リジットジャッキ YCL/YNR600用（6個）', ico:'⚙️', price:90000,  cost:57000 },
+  { id:'co3',  name:'リジットジャッキ YNR720,900用（8個）', ico:'⚙️', price:120000, cost:76000 },
+  { id:'co4',  name:'リジットジャッキ YLW600用（6個）',     ico:'⚙️', price:150000, cost:96000 },
+  { id:'co5',  name:'土台ベース YNR600用',                  ico:'🏗️', price:430000, cost:280000 },
+  { id:'co6',  name:'土台ベース YNR720用',                  ico:'🏗️', price:445000, cost:290000 },
+  { id:'co7',  name:'土台ベース YNR900用',                  ico:'🏗️', price:580000, cost:380000 },
+  { id:'co8',  name:'土台ベース YCL600用',                  ico:'🏗️', price:385000, cost:250000 },
+  { id:'co9',  name:'土台ベース YLW600用',                  ico:'🏗️', price:440000, cost:286320 },
+  { id:'co10', name:'予備車検',                             ico:'🔍', price:80000,  cost:0 },
 ];
 
 const TRANSPORT_OPTS = [
-  { idx:0,  label:'なし',       price:0 },
-  { idx:1,  label:'100km以内',  price:190000 },
-  { idx:2,  label:'200km以内',  price:260000 },
-  { idx:3,  label:'300km以内',  price:330000 },
-  { idx:4,  label:'400km以内',  price:400000 },
-  { idx:5,  label:'500km以内',  price:470000 },
-  { idx:6,  label:'600km以内',  price:540000 },
-  { idx:7,  label:'700km以内',  price:620000 },
-  { idx:8,  label:'800km以内',  price:690000 },
-  { idx:9,  label:'900km以内',  price:760000 },
-  { idx:10, label:'1000km以内', price:830000 },
+  { idx:0,  label:'なし',       price:0,      cost:0 },
+  { idx:1,  label:'100km以内',  price:190000, cost:130000 },
+  { idx:2,  label:'200km以内',  price:260000, cost:180000 },
+  { idx:3,  label:'300km以内',  price:330000, cost:230000 },
+  { idx:4,  label:'400km以内',  price:400000, cost:280000 },
+  { idx:5,  label:'500km以内',  price:470000, cost:330000 },
+  { idx:6,  label:'600km以内',  price:540000, cost:380000 },
+  { idx:7,  label:'700km以内',  price:620000, cost:430000 },
+  { idx:8,  label:'800km以内',  price:690000, cost:480000 },
+  { idx:9,  label:'900km以内',  price:760000, cost:530000 },
+  { idx:10, label:'1000km以内', price:830000, cost:580000 },
 ];
 const REGION_OPTS = [
-  { idx:0, label:'なし',         price:0 },
-  { idx:1, label:'関東',         price:50000 },
-  { idx:2, label:'北陸・中部',   price:70000 },
-  { idx:3, label:'東北・関西',   price:100000 },
-  { idx:4, label:'四国・中国',   price:150000 },
-  { idx:5, label:'九州・北海道', price:150000 },
-  { idx:6, label:'沖縄・離島',   price:150000 },
+  { idx:0, label:'なし',         price:0,      cost:0 },
+  { idx:1, label:'関東',         price:50000,  cost:20000 },
+  { idx:2, label:'北陸・中部',   price:70000,  cost:30000 },
+  { idx:3, label:'東北・関西',   price:100000, cost:50000 },
+  { idx:4, label:'四国・中国',   price:150000, cost:90000 },
+  { idx:5, label:'九州・北海道', price:150000, cost:90000 },
+  { idx:6, label:'沖縄・離島',   price:150000, cost:90000 },
 ];
+const YLW_TRANSPORT_OPTS = [
+  { idx:0,  region:'',     label:'なし',                       price:0,       cost:0 },
+  { idx:1,  region:'北海道', label:'札幌営業所渡し',           price:160000,  cost:0 },
+  { idx:2,  region:'東北',  label:'青森',                      price:112000,  cost:0 },
+  { idx:3,  region:'東北',  label:'秋田',                      price:115000,  cost:0 },
+  { idx:4,  region:'東北',  label:'岩手・山形',                price:102000,  cost:0 },
+  { idx:5,  region:'東北',  label:'宮城・福島',                price:92000,   cost:0 },
+  { idx:6,  region:'関東',  label:'茨城・栃木・群馬',          price:80000,   cost:0 },
+  { idx:7,  region:'関東',  label:'埼玉・千葉・東京・神奈川',  price:80000,   cost:0 },
+  { idx:8,  region:'上越',  label:'新潟',                      price:90000,   cost:0 },
+  { idx:9,  region:'上越',  label:'山梨',                      price:80000,   cost:0 },
+  { idx:10, region:'上越',  label:'長野',                      price:90000,   cost:0 },
+  { idx:11, region:'北陸',  label:'富山・石川・福井',          price:92000,   cost:0 },
+  { idx:12, region:'中部',  label:'静岡',                      price:88000,   cost:0 },
+  { idx:13, region:'中部',  label:'愛知・岐阜・三重',          price:84000,   cost:0 },
+  { idx:14, region:'近畿',  label:'和歌山',                    price:86000,   cost:0 },
+  { idx:15, region:'近畿',  label:'奈良・滋賀',                price:86000,   cost:0 },
+  { idx:16, region:'近畿',  label:'京都',                      price:84000,   cost:0 },
+  { idx:17, region:'近畿',  label:'大阪・兵庫',                price:78000,   cost:0 },
+  { idx:18, region:'中国',  label:'岡山',                      price:72000,   cost:0 },
+  { idx:19, region:'中国',  label:'広島',                      price:84000,   cost:0 },
+  { idx:20, region:'中国',  label:'山口',                      price:90000,   cost:0 },
+  { idx:21, region:'中国',  label:'鳥取・島根',                price:90000,   cost:0 },
+  { idx:22, region:'四国',  label:'香川',                      price:91000,   cost:0 },
+  { idx:23, region:'四国',  label:'徳島・愛媛',                price:94000,   cost:0 },
+  { idx:24, region:'四国',  label:'高知',                      price:95000,   cost:0 },
+  { idx:25, region:'九州',  label:'福岡',                      price:92000,   cost:0 },
+  { idx:26, region:'九州',  label:'大分',                      price:102000,  cost:0 },
+  { idx:27, region:'九州',  label:'佐賀',                      price:105000,  cost:0 },
+  { idx:28, region:'九州',  label:'長崎',                      price:105000,  cost:0 },
+  { idx:29, region:'九州',  label:'熊本',                      price:102000,  cost:0 },
+  { idx:30, region:'九州',  label:'宮崎・鹿児島',              price:127000,  cost:0 },
+  { idx:31, region:'沖縄',  label:'安謝港渡し',                price:152000,  cost:0 },
+];
+
+// ============================================================
+// Prefecture / City data
+// ============================================================
+const PREF_CITIES = {
+  '北海道':['札幌市','函館市','小樽市','旭川市','室蘭市','釧路市','帯広市','北見市','夕張市','岩見沢市','網走市','留萌市','苫小牧市','稚内市','美唄市','芦別市','江別市','赤平市','紋別市','士別市','名寄市','三笠市','根室市','千歳市','滝川市','砂川市','歌志内市','深川市','富良野市','登別市','恵庭市','伊達市','北広島市','石狩市','北斗市','石狩郡当別町','石狩郡新篠津村','松前郡松前町','松前郡福島町','上磯郡知内町','上磯郡木古内町','亀田郡七飯町','茅部郡鹿部町','茅部郡森町','二海郡八雲町','山越郡長万部町','檜山郡江差町','檜山郡上ノ国町','檜山郡厚沢部町','爾志郡乙部町','奥尻郡奥尻町','瀬棚郡今金町','久遠郡せたな町','島牧郡島牧村','寿都郡寿都町','寿都郡黒松内町','磯谷郡蘭越町','虻田郡ニセコ町','虻田郡真狩村','虻田郡留寿都村','虻田郡喜茂別町','虻田郡京極町','虻田郡倶知安町','岩内郡共和町','岩内郡岩内町','古宇郡泊村','古宇郡神恵内村','積丹郡積丹町','古平郡古平町','余市郡仁木町','余市郡余市町','余市郡赤井川村','空知郡南幌町','空知郡奈井江町','空知郡上砂川町','夕張郡由仁町','夕張郡長沼町','夕張郡栗山町','樺戸郡月形町','樺戸郡浦臼町','樺戸郡新十津川町','雨竜郡妹背牛町','雨竜郡秩父別町','雨竜郡雨竜町','雨竜郡北竜町','雨竜郡沼田町','上川郡鷹栖町','上川郡東神楽町','上川郡当麻町','上川郡比布町','上川郡愛別町','上川郡上川町','上川郡東川町','上川郡美瑛町','空知郡上富良野町','空知郡中富良野町','空知郡南富良野町','勇払郡占冠村','上川郡和寒町','上川郡剣淵町','上川郡下川町','中川郡美深町','中川郡音威子府村','中川郡中川町','雨竜郡幌加内町','増毛郡増毛町','留萌郡小平町','苫前郡苫前町','苫前郡羽幌町','苫前郡初山別村','天塩郡遠別町','天塩郡天塩町','宗谷郡猿払村','枝幸郡浜頓別町','枝幸郡中頓別町','枝幸郡枝幸町','天塩郡豊富町','礼文郡礼文町','利尻郡利尻町','利尻郡利尻富士町','天塩郡幌延町','網走郡美幌町','網走郡津別町','斜里郡斜里町','斜里郡清里町','斜里郡小清水町','常呂郡訓子府町','常呂郡置戸町','常呂郡佐呂間町','紋別郡遠軽町','紋別郡湧別町','紋別郡滝上町','紋別郡興部町','紋別郡西興部村','紋別郡雄武町','網走郡大空町','虻田郡豊浦町','有珠郡壮瞥町','白老郡白老町','勇払郡厚真町','虻田郡洞爺湖町','勇払郡安平町','勇払郡むかわ町','沙流郡日高町','沙流郡平取町','新冠郡新冠町','浦河郡浦河町','様似郡様似町','幌泉郡えりも町','日高郡新ひだか町','河東郡音更町','河東郡士幌町','河東郡上士幌町','河東郡鹿追町','上川郡新得町','上川郡清水町','河西郡芽室町','河西郡中札内村','河西郡更別村','広尾郡大樹町','広尾郡広尾町','中川郡幕別町','中川郡池田町','中川郡豊頃町','中川郡本別町','足寄郡足寄町','足寄郡陸別町','十勝郡浦幌町','釧路郡釧路町','厚岸郡厚岸町','厚岸郡浜中町','川上郡標茶町','川上郡弟子屈町','阿寒郡鶴居村','白糠郡白糠町','野付郡別海町','標津郡中標津町','標津郡標津町','目梨郡羅臼町','色丹郡色丹村','国後郡泊村','国後郡留夜別村','択捉郡留別村','紗那郡紗那村','蘂取郡蘂取村'],
+  '青森県':['青森市','弘前市','八戸市','黒石市','五所川原市','十和田市','三沢市','むつ市','つがる市','平川市','東津軽郡平内町','東津軽郡今別町','東津軽郡蓬田村','東津軽郡外ヶ浜町','西津軽郡鰺ヶ沢町','西津軽郡深浦町','中津軽郡西目屋村','南津軽郡藤崎町','南津軽郡大鰐町','南津軽郡田舎館村','北津軽郡板柳町','北津軽郡鶴田町','北津軽郡中泊町','上北郡野辺地町','上北郡七戸町','上北郡六戸町','上北郡横浜町','上北郡東北町','上北郡六ヶ所村','上北郡おいらせ町','下北郡大間町','下北郡東通村','下北郡風間浦村','下北郡佐井村','三戸郡三戸町','三戸郡五戸町','三戸郡田子町','三戸郡南部町','三戸郡階上町','三戸郡新郷村'],
+  '岩手県':['盛岡市','宮古市','大船渡市','花巻市','北上市','久慈市','遠野市','一関市','陸前高田市','釜石市','二戸市','八幡平市','奥州市','滝沢市','岩手郡雫石町','岩手郡葛巻町','岩手郡岩手町','紫波郡紫波町','紫波郡矢巾町','和賀郡西和賀町','胆沢郡金ケ崎町','西磐井郡平泉町','気仙郡住田町','上閉伊郡大槌町','下閉伊郡山田町','下閉伊郡岩泉町','下閉伊郡田野畑村','下閉伊郡普代村','九戸郡軽米町','九戸郡野田村','九戸郡九戸村','九戸郡洋野町','二戸郡一戸町'],
+  '宮城県':['仙台市','石巻市','塩竈市','気仙沼市','白石市','名取市','角田市','多賀城市','岩沼市','登米市','栗原市','東松島市','大崎市','富谷市','刈田郡蔵王町','刈田郡七ヶ宿町','柴田郡大河原町','柴田郡村田町','柴田郡柴田町','柴田郡川崎町','伊具郡丸森町','亘理郡亘理町','亘理郡山元町','宮城郡松島町','宮城郡七ヶ浜町','宮城郡利府町','黒川郡大和町','黒川郡大郷町','黒川郡大衡村','加美郡色麻町','加美郡加美町','遠田郡涌谷町','遠田郡美里町','牡鹿郡女川町','本吉郡南三陸町'],
+  '秋田県':['秋田市','能代市','横手市','大館市','男鹿市','湯沢市','鹿角市','由利本荘市','潟上市','大仙市','北秋田市','にかほ市','仙北市','鹿角郡小坂町','北秋田郡上小阿仁村','山本郡藤里町','山本郡三種町','山本郡八峰町','南秋田郡五城目町','南秋田郡八郎潟町','南秋田郡井川町','南秋田郡大潟村','仙北郡美郷町','雄勝郡羽後町','雄勝郡東成瀬村'],
+  '山形県':['山形市','米沢市','鶴岡市','酒田市','新庄市','寒河江市','上山市','村山市','長井市','天童市','東根市','尾花沢市','南陽市','東村山郡山辺町','東村山郡中山町','西村山郡河北町','西村山郡西川町','西村山郡朝日町','西村山郡大江町','北村山郡大石田町','最上郡金山町','最上郡最上町','最上郡舟形町','最上郡真室川町','最上郡大蔵村','最上郡鮭川村','最上郡戸沢村','東置賜郡高畠町','東置賜郡川西町','西置賜郡小国町','西置賜郡白鷹町','西置賜郡飯豊町','東田川郡三川町','東田川郡庄内町','飽海郡遊佐町'],
+  '福島県':['福島市','会津若松市','郡山市','いわき市','白河市','須賀川市','喜多方市','相馬市','二本松市','田村市','南相馬市','伊達市','本宮市','伊達郡桑折町','伊達郡国見町','伊達郡川俣町','安達郡大玉村','岩瀬郡鏡石町','岩瀬郡天栄村','南会津郡下郷町','南会津郡檜枝岐村','南会津郡只見町','南会津郡南会津町','耶麻郡北塩原村','耶麻郡西会津町','耶麻郡磐梯町','耶麻郡猪苗代町','河沼郡会津坂下町','河沼郡湯川村','河沼郡柳津町','大沼郡三島町','大沼郡金山町','大沼郡昭和村','大沼郡会津美里町','西白河郡西郷村','西白河郡泉崎村','西白河郡中島村','西白河郡矢吹町','東白川郡棚倉町','東白川郡矢祭町','東白川郡塙町','東白川郡鮫川村','石川郡石川町','石川郡玉川村','石川郡平田村','石川郡浅川町','石川郡古殿町','田村郡三春町','田村郡小野町','双葉郡広野町','双葉郡楢葉町','双葉郡富岡町','双葉郡川内村','双葉郡大熊町','双葉郡双葉町','双葉郡浪江町','双葉郡葛尾村','相馬郡新地町','相馬郡飯舘村'],
+  '茨城県':['水戸市','日立市','土浦市','古河市','石岡市','結城市','龍ケ崎市','下妻市','常総市','常陸太田市','高萩市','北茨城市','笠間市','取手市','牛久市','つくば市','ひたちなか市','鹿嶋市','潮来市','守谷市','常陸大宮市','那珂市','筑西市','坂東市','稲敷市','かすみがうら市','桜川市','神栖市','行方市','鉾田市','つくばみらい市','小美玉市','東茨城郡茨城町','東茨城郡大洗町','東茨城郡城里町','那珂郡東海村','久慈郡大子町','稲敷郡美浦村','稲敷郡阿見町','稲敷郡河内町','結城郡八千代町','猿島郡五霞町','猿島郡境町','北相馬郡利根町'],
+  '栃木県':['宇都宮市','足利市','栃木市','佐野市','鹿沼市','日光市','小山市','真岡市','大田原市','矢板市','那須塩原市','さくら市','那須烏山市','下野市','河内郡上三川町','芳賀郡益子町','芳賀郡茂木町','芳賀郡市貝町','芳賀郡芳賀町','下都賀郡壬生町','下都賀郡野木町','塩谷郡塩谷町','塩谷郡高根沢町','那須郡那須町','那須郡那珂川町'],
+  '群馬県':['前橋市','高崎市','桐生市','伊勢崎市','太田市','沼田市','館林市','渋川市','藤岡市','富岡市','安中市','みどり市','北群馬郡榛東村','北群馬郡吉岡町','多野郡上野村','多野郡神流町','甘楽郡下仁田町','甘楽郡南牧村','甘楽郡甘楽町','吾妻郡中之条町','吾妻郡長野原町','吾妻郡嬬恋村','吾妻郡草津町','吾妻郡高山村','吾妻郡東吾妻町','利根郡片品村','利根郡川場村','利根郡昭和村','利根郡みなかみ町','佐波郡玉村町','邑楽郡板倉町','邑楽郡明和町','邑楽郡千代田町','邑楽郡大泉町','邑楽郡邑楽町'],
+  '埼玉県':['さいたま市','川越市','熊谷市','川口市','行田市','秩父市','所沢市','飯能市','加須市','本庄市','東松山市','春日部市','狭山市','羽生市','鴻巣市','深谷市','上尾市','草加市','越谷市','蕨市','戸田市','入間市','朝霞市','志木市','和光市','新座市','桶川市','久喜市','北本市','八潮市','富士見市','三郷市','蓮田市','坂戸市','幸手市','鶴ヶ島市','日高市','吉川市','ふじみ野市','白岡市','北足立郡伊奈町','入間郡三芳町','入間郡毛呂山町','入間郡越生町','比企郡滑川町','比企郡嵐山町','比企郡小川町','比企郡川島町','比企郡吉見町','比企郡鳩山町','比企郡ときがわ町','秩父郡横瀬町','秩父郡皆野町','秩父郡長瀞町','秩父郡小鹿野町','秩父郡東秩父村','児玉郡美里町','児玉郡神川町','児玉郡上里町','大里郡寄居町','南埼玉郡宮代町','北葛飾郡杉戸町','北葛飾郡松伏町'],
+  '千葉県':['千葉市','銚子市','市川市','船橋市','館山市','木更津市','松戸市','野田市','茂原市','成田市','佐倉市','東金市','旭市','習志野市','柏市','勝浦市','市原市','流山市','八千代市','我孫子市','鴨川市','鎌ケ谷市','君津市','富津市','浦安市','四街道市','袖ケ浦市','八街市','印西市','白井市','富里市','南房総市','匝瑳市','香取市','山武市','いすみ市','大網白里市','印旛郡酒々井町','印旛郡栄町','香取郡神崎町','香取郡多古町','香取郡東庄町','山武郡九十九里町','山武郡芝山町','山武郡横芝光町','長生郡一宮町','長生郡睦沢町','長生郡長生村','長生郡白子町','長生郡長柄町','長生郡長南町','夷隅郡大多喜町','夷隅郡御宿町','安房郡鋸南町'],
+  '東京都':['千代田区','中央区','港区','新宿区','文京区','台東区','墨田区','江東区','品川区','目黒区','大田区','世田谷区','渋谷区','中野区','杉並区','豊島区','北区','荒川区','板橋区','練馬区','足立区','葛飾区','江戸川区','八王子市','立川市','武蔵野市','三鷹市','青梅市','府中市','昭島市','調布市','町田市','小金井市','小平市','日野市','東村山市','国分寺市','国立市','福生市','狛江市','東大和市','清瀬市','東久留米市','武蔵村山市','多摩市','稲城市','羽村市','あきる野市','西東京市','西多摩郡瑞穂町','西多摩郡日の出町','西多摩郡檜原村','西多摩郡奥多摩町','大島町','利島村','新島村','神津島村','三宅村','御蔵島村','八丈町','青ヶ島村','小笠原村'],
+  '神奈川県':['横浜市','川崎市','相模原市','横須賀市','平塚市','鎌倉市','藤沢市','小田原市','茅ヶ崎市','逗子市','三浦市','秦野市','厚木市','大和市','伊勢原市','海老名市','座間市','南足柄市','綾瀬市','三浦郡葉山町','高座郡寒川町','中郡大磯町','中郡二宮町','足柄上郡中井町','足柄上郡大井町','足柄上郡松田町','足柄上郡山北町','足柄上郡開成町','足柄下郡箱根町','足柄下郡真鶴町','足柄下郡湯河原町','愛甲郡愛川町','愛甲郡清川村'],
+  '新潟県':['新潟市','長岡市','三条市','柏崎市','新発田市','小千谷市','加茂市','十日町市','見附市','村上市','燕市','糸魚川市','妙高市','五泉市','上越市','阿賀野市','佐渡市','魚沼市','南魚沼市','胎内市','北蒲原郡聖籠町','西蒲原郡弥彦村','南蒲原郡田上町','東蒲原郡阿賀町','三島郡出雲崎町','南魚沼郡湯沢町','中魚沼郡津南町','刈羽郡刈羽村','岩船郡関川村','岩船郡粟島浦村'],
+  '富山県':['富山市','高岡市','魚津市','氷見市','滑川市','黒部市','砺波市','小矢部市','南砺市','射水市','中新川郡舟橋村','中新川郡上市町','中新川郡立山町','下新川郡入善町','下新川郡朝日町'],
+  '石川県':['金沢市','七尾市','小松市','輪島市','珠洲市','加賀市','羽咋市','かほく市','白山市','能美市','野々市市','能美郡川北町','河北郡津幡町','河北郡内灘町','羽咋郡志賀町','羽咋郡宝達志水町','鹿島郡中能登町','鳳珠郡穴水町','鳳珠郡能登町'],
+  '福井県':['福井市','敦賀市','小浜市','大野市','勝山市','鯖江市','あわら市','越前市','坂井市','吉田郡永平寺町','今立郡池田町','南条郡南越前町','丹生郡越前町','三方郡美浜町','大飯郡高浜町','大飯郡おおい町','三方上中郡若狭町'],
+  '山梨県':['甲府市','富士吉田市','都留市','山梨市','大月市','韮崎市','南アルプス市','北杜市','甲斐市','笛吹市','上野原市','甲州市','中央市','西八代郡市川三郷町','南巨摩郡早川町','南巨摩郡身延町','南巨摩郡南部町','南巨摩郡富士川町','中巨摩郡昭和町','南都留郡道志村','南都留郡西桂町','南都留郡忍野村','南都留郡山中湖村','南都留郡鳴沢村','南都留郡富士河口湖町','北都留郡小菅村','北都留郡丹波山村'],
+  '長野県':['長野市','松本市','上田市','岡谷市','飯田市','諏訪市','須坂市','小諸市','伊那市','駒ヶ根市','中野市','大町市','飯山市','茅野市','塩尻市','佐久市','千曲市','東御市','安曇野市','南佐久郡小海町','南佐久郡川上村','南佐久郡南牧村','南佐久郡南相木村','南佐久郡北相木村','南佐久郡佐久穂町','北佐久郡軽井沢町','北佐久郡御代田町','北佐久郡立科町','小県郡青木村','小県郡長和町','諏訪郡下諏訪町','諏訪郡富士見町','諏訪郡原村','上伊那郡辰野町','上伊那郡箕輪町','上伊那郡飯島町','上伊那郡南箕輪村','上伊那郡中川村','上伊那郡宮田村','下伊那郡松川町','下伊那郡高森町','下伊那郡阿南町','下伊那郡阿智村','下伊那郡平谷村','下伊那郡根羽村','下伊那郡下條村','下伊那郡売木村','下伊那郡天龍村','下伊那郡泰阜村','下伊那郡喬木村','下伊那郡豊丘村','下伊那郡大鹿村','木曽郡上松町','木曽郡南木曽町','木曽郡木祖村','木曽郡王滝村','木曽郡大桑村','木曽郡木曽町','東筑摩郡麻績村','東筑摩郡生坂村','東筑摩郡山形村','東筑摩郡朝日村','東筑摩郡筑北村','北安曇郡池田町','北安曇郡松川村','北安曇郡白馬村','北安曇郡小谷村','埴科郡坂城町','上高井郡小布施町','上高井郡高山村','下高井郡山ノ内町','下高井郡木島平村','下高井郡野沢温泉村','上水内郡信濃町','上水内郡小川村','上水内郡飯綱町','下水内郡栄村'],
+  '岐阜県':['岐阜市','大垣市','高山市','多治見市','関市','中津川市','美濃市','瑞浪市','羽島市','恵那市','美濃加茂市','土岐市','各務原市','可児市','山県市','瑞穂市','飛騨市','本巣市','郡上市','下呂市','海津市','羽島郡岐南町','羽島郡笠松町','養老郡養老町','不破郡垂井町','不破郡関ケ原町','安八郡神戸町','安八郡輪之内町','安八郡安八町','揖斐郡揖斐川町','揖斐郡大野町','揖斐郡池田町','本巣郡北方町','加茂郡坂祝町','加茂郡富加町','加茂郡川辺町','加茂郡七宗町','加茂郡八百津町','加茂郡白川町','加茂郡東白川村','可児郡御嵩町','大野郡白川村'],
+  '静岡県':['静岡市','浜松市','沼津市','熱海市','三島市','富士宮市','伊東市','島田市','富士市','磐田市','焼津市','掛川市','藤枝市','御殿場市','袋井市','下田市','裾野市','湖西市','伊豆市','御前崎市','菊川市','伊豆の国市','牧之原市','賀茂郡東伊豆町','賀茂郡河津町','賀茂郡南伊豆町','賀茂郡松崎町','賀茂郡西伊豆町','田方郡函南町','駿東郡清水町','駿東郡長泉町','駿東郡小山町','榛原郡吉田町','榛原郡川根本町','周智郡森町'],
+  '愛知県':['名古屋市','豊橋市','岡崎市','一宮市','瀬戸市','半田市','春日井市','豊川市','津島市','碧南市','刈谷市','豊田市','安城市','西尾市','蒲郡市','犬山市','常滑市','江南市','小牧市','稲沢市','新城市','東海市','大府市','知多市','知立市','尾張旭市','高浜市','岩倉市','豊明市','日進市','田原市','愛西市','清須市','北名古屋市','弥富市','みよし市','あま市','長久手市','愛知郡東郷町','西春日井郡豊山町','丹羽郡大口町','丹羽郡扶桑町','海部郡大治町','海部郡蟹江町','海部郡飛島村','知多郡阿久比町','知多郡東浦町','知多郡南知多町','知多郡美浜町','知多郡武豊町','額田郡幸田町','北設楽郡設楽町','北設楽郡東栄町','北設楽郡豊根村'],
+  '三重県':['津市','四日市市','伊勢市','松阪市','桑名市','鈴鹿市','名張市','尾鷲市','亀山市','鳥羽市','熊野市','いなべ市','志摩市','伊賀市','桑名郡木曽岬町','員弁郡東員町','三重郡菰野町','三重郡朝日町','三重郡川越町','多気郡多気町','多気郡明和町','多気郡大台町','度会郡玉城町','度会郡度会町','度会郡大紀町','度会郡南伊勢町','北牟婁郡紀北町','南牟婁郡御浜町','南牟婁郡紀宝町'],
+  '滋賀県':['大津市','彦根市','長浜市','近江八幡市','草津市','守山市','栗東市','甲賀市','野洲市','湖南市','高島市','東近江市','米原市','蒲生郡日野町','蒲生郡竜王町','愛知郡愛荘町','犬上郡豊郷町','犬上郡甲良町','犬上郡多賀町'],
+  '京都府':['京都市','福知山市','舞鶴市','綾部市','宇治市','宮津市','亀岡市','城陽市','向日市','長岡京市','八幡市','京田辺市','京丹後市','南丹市','木津川市','乙訓郡大山崎町','久世郡久御山町','綴喜郡井手町','綴喜郡宇治田原町','相楽郡笠置町','相楽郡和束町','相楽郡精華町','相楽郡南山城村','船井郡京丹波町','与謝郡伊根町','与謝郡与謝野町'],
+  '大阪府':['大阪市','堺市','岸和田市','豊中市','池田市','吹田市','泉大津市','高槻市','貝塚市','守口市','枚方市','茨木市','八尾市','泉佐野市','富田林市','寝屋川市','河内長野市','松原市','大東市','和泉市','箕面市','柏原市','羽曳野市','門真市','摂津市','高石市','藤井寺市','東大阪市','泉南市','四條畷市','交野市','大阪狭山市','阪南市','三島郡島本町','豊能郡豊能町','豊能郡能勢町','泉北郡忠岡町','泉南郡熊取町','泉南郡田尻町','泉南郡岬町','南河内郡太子町','南河内郡河南町','南河内郡千早赤阪村'],
+  '兵庫県':['神戸市','姫路市','尼崎市','明石市','西宮市','洲本市','芦屋市','伊丹市','相生市','豊岡市','加古川市','赤穂市','西脇市','宝塚市','三木市','高砂市','川西市','小野市','三田市','加西市','丹波篠山市','養父市','丹波市','南あわじ市','朝来市','淡路市','宍粟市','加東市','たつの市','川辺郡猪名川町','多可郡多可町','加古郡稲美町','加古郡播磨町','神崎郡市川町','神崎郡福崎町','神崎郡神河町','揖保郡太子町','赤穂郡上郡町','佐用郡佐用町','美方郡香美町','美方郡新温泉町'],
+  '奈良県':['奈良市','大和高田市','大和郡山市','天理市','橿原市','桜井市','五條市','御所市','生駒市','香芝市','葛城市','宇陀市','山辺郡山添村','生駒郡平群町','生駒郡三郷町','生駒郡斑鳩町','生駒郡安堵町','磯城郡川西町','磯城郡三宅町','磯城郡田原本町','宇陀郡曽爾村','宇陀郡御杖村','高市郡高取町','高市郡明日香村','北葛城郡上牧町','北葛城郡王寺町','北葛城郡広陵町','北葛城郡河合町','吉野郡吉野町','吉野郡大淀町','吉野郡下市町','吉野郡黒滝村','吉野郡天川村','吉野郡野迫川村','吉野郡十津川村','吉野郡下北山村','吉野郡上北山村','吉野郡川上村','吉野郡東吉野村'],
+  '和歌山県':['和歌山市','海南市','橋本市','有田市','御坊市','田辺市','新宮市','紀の川市','岩出市','海草郡紀美野町','伊都郡かつらぎ町','伊都郡九度山町','伊都郡高野町','有田郡湯浅町','有田郡広川町','有田郡有田川町','日高郡美浜町','日高郡日高町','日高郡由良町','日高郡印南町','日高郡みなべ町','日高郡日高川町','西牟婁郡白浜町','西牟婁郡上富田町','西牟婁郡すさみ町','東牟婁郡那智勝浦町','東牟婁郡太地町','東牟婁郡古座川町','東牟婁郡北山村','東牟婁郡串本町'],
+  '鳥取県':['鳥取市','米子市','倉吉市','境港市','岩美郡岩美町','八頭郡若桜町','八頭郡智頭町','八頭郡八頭町','東伯郡三朝町','東伯郡湯梨浜町','東伯郡琴浦町','東伯郡北栄町','西伯郡日吉津村','西伯郡大山町','西伯郡南部町','西伯郡伯耆町','日野郡日南町','日野郡日野町','日野郡江府町'],
+  '島根県':['松江市','浜田市','出雲市','益田市','大田市','安来市','江津市','雲南市','仁多郡奥出雲町','飯石郡飯南町','邑智郡川本町','邑智郡美郷町','邑智郡邑南町','鹿足郡津和野町','鹿足郡吉賀町','隠岐郡海士町','隠岐郡西ノ島町','隠岐郡知夫村','隠岐郡隠岐の島町'],
+  '岡山県':['岡山市','倉敷市','津山市','玉野市','笠岡市','井原市','総社市','高梁市','新見市','備前市','瀬戸内市','赤磐市','真庭市','美作市','浅口市','和気郡和気町','都窪郡早島町','浅口郡里庄町','小田郡矢掛町','真庭郡新庄村','苫田郡鏡野町','勝田郡勝央町','勝田郡奈義町','英田郡西粟倉村','久米郡久米南町','久米郡美咲町','加賀郡吉備中央町'],
+  '広島県':['広島市','呉市','竹原市','三原市','尾道市','福山市','府中市','三次市','庄原市','大竹市','東広島市','廿日市市','安芸高田市','江田島市','安芸郡府中町','安芸郡海田町','安芸郡熊野町','安芸郡坂町','山県郡安芸太田町','山県郡北広島町','豊田郡大崎上島町','世羅郡世羅町','神石郡神石高原町'],
+  '山口県':['下関市','宇部市','山口市','萩市','防府市','下松市','岩国市','光市','長門市','柳井市','美祢市','周南市','山陽小野田市','大島郡周防大島町','玖珂郡和木町','熊毛郡上関町','熊毛郡田布施町','熊毛郡平生町','阿武郡阿武町'],
+  '徳島県':['徳島市','鳴門市','小松島市','阿南市','吉野川市','阿波市','美馬市','三好市','勝浦郡勝浦町','勝浦郡上勝町','名東郡佐那河内村','名西郡石井町','名西郡神山町','那賀郡那賀町','海部郡牟岐町','海部郡美波町','海部郡海陽町','板野郡松茂町','板野郡北島町','板野郡藍住町','板野郡板野町','板野郡上板町','美馬郡つるぎ町','三好郡東みよし町'],
+  '香川県':['高松市','丸亀市','坂出市','善通寺市','観音寺市','さぬき市','東かがわ市','三豊市','小豆郡土庄町','小豆郡小豆島町','木田郡三木町','香川郡直島町','綾歌郡宇多津町','綾歌郡綾川町','仲多度郡琴平町','仲多度郡多度津町','仲多度郡まんのう町'],
+  '愛媛県':['松山市','今治市','宇和島市','八幡浜市','新居浜市','西条市','大洲市','伊予市','四国中央市','西予市','東温市','越智郡上島町','上浮穴郡久万高原町','伊予郡松前町','伊予郡砥部町','喜多郡内子町','西宇和郡伊方町','北宇和郡松野町','北宇和郡鬼北町','南宇和郡愛南町'],
+  '高知県':['高知市','室戸市','安芸市','南国市','土佐市','須崎市','宿毛市','土佐清水市','四万十市','香南市','香美市','安芸郡東洋町','安芸郡奈半利町','安芸郡田野町','安芸郡安田町','安芸郡北川村','安芸郡馬路村','安芸郡芸西村','長岡郡本山町','長岡郡大豊町','土佐郡土佐町','土佐郡大川村','吾川郡いの町','吾川郡仁淀川町','高岡郡中土佐町','高岡郡佐川町','高岡郡越知町','高岡郡檮原町','高岡郡日高村','高岡郡津野町','高岡郡四万十町','幡多郡大月町','幡多郡三原村','幡多郡黒潮町'],
+  '福岡県':['北九州市','福岡市','大牟田市','久留米市','直方市','飯塚市','田川市','柳川市','八女市','筑後市','大川市','行橋市','豊前市','中間市','小郡市','筑紫野市','春日市','大野城市','宗像市','太宰府市','古賀市','福津市','うきは市','宮若市','嘉麻市','朝倉市','みやま市','糸島市','那珂川市','糟屋郡宇美町','糟屋郡篠栗町','糟屋郡志免町','糟屋郡須恵町','糟屋郡新宮町','糟屋郡久山町','糟屋郡粕屋町','遠賀郡芦屋町','遠賀郡水巻町','遠賀郡岡垣町','遠賀郡遠賀町','鞍手郡小竹町','鞍手郡鞍手町','嘉穂郡桂川町','朝倉郡筑前町','朝倉郡東峰村','三井郡大刀洗町','三潴郡大木町','八女郡広川町','田川郡香春町','田川郡添田町','田川郡糸田町','田川郡川崎町','田川郡大任町','田川郡赤村','田川郡福智町','京都郡苅田町','京都郡みやこ町','築上郡吉富町','築上郡上毛町','築上郡築上町'],
+  '佐賀県':['佐賀市','唐津市','鳥栖市','多久市','伊万里市','武雄市','鹿島市','小城市','嬉野市','神埼市','神埼郡吉野ヶ里町','三養基郡基山町','三養基郡上峰町','三養基郡みやき町','東松浦郡玄海町','西松浦郡有田町','杵島郡大町町','杵島郡江北町','杵島郡白石町','藤津郡太良町'],
+  '長崎県':['長崎市','佐世保市','島原市','諫早市','大村市','平戸市','松浦市','対馬市','壱岐市','五島市','西海市','雲仙市','南島原市','西彼杵郡長与町','西彼杵郡時津町','東彼杵郡東彼杵町','東彼杵郡川棚町','東彼杵郡波佐見町','北松浦郡小値賀町','北松浦郡佐々町','南松浦郡新上五島町'],
+  '熊本県':['熊本市','八代市','人吉市','荒尾市','水俣市','玉名市','山鹿市','菊池市','宇土市','上天草市','宇城市','阿蘇市','天草市','合志市','下益城郡美里町','玉名郡玉東町','玉名郡南関町','玉名郡長洲町','玉名郡和水町','菊池郡大津町','菊池郡菊陽町','阿蘇郡南小国町','阿蘇郡小国町','阿蘇郡産山村','阿蘇郡高森町','阿蘇郡西原村','阿蘇郡南阿蘇村','上益城郡御船町','上益城郡嘉島町','上益城郡益城町','上益城郡甲佐町','上益城郡山都町','八代郡氷川町','葦北郡芦北町','葦北郡津奈木町','球磨郡錦町','球磨郡多良木町','球磨郡湯前町','球磨郡水上村','球磨郡相良村','球磨郡五木村','球磨郡山江村','球磨郡球磨村','球磨郡あさぎり町','天草郡苓北町'],
+  '大分県':['大分市','別府市','中津市','日田市','佐伯市','臼杵市','津久見市','竹田市','豊後高田市','杵築市','宇佐市','豊後大野市','由布市','国東市','東国東郡姫島村','速見郡日出町','玖珠郡九重町','玖珠郡玖珠町'],
+  '宮崎県':['宮崎市','都城市','延岡市','日南市','小林市','日向市','串間市','西都市','えびの市','北諸県郡三股町','西諸県郡高原町','東諸県郡国富町','東諸県郡綾町','児湯郡高鍋町','児湯郡新富町','児湯郡西米良村','児湯郡木城町','児湯郡川南町','児湯郡都農町','東臼杵郡門川町','東臼杵郡諸塚村','東臼杵郡椎葉村','東臼杵郡美郷町','西臼杵郡高千穂町','西臼杵郡日之影町','西臼杵郡五ヶ瀬町'],
+  '鹿児島県':['鹿児島市','鹿屋市','枕崎市','阿久根市','出水市','指宿市','西之表市','垂水市','薩摩川内市','日置市','曽於市','霧島市','いちき串木野市','南さつま市','志布志市','奄美市','南九州市','伊佐市','姶良市','鹿児島郡三島村','鹿児島郡十島村','薩摩郡さつま町','出水郡長島町','姶良郡湧水町','曽於郡大崎町','肝属郡東串良町','肝属郡錦江町','肝属郡南大隅町','肝属郡肝付町','熊毛郡中種子町','熊毛郡南種子町','熊毛郡屋久島町','大島郡大和村','大島郡宇検村','大島郡瀬戸内町','大島郡龍郷町','大島郡喜界町','大島郡徳之島町','大島郡天城町','大島郡伊仙町','大島郡和泊町','大島郡知名町','大島郡与論町'],
+  '沖縄県':['那覇市','宜野湾市','石垣市','浦添市','名護市','糸満市','沖縄市','豊見城市','うるま市','宮古島市','南城市','国頭郡国頭村','国頭郡大宜味村','国頭郡東村','国頭郡今帰仁村','国頭郡本部町','国頭郡恩納村','国頭郡宜野座村','国頭郡金武町','国頭郡伊江村','中頭郡読谷村','中頭郡嘉手納町','中頭郡北谷町','中頭郡北中城村','中頭郡中城村','中頭郡西原町','島尻郡与那原町','島尻郡南風原町','島尻郡渡嘉敷村','島尻郡座間味村','島尻郡粟国村','島尻郡渡名喜村','島尻郡南大東村','島尻郡北大東村','島尻郡伊平屋村','島尻郡伊是名村','島尻郡久米島町','島尻郡八重瀬町','宮古郡多良間村','八重山郡竹富町','八重山郡与那国町'],
+};
+const PREFECTURES = ['北海道','青森県','岩手県','宮城県','秋田県','山形県','福島県','茨城県','栃木県','群馬県','埼玉県','千葉県','東京都','神奈川県','新潟県','富山県','石川県','福井県','山梨県','長野県','岐阜県','静岡県','愛知県','三重県','滋賀県','京都府','大阪府','兵庫県','奈良県','和歌山県','鳥取県','島根県','岡山県','広島県','山口県','徳島県','香川県','愛媛県','高知県','福岡県','佐賀県','長崎県','熊本県','大分県','宮崎県','鹿児島県','沖縄県'];
 
 // ============================================================
 // State
 // ============================================================
 let state = {
-  currentView: 'quote',
+  mode: 'create',  // 'create' | 'admin' | 'history'
   active: 'tinys',
-  customer: { name:'', contact:'', area:'' },
+  customerName: '',
+  staffName: '',
+  area: '',
+  areaPref: '',
+  areaCity: '',
+  areaSub: '',
   transportIdx: 0,
+  ylwTransportIdx: 0,
   miscCostIdx: 0,
   discount: 0,
-  tinys:   { modelQtys:{}, sizeOpts:{}, commonOpts:{}, blindIdx:0, blindCount:1, miscOpts:{} },
-  roadie:  { modelQtys:{}, sizeOpts:{}, commonOpts:{}, miscOpts:{} },
+  tinys:   { modelQtys:{}, sizeOpts:{}, commonOpts:{}, blindIdx:0, blindCount:1, miscOpts:{}, designLv:0, customOpts:[] },
+  roadie:  { modelQtys:{}, sizeOpts:{}, commonOpts:{}, miscOpts:{}, designLv:0, customOpts:[] },
   chassis: { modelQtys:{}, opts:{} },
 };
-const VIEWS = [
-  { id:'quote',   label:'見積もり作成' },
-  { id:'history', label:'履歴' },
-  { id:'admin',   label:'管理' },
-];
-let historyFilter = '';
 const hasModel   = (s) => Object.values(s.modelQtys||{}).some(q => q > 0);
 const seriesQty  = (s) => Object.values(s.modelQtys||{}).reduce((a,b) => a+b, 0);
+
+// ============================================================
+// localStorage Keys & Price Overrides
+// ============================================================
+const LS_PRICES = 'yadokari_prices_v1';
+const LS_QUOTES = 'yadokari_quotes_v1';
+const LS_MEMOS  = 'yadokari_memos_v1';
+const LS_STAFF  = 'yadokari_staff_v1';
+const DEFAULT_STAFF = ['遠藤美智子','郷優里','小川晃輝','長尾航世'];
+function loadStaff() { try { return JSON.parse(localStorage.getItem(LS_STAFF) || 'null') || DEFAULT_STAFF.slice(); } catch(e) { return DEFAULT_STAFF.slice(); } }
+function saveStaff(arr) { localStorage.setItem(LS_STAFF, JSON.stringify(arr)); }
+let STAFF_LIST = loadStaff();
+
+function loadOverrides() {
+  try { return JSON.parse(localStorage.getItem(LS_PRICES) || '{}'); } catch(e) { return {}; }
+}
+function saveOverrides(data) { localStorage.setItem(LS_PRICES, JSON.stringify(data)); }
+let PRICE_OVR = loadOverrides();
+
+function loadMemos() { try { return JSON.parse(localStorage.getItem(LS_MEMOS) || '{}'); } catch(e) { return {}; } }
+function saveMemos(data) { localStorage.setItem(LS_MEMOS, JSON.stringify(data)); }
+let MEMO_DATA = loadMemos();
+function getMemo(priceKey) { return MEMO_DATA[priceKey.replace(/:price$/, ':memo')] || ''; }
+
+// Apply overrides to a price/cost. key format: "model:t1:price", "sizeOpt:ts1:6m:price", "commonOpt:tc1:cost", etc.
+function ovr(key, fallback) {
+  return (PRICE_OVR[key] !== undefined) ? PRICE_OVR[key] : fallback;
+}
+// Effective getters (use these everywhere the app needs a live price/cost)
+function mPrice(m) { return ovr(`model:${m.id}:price`, m.price); }
+function mCost(m)  { return ovr(`model:${m.id}:cost`,  m.cost || 0); }
+function soPrice(opt, size) { return ovr(`sizeOpt:${opt.id}:${size}:price`, opt.prices?.[size] ?? null); }
+function soCost(opt, size)  { return ovr(`sizeOpt:${opt.id}:${size}:cost`,  opt.costs?.[size]  ?? 0); }
+function coPrice(opt) { return ovr(`commonOpt:${opt.id}:price`, opt.price); }
+function coCost(opt)  { return ovr(`commonOpt:${opt.id}:cost`,  opt.cost || 0); }
+function blPrice(b)   { return ovr(`blind:${b.idx}:price`, b.price); }
+function blCost(b)    { return ovr(`blind:${b.idx}:cost`,  b.cost || 0); }
+function mxPrice(opt) { return ovr(`misc:${opt.id}:price`, opt.price); }
+function mxCost(opt)  { return ovr(`misc:${opt.id}:cost`,  opt.cost || 0); }
+function chPrice(opt) { return ovr(`chopt:${opt.id}:price`, opt.price); }
+function chCost(opt)  { return ovr(`chopt:${opt.id}:cost`,  opt.cost || 0); }
+function trPrice(t)   { return ovr(`transport:${t.idx}:price`, t.price); }
+function trCost(t)    { return ovr(`transport:${t.idx}:cost`,  t.cost || 0); }
+function rgPrice(r)   { return ovr(`region:${r.idx}:price`, r.price); }
+function rgCost(r)    { return ovr(`region:${r.idx}:cost`,  r.cost || 0); }
+
+// ============================================================
+// History storage
+// ============================================================
+function loadQuotes() {
+  try { return JSON.parse(localStorage.getItem(LS_QUOTES) || '[]'); } catch(e) { return []; }
+}
+function saveQuotes(arr) { localStorage.setItem(LS_QUOTES, JSON.stringify(arr)); }
 
 // ============================================================
 // Helpers
 // ============================================================
 const fmt = n => '¥' + Math.round(n).toLocaleString('ja-JP');
 const getModelPrice = (m, cp) => (m.price !== null && m.price !== undefined) ? m.price : (cp || 0);
-const escapeHtml = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-
-// ============================================================
-// Persistence (localStorage)
-// ============================================================
-const LS_PRICES = 'quote_app_prices';
-const LS_HISTORY = 'quote_app_history';
-const ALL_MODEL_LISTS = [TINYS_MODELS, ROADIE_MODELS, CHASSIS_MODELS];
-const DEFAULT_PRICES = {};
-ALL_MODEL_LISTS.forEach(list => list.forEach(m => { DEFAULT_PRICES[m.id] = m.price; }));
-
-function loadPriceOverrides() {
-  try { return JSON.parse(localStorage.getItem(LS_PRICES) || '{}'); } catch { return {}; }
-}
-function savePriceOverrides(o) { localStorage.setItem(LS_PRICES, JSON.stringify(o)); }
-function applyPriceOverrides() {
-  const o = loadPriceOverrides();
-  ALL_MODEL_LISTS.forEach(list => list.forEach(m => {
-    const ov = o[m.id] || {};
-    m.price = (typeof ov.price === 'number') ? ov.price : DEFAULT_PRICES[m.id];
-    m.cost  = (typeof ov.cost  === 'number') ? ov.cost  : 0;
-  }));
-}
-function updatePriceOverride(id, field, value) {
-  const o = loadPriceOverrides();
-  o[id] = o[id] || {};
-  o[id][field] = value;
-  savePriceOverrides(o);
-}
-
-function loadHistory() {
-  try { return JSON.parse(localStorage.getItem(LS_HISTORY) || '[]'); } catch { return []; }
-}
-function saveHistoryList(list) { localStorage.setItem(LS_HISTORY, JSON.stringify(list)); }
 
 // ============================================================
 // Header tabs
 // ============================================================
 function buildHeader() {
-  const vNav = document.getElementById('vNav');
-  vNav.innerHTML = '';
-  VIEWS.forEach(v => {
-    const btn = document.createElement('button');
-    btn.className = 'v-btn' + (state.currentView === v.id ? ' active' : '');
-    btn.textContent = v.label;
-    btn.onclick = () => goView(v.id);
-    vNav.appendChild(btn);
-  });
-
   const nav = document.getElementById('sNav');
   nav.innerHTML = '';
-  if (state.currentView === 'quote') {
-    SERIES.forEach(s => {
-      const btn = document.createElement('button');
-      btn.className = 's-btn' + (state.active === s.id ? ' active' : '');
-      const hasSel = hasModel(state[s.id]);
-      if (hasSel) btn.classList.add('has-sel');
-      btn.dataset.series = s.id;
-      btn.innerHTML = `<span class="dot"></span><span class="label">${s.label}</span>`;
-      btn.onclick = () => { state.active = s.id; update(); };
-      nav.appendChild(btn);
-    });
-  }
+  SERIES.forEach(s => {
+    const btn = document.createElement('button');
+    btn.className = 's-btn' + (state.active === s.id ? ' active' : '');
+    const hasSel = hasModel(state[s.id]);
+    if (hasSel) btn.classList.add('has-sel');
+    btn.dataset.series = s.id;
+    btn.innerHTML = `<span class="dot"></span><span class="label">${s.label}</span>`;
+    btn.onclick = () => { state.active = s.id; update(); };
+    nav.appendChild(btn);
+  });
   const titles = { tinys:'Tinys INSPIRATION', roadie:'ROADIE', chassis:'シャーシ' };
-  const sbTitle = document.getElementById('sbTitle');
-  if (sbTitle) sbTitle.textContent = titles[state.active];
-}
-
-function goView(v) {
-  state.currentView = v;
-  window.scrollTo({ top:0, behavior:'auto' });
-  update();
+  document.getElementById('sbTitle').textContent = titles[state.active];
 }
 
 // ============================================================
 // Main form render
 // ============================================================
-function renderQuoteView() {
+function renderForm() {
   const el = document.getElementById('mainContent');
   el.innerHTML = '';
-  el.appendChild(customerCard());
+  el.appendChild(renderCustomerCard());
   if (state.active === 'tinys')   renderTinys(el);
   if (state.active === 'roadie')  renderRoadie(el);
   if (state.active === 'chassis') renderChassis(el);
   renderShared(el);
 }
 
-function customerCard() {
-  const c = sectionCard('顧客情報', '未記入のままでも見積もり作成・確定できます');
-  const g = div('cust-grid');
-  const fields = [
-    { key:'name',    label:'顧客名',   placeholder:'例：YADOKARI 株式会社' },
-    { key:'contact', label:'担当者名', placeholder:'例：山田 太郎' },
-    { key:'area',    label:'エリア',   placeholder:'例：関東' },
-  ];
-  fields.forEach(f => {
-    const fd = div('cust-field');
-    fd.innerHTML = `<label>${f.label}</label><input type="text" placeholder="${f.placeholder}" value="${escapeHtml(state.customer[f.key]||'')}">`;
-    const inp = fd.querySelector('input');
-    inp.addEventListener('input', () => { state.customer[f.key] = inp.value; });
-    g.appendChild(fd);
+function buildAreaString() {
+  return [state.areaPref, state.areaCity, state.areaSub].filter(Boolean).join(' ');
+}
+function updateCitySelect() {
+  const sel = document.getElementById('areaCitySel');
+  if (!sel) return;
+  const cities = PREF_CITIES[state.areaPref] || [];
+  sel.innerHTML = '<option value="">市区町村を選択</option>' +
+    cities.map(c => `<option value="${c}"${state.areaCity===c?' selected':''}>${c}</option>`).join('');
+}
+function renderCustomerCard() {
+  const c = sectionCard('顧客情報', '未記入でも構いません');
+  const grid = div('cust-grid');
+
+  const prefOpts = '<option value="">都道府県</option>' +
+    PREFECTURES.map(p => `<option value="${p}"${state.areaPref===p?' selected':''}>${p}</option>`).join('');
+  const cities = PREF_CITIES[state.areaPref] || [];
+  const cityOpts = '<option value="">市区町村を選択</option>' +
+    cities.map(c => `<option value="${c}"${state.areaCity===c?' selected':''}>${c}</option>`).join('');
+
+  grid.innerHTML = `
+    <div class="cust-field">
+      <label>顧客名</label>
+      <input type="text" id="custName" placeholder="（未記入）" value="${escapeAttr(state.customerName)}">
+    </div>
+    <div class="cust-field">
+      <label>担当者名</label>
+      <select id="staffName">
+        <option value="">（未選択）</option>
+        ${STAFF_LIST.map(s => `<option value="${escapeAttr(s)}"${state.staffName===s?' selected':''}>${escapeHtml(s)}</option>`).join('')}
+      </select>
+    </div>
+    <div class="cust-field field-full">
+      <label>エリア</label>
+      <div class="area-inputs">
+        <select id="areaPrefSel">${prefOpts}</select>
+        <select id="areaCitySel">${cityOpts}</select>
+        <input type="text" id="areaSubInp" placeholder="以降を自由記載" value="${escapeAttr(state.areaSub)}">
+      </div>
+    </div>
+  `;
+  grid.querySelector('#custName').addEventListener('input', e => { state.customerName = e.target.value; });
+  grid.querySelector('#staffName').addEventListener('change', e => { state.staffName = e.target.value; });
+  grid.querySelector('#areaPrefSel').addEventListener('change', e => {
+    state.areaPref = e.target.value; state.areaCity = '';
+    updateCitySelect();
+    state.area = buildAreaString(); updateSummary();
   });
-  c.appendChild(g);
+  grid.querySelector('#areaCitySel').addEventListener('change', e => {
+    state.areaCity = e.target.value; state.area = buildAreaString(); updateSummary();
+  });
+  grid.querySelector('#areaSubInp').addEventListener('input', e => {
+    state.areaSub = e.target.value; state.area = buildAreaString(); updateSummary();
+  });
+  c.appendChild(grid);
   return c;
 }
 
-// ============================================================
-// Admin (price management) view
-// ============================================================
-function renderAdminView() {
-  const el = document.getElementById('mainContent');
-  el.innerHTML = '';
-  const c = sectionCard('価格管理', '売価・原価を編集すると、このブラウザに自動保存されます');
-  const bar = div('tbar');
-  bar.innerHTML = `
-    <div class="tbar-hint">利益率 = (売価 − 原価) ÷ 売価 × 100</div>
-    <button class="btn-sec gray" onclick="resetPrices()">デフォルトに戻す</button>
-  `;
-  c.appendChild(bar);
-
-  const wrap = div('tbl-wrap');
-  const tbl = document.createElement('table');
-  tbl.className = 'tbl';
-  tbl.innerHTML = `<thead><tr>
-    <th>モデル</th>
-    <th class="num">売価</th>
-    <th class="num">原価</th>
-    <th class="num">利益率</th>
-  </tr></thead><tbody></tbody>`;
-  const tbody = tbl.querySelector('tbody');
-  const groups = [
-    { title:'Tinys INSPIRATION', models: TINYS_MODELS },
-    { title:'ROADIE',            models: ROADIE_MODELS },
-    { title:'シャーシ',          models: CHASSIS_MODELS },
-  ];
-  groups.forEach(g => {
-    const hdrRow = document.createElement('tr');
-    hdrRow.className = 'group-hdr';
-    hdrRow.innerHTML = `<td colspan="4">${g.title}</td>`;
-    tbody.appendChild(hdrRow);
-    g.models.forEach(m => {
-      const tr = document.createElement('tr');
-      const nameTd = document.createElement('td');
-      nameTd.textContent = m.label;
-      const priceTd = document.createElement('td'); priceTd.className = 'num';
-      const costTd  = document.createElement('td'); costTd.className  = 'num';
-      const marginTd= document.createElement('td'); marginTd.className= 'num';
-
-      const priceInput = document.createElement('input');
-      priceInput.type = 'number'; priceInput.className = 'cell-input';
-      priceInput.min = '0'; priceInput.step = '10000';
-      priceInput.value = m.price || 0;
-      priceInput.addEventListener('input', () => {
-        const v = parseInt(priceInput.value) || 0;
-        m.price = v;
-        updatePriceOverride(m.id, 'price', v);
-        marginTd.innerHTML = marginHtml(m.price, m.cost);
-      });
-
-      const costInput = document.createElement('input');
-      costInput.type = 'number'; costInput.className = 'cell-input';
-      costInput.min = '0'; costInput.step = '10000';
-      costInput.value = m.cost || 0;
-      costInput.addEventListener('input', () => {
-        const v = parseInt(costInput.value) || 0;
-        m.cost = v;
-        updatePriceOverride(m.id, 'cost', v);
-        marginTd.innerHTML = marginHtml(m.price, m.cost);
-      });
-
-      priceTd.appendChild(priceInput);
-      costTd.appendChild(costInput);
-      marginTd.innerHTML = marginHtml(m.price, m.cost);
-      tr.append(nameTd, priceTd, costTd, marginTd);
-      tbody.appendChild(tr);
-    });
-  });
-  wrap.appendChild(tbl);
-  c.appendChild(wrap);
-  el.appendChild(c);
-}
-
-function marginHtml(price, cost) {
-  if (!price || price <= 0) return '<span class="margin-zero">—</span>';
-  if (!cost  || cost  <= 0) return '<span class="margin-zero">—</span>';
-  const m = (price - cost) / price * 100;
-  const cls = m > 0 ? 'margin-pos' : (m < 0 ? 'margin-neg' : 'margin-zero');
-  return `<span class="${cls}">${m.toFixed(1)}%</span>`;
-}
-
-function resetPrices() {
-  if (!confirm('すべての価格をデフォルトに戻しますか？（原価も0にリセットされます）')) return;
-  localStorage.removeItem(LS_PRICES);
-  applyPriceOverrides();
-  update();
-}
-
-// ============================================================
-// History view
-// ============================================================
-function renderHistoryView() {
-  const el = document.getElementById('mainContent');
-  el.innerHTML = '';
-  const c = sectionCard('見積もり履歴', '「見積もりを確定」で作成した見積もりがここに保存されます');
-  const bar = div('tbar');
-  bar.innerHTML = `
-    <input type="search" id="histSearch" placeholder="顧客名・担当者で検索" value="${escapeHtml(historyFilter)}">
-    <button class="btn-sec" onclick="exportHistoryCSV()">CSVエクスポート</button>
-    <button class="btn-sec gray" onclick="clearAllHistory()">全削除</button>
-  `;
-  c.appendChild(bar);
-  const wrap = div('tbl-wrap'); wrap.id = 'histTblWrap';
-  c.appendChild(wrap);
-  el.appendChild(c);
-
-  const search = bar.querySelector('#histSearch');
-  search.addEventListener('input', e => {
-    historyFilter = e.target.value;
-    renderHistoryTable();
-  });
-  renderHistoryTable();
-}
-
-function renderHistoryTable() {
-  const wrap = document.getElementById('histTblWrap');
-  if (!wrap) return;
-  const list = loadHistory();
-  const f = historyFilter.trim().toLowerCase();
-  const filtered = f
-    ? list.filter(h => (h.customer?.name||'').toLowerCase().includes(f) || (h.customer?.contact||'').toLowerCase().includes(f))
-    : list;
-
-  if (!filtered.length) {
-    wrap.innerHTML = `<div class="empty-state">${list.length ? '検索条件に一致する履歴がありません' : 'まだ履歴がありません'}</div>`;
-    return;
-  }
-
-  let html = `<table class="tbl"><thead><tr>
-    <th>日時</th><th>顧客名</th><th>担当者</th><th>エリア</th>
-    <th class="num">税込合計</th><th>操作</th>
-  </tr></thead><tbody>`;
-  filtered.forEach(h => {
-    html += `<tr>
-      <td>${escapeHtml(h.datetime)}</td>
-      <td>${escapeHtml(h.customer?.name||'—')}</td>
-      <td>${escapeHtml(h.customer?.contact||'—')}</td>
-      <td>${escapeHtml(h.customer?.area||'—')}</td>
-      <td class="num">${fmt(h.tax)}</td>
-      <td><div class="row-actions">
-        <button onclick="printHistoryItem(${h.id})">PDF</button>
-        <button class="danger" onclick="deleteHistoryItem(${h.id})">削除</button>
-      </div></td>
-    </tr>`;
-  });
-  html += `</tbody></table>`;
-  wrap.innerHTML = html;
-}
-
-function deleteHistoryItem(id) {
-  if (!confirm('この見積もりを削除しますか？')) return;
-  const list = loadHistory().filter(h => h.id !== id);
-  saveHistoryList(list);
-  renderHistoryTable();
-}
-
-function clearAllHistory() {
-  const list = loadHistory();
-  if (!list.length) { alert('履歴はありません'); return; }
-  if (!confirm(`${list.length}件の履歴をすべて削除しますか？`)) return;
-  saveHistoryList([]);
-  renderHistoryTable();
-}
-
-function printHistoryItem(id) {
-  const h = loadHistory().find(x => x.id === id);
-  if (!h) return;
-  renderCompletionHtml(h);
-  document.getElementById('completionPage').style.display = 'block';
-  document.body.classList.add('comp-open');
-  document.body.style.overflow = 'hidden';
-  document.getElementById('completionPage').scrollTop = 0;
-}
-
-function exportHistoryCSV() {
-  const list = loadHistory();
-  if (!list.length) { alert('履歴はありません'); return; }
-  const rows = [['日時','顧客名','担当者','エリア','小計','値引き','合計(税前)','合計(税込10%)','明細']];
-  list.forEach(h => {
-    const details = (h.sections||[]).map(sec =>
-      `【${sec.title}】` + sec.lines.map(l => `${l.name} ${l.val}`).join(' / ')
-    ).join(' || ');
-    rows.push([
-      h.datetime,
-      h.customer?.name||'',
-      h.customer?.contact||'',
-      h.customer?.area||'',
-      h.grand, h.discount||0, h.pre, h.tax,
-      details,
-    ]);
-  });
-  const csv = rows.map(r => r.map(v => {
-    const s = String(v ?? '');
-    return /[,"\r\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
-  }).join(',')).join('\r\n');
-  const bom = '\uFEFF';
-  const blob = new Blob([bom + csv], { type: 'text/csv;charset=utf-8' });
-  const a = document.createElement('a');
-  const ts = new Date().toISOString().slice(0,10);
-  a.href = URL.createObjectURL(blob);
-  a.download = `見積履歴_${ts}.csv`;
-  document.body.appendChild(a); a.click(); document.body.removeChild(a);
-  URL.revokeObjectURL(a.href);
-}
+function escapeAttr(s) { return (s || '').replace(/"/g, '&quot;').replace(/</g, '&lt;'); }
+function escapeHtml(s) { return (s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
 // ---- Tinys ----
 function renderTinys(el) {
@@ -885,7 +962,7 @@ function renderTinys(el) {
   const size = firstM?.size || null;
   const rows2 = div('opt-rows');
   TINYS_SIZE_OPTS.forEach(opt => {
-    const p = size ? opt.prices[size] : null;
+    const p = size ? soPrice(opt, size) : null;
     rows2.appendChild(toggleRow(opt, p, !!s.sizeOpts[opt.id], !size || p == null, v => { s.sizeOpts[opt.id] = v; update(); }));
   });
   c2.appendChild(rows2);
@@ -893,16 +970,13 @@ function renderTinys(el) {
 
   const c3 = sectionCard('共通オプション', '');
   const rows3 = div('opt-rows');
-  TINYS_COMMON_OPTS.forEach(opt => rows3.appendChild(toggleRow(opt, opt.price, !!s.commonOpts[opt.id], false, v => { s.commonOpts[opt.id] = v; update(); })));
+  TINYS_COMMON_OPTS.forEach(opt => rows3.appendChild(toggleRow(opt, coPrice(opt), !!s.commonOpts[opt.id], false, v => { s.commonOpts[opt.id] = v; update(); })));
   rows3.appendChild(buildBlindRow(s));
   c3.appendChild(rows3);
   el.appendChild(c3);
 
-  const c5 = sectionCard('設計・手続き関連', '');
-  const rows5 = div('opt-rows');
-  TINYS_MISC_OPTS.forEach(opt => rows5.appendChild(toggleRow(opt, opt.price, !!s.miscOpts[opt.id], false, v => { s.miscOpts[opt.id] = v; update(); })));
-  c5.appendChild(rows5);
-  el.appendChild(c5);
+  renderCustomOptsCard(s, el);
+  renderDesignLevelCard(s, TINYS_MODELS, el);
 }
 
 // ---- ROADIE ----
@@ -916,7 +990,7 @@ function renderRoadie(el) {
   const size = firstM?.size || null;
   const rows2 = div('opt-rows');
   ROADIE_SIZE_OPTS.forEach(opt => {
-    const p = size ? opt.prices[size] : null;
+    const p = size ? soPrice(opt, size) : null;
     rows2.appendChild(toggleRow(opt, p, !!s.sizeOpts[opt.id], !size || p == null, v => { s.sizeOpts[opt.id] = v; update(); }));
   });
   c2.appendChild(rows2);
@@ -924,15 +998,12 @@ function renderRoadie(el) {
 
   const c3 = sectionCard('共通オプション', '');
   const rows3 = div('opt-rows');
-  ROADIE_COMMON_OPTS.forEach(opt => rows3.appendChild(toggleRow(opt, opt.price, !!s.commonOpts[opt.id], false, v => { s.commonOpts[opt.id] = v; update(); })));
+  ROADIE_COMMON_OPTS.forEach(opt => rows3.appendChild(toggleRow(opt, coPrice(opt), !!s.commonOpts[opt.id], false, v => { s.commonOpts[opt.id] = v; update(); })));
   c3.appendChild(rows3);
   el.appendChild(c3);
 
-  const c4 = sectionCard('設計・手続き関連', '');
-  const rows4 = div('opt-rows');
-  ROADIE_MISC_OPTS.forEach(opt => rows4.appendChild(toggleRow(opt, opt.price, !!s.miscOpts[opt.id], false, v => { s.miscOpts[opt.id] = v; update(); })));
-  c4.appendChild(rows4);
-  el.appendChild(c4);
+  renderCustomOptsCard(s, el);
+  renderDesignLevelCard(s, ROADIE_MODELS, el);
 }
 
 // ---- Chassis ----
@@ -943,24 +1014,138 @@ function renderChassis(el) {
   const c2 = sectionCard('オプション', '');
   c2.id = 'sec-opt';
   const rows = div('opt-rows');
-  CHASSIS_OPTS.forEach(opt => rows.appendChild(toggleRow(opt, opt.price, !!s.opts[opt.id], false, v => { s.opts[opt.id] = v; update(); })));
+  CHASSIS_OPTS.forEach(opt => rows.appendChild(toggleRow(opt, chPrice(opt), !!s.opts[opt.id], false, v => { s.opts[opt.id] = v; update(); })));
   c2.appendChild(rows);
   el.appendChild(c2);
 }
 
 // ---- Shared (shipping + discount) ----
+function renderCustomOptsCard(s, el) {
+  const c = sectionCard('追加オプション', '');
+  const wrap = document.createElement('div');
+
+  const renderRows = () => {
+    wrap.innerHTML = '';
+    if (s.customOpts.length > 0) {
+      const hdr = document.createElement('div');
+      hdr.className = 'custom-opt-hdr';
+      hdr.innerHTML = '<span>項目名</span><span style="text-align:center">数量</span><span style="text-align:right">売価（円）</span><span></span>';
+      wrap.appendChild(hdr);
+    }
+    s.customOpts.forEach((opt, i) => {
+      const row = document.createElement('div');
+      row.className = 'custom-opt-row';
+
+      const nameInp = document.createElement('input');
+      nameInp.type = 'text'; nameInp.placeholder = '項目名';
+      nameInp.value = opt.name || '';
+      nameInp.addEventListener('input', e => { s.customOpts[i].name = e.target.value; updateSummary(); });
+
+      const qtyInp = document.createElement('input');
+      qtyInp.type = 'number'; qtyInp.min = '1'; qtyInp.step = '1'; qtyInp.placeholder = '1';
+      qtyInp.value = opt.qty != null ? opt.qty : 1;
+      qtyInp.addEventListener('input', e => { s.customOpts[i].qty = parseFloat(e.target.value) || 1; updateSummary(); });
+
+      const priceInp = document.createElement('input');
+      priceInp.type = 'number'; priceInp.min = '0'; priceInp.step = '1000'; priceInp.placeholder = '0';
+      priceInp.value = opt.price || 0;
+      priceInp.addEventListener('input', e => { s.customOpts[i].price = parseFloat(e.target.value) || 0; updateSummary(); });
+
+      const delBtn = document.createElement('button');
+      delBtn.className = 'custom-opt-del'; delBtn.textContent = '×';
+      delBtn.onclick = () => { s.customOpts.splice(i, 1); renderRows(); updateSummary(); };
+
+      row.append(nameInp, qtyInp, priceInp, delBtn);
+      wrap.appendChild(row);
+    });
+
+    const addBtn = document.createElement('button');
+    addBtn.className = 'custom-opt-add';
+    addBtn.innerHTML = '＋ 項目を追加';
+    addBtn.onclick = () => { s.customOpts.push({ name:'', qty:1, price:0 }); renderRows(); };
+    wrap.appendChild(addBtn);
+  };
+
+  renderRows();
+  c.appendChild(wrap);
+  el.appendChild(c);
+}
+
+function renderDesignLevelCard(s, modelsArr, el) {
+  const c = sectionCard('設計・手続き関連', '');
+  const wrap = div('design-lv-wrap');
+
+  const lbl = document.createElement('label');
+  lbl.textContent = '基本設計費・製造管理費（難易度）';
+  lbl.style.cssText = 'font-size:0.78rem;font-weight:600;color:var(--t2);display:block;margin-bottom:2px;';
+  wrap.appendChild(lbl);
+
+  const btnRow = div('design-lv-btns');
+  const mkBtn = (lvVal, label) => {
+    const b = document.createElement('button');
+    b.className = 'dlv-btn' + (s.designLv === lvVal ? ' active' : '');
+    b.textContent = label;
+    b.onclick = () => { s.designLv = lvVal; update(); };
+    return b;
+  };
+  btnRow.appendChild(mkBtn(0, 'なし'));
+  DESIGN_LEVELS.forEach(dl => btnRow.appendChild(mkBtn(dl.lv, `Lv${dl.lv}`)));
+  wrap.appendChild(btnRow);
+
+  if (s.designLv > 0) {
+    const dl = DESIGN_LEVELS[s.designLv - 1];
+    const totalQty = seriesQty(s);
+    const totalBasePrice = modelsArr.reduce((sum, m) => sum + mPrice(m) * (s.modelQtys[m.id]||0), 0);
+    const unitPrice = totalBasePrice / Math.max(1, totalQty);
+    const basicFee = Math.round(unitPrice * 0.1 * dl.coef);
+    const qc = designQtyCoef(totalQty);
+    const mfgFee = totalQty > 1 ? Math.round(basicFee * qc * (totalQty - 1)) : 0;
+    const info = div('design-lv-info');
+    info.innerHTML = `
+      <div class="dlv-row"><span>難易度係数</span><span>×${dl.coef}</span></div>
+      <div class="dlv-row"><span>基本設計費</span><span>${fmt(basicFee)}</span></div>
+      ${totalQty > 1
+        ? `<div class="dlv-row"><span>製造管理費（台数係数×${qc}・${totalQty-1}台分）</span><span>${fmt(mfgFee)}</span></div>`
+        : `<div class="dlv-row" style="color:var(--t3)"><span>製造管理費</span><span>1台目は基本設計費に含む</span></div>`}
+      <div class="dlv-row dlv-total"><span>設計費 合計</span><span>${fmt(basicFee + mfgFee)}</span></div>`;
+    wrap.appendChild(info);
+  }
+
+  // その他の手続き項目（車両申請書類等）
+  const miscOpts = (modelsArr === TINYS_MODELS ? TINYS_MISC_OPTS : ROADIE_MISC_OPTS);
+  if (miscOpts.length > 0) {
+    const rows = div('opt-rows');
+    rows.style.marginTop = '12px';
+    miscOpts.forEach(opt => rows.appendChild(toggleRow(opt, mxPrice(opt), !!s.miscOpts[opt.id], false, v => { s.miscOpts[opt.id] = v; update(); })));
+    wrap.appendChild(rows);
+  }
+
+  c.appendChild(wrap);
+  el.appendChild(c);
+}
+
 function renderShared(el) {
+  const isYLW = (state.chassis.modelQtys['ch6'] || 0) > 0;
   const c = sectionCard('配送設定・諸経費', '');
   c.id = 'sec-ship';
   const g = div('sel-grid');
   const g1 = div('sel-group');
-  g1.innerHTML = `<label>配送費用（距離別）</label><select id="transSelect">${TRANSPORT_OPTS.map(o => `<option value="${o.idx}" ${state.transportIdx===o.idx?'selected':''}>${o.label}${o.price?'　'+fmt(o.price):''}</option>`).join('')}</select>`;
-  g1.querySelector('select').addEventListener('change', e => { state.transportIdx = +e.target.value; updateSummary(); });
+  if (isYLW) {
+    const opts = YLW_TRANSPORT_OPTS.map(o => {
+      const prefix = o.region ? `【${o.region}】` : '';
+      const price  = o.price  ? '　' + fmt(o.price) : '';
+      return `<option value="${o.idx}" ${state.ylwTransportIdx===o.idx?'selected':''}>${prefix}${o.label}${price}</option>`;
+    }).join('');
+    g1.innerHTML = `<label>YLW600 配送費用（エリア別）</label><select id="transSelect">${opts}</select>`;
+    g1.querySelector('select').addEventListener('change', e => { state.ylwTransportIdx = +e.target.value; updateSummary(); });
+  } else {
+    g1.innerHTML = `<label>配送費用（距離別）</label><select id="transSelect">${TRANSPORT_OPTS.map(o => `<option value="${o.idx}" ${state.transportIdx===o.idx?'selected':''}>${o.label}${trPrice(o)?'　'+fmt(trPrice(o)):''}</option>`).join('')}</select>`;
+    g1.querySelector('select').addEventListener('change', e => { state.transportIdx = +e.target.value; updateSummary(); });
+  }
   const g2 = div('sel-group');
-  g2.innerHTML = `<label>諸経費（エリア別）</label><select id="regionSelect">${REGION_OPTS.map(o => `<option value="${o.idx}" ${state.miscCostIdx===o.idx?'selected':''}>${o.label}${o.price?'　'+fmt(o.price):''}</option>`).join('')}</select>`;
+  g2.innerHTML = `<label>諸経費（エリア別）</label><select id="regionSelect">${REGION_OPTS.map(o => `<option value="${o.idx}" ${state.miscCostIdx===o.idx?'selected':''}>${o.label}${rgPrice(o)?'　'+fmt(rgPrice(o)):''}</option>`).join('')}</select>`;
   g2.querySelector('select').addEventListener('change', e => { state.miscCostIdx = +e.target.value; updateSummary(); });
   g.append(g1, g2); c.appendChild(g); el.appendChild(c);
-
 }
 
 // ============================================================
@@ -989,7 +1174,8 @@ function modelListGrouped(title, sub, groups, modelsArr, s) {
       const ico = div('mg-ico'); ico.textContent = m.ico;
       const name = div('mg-name'); name.textContent = m.shortLabel || m.label;
       const priceEl = div('mg-price');
-      priceEl.textContent = m.price != null ? fmt(m.price) : '要確認';
+      const effPrice = mPrice(m);
+      priceEl.textContent = effPrice != null ? fmt(effPrice) : '要確認';
       const ctrl = div('qty-ctrl');
       const btnM = document.createElement('button');
       btnM.className = 'qty-btn'; btnM.textContent = '−'; btnM.disabled = qty <= 0;
@@ -1026,7 +1212,7 @@ function toggleRow(opt, price, checked, disabled, onChange) {
 }
 
 function buildBlindRow(s) {
-  const blindPrice = s.blindIdx > 0 ? TINYS_BLIND_OPTS[s.blindIdx].price * s.blindCount : null;
+  const blindPrice = s.blindIdx > 0 ? blPrice(TINYS_BLIND_OPTS[s.blindIdx]) * s.blindCount : null;
   const isOn = s.blindIdx > 0;
   const row = div('blind-row');
   const top = div('blind-row-top');
@@ -1042,7 +1228,8 @@ function buildBlindRow(s) {
   const sizeSel = document.createElement('select');
   TINYS_BLIND_OPTS.forEach(b => {
     const o = document.createElement('option');
-    o.value = b.idx; o.textContent = b.label + (b.price ? '　' + fmt(b.price) : '');
+    const ep = blPrice(b);
+    o.value = b.idx; o.textContent = b.label + (ep ? '　' + fmt(ep) : '');
     if (s.blindIdx === b.idx) o.selected = true;
     sizeSel.appendChild(o);
   });
@@ -1079,13 +1266,23 @@ function collectLines() {
     const lines = [];
     TINYS_MODELS.forEach(m => {
       const qty = s.modelQtys[m.id]||0; if (!qty) return;
-      lines.push({ name:`【ベース】${m.label}${ql(qty)}`, val:m.price*qty, cls:'base' });
+      lines.push({ name:`【ベース】${m.label}${ql(qty)}`, val:mPrice(m)*qty, cls:'base' });
     });
-    TINYS_SIZE_OPTS.forEach(o => { if (s.sizeOpts[o.id] && size && o.prices[size]) lines.push({ name:o.name+ql(tq), val:o.prices[size]*tq }); });
-    TINYS_COMMON_OPTS.forEach(o => { if (s.commonOpts[o.id]) lines.push({ name:o.name+ql(tq), val:o.price*tq }); });
-    if (s.blindIdx > 0) { const b = TINYS_BLIND_OPTS[s.blindIdx]; lines.push({ name:`ロールスクリーン ${b.label}×${s.blindCount}枚${ql(tq)}`, val:b.price*s.blindCount*tq }); }
-    TINYS_MISC_OPTS.forEach(o => { if (s.miscOpts[o.id]) lines.push({ name:o.name+ql(tq), val:o.price*tq }); });
-    sections.push({ title:'Tinys INSPIRATION', lines });
+    TINYS_SIZE_OPTS.forEach(o => { if (s.sizeOpts[o.id] && size && soPrice(o, size)) lines.push({ name:o.name+ql(tq), val:soPrice(o, size)*tq }); });
+    TINYS_COMMON_OPTS.forEach(o => { if (s.commonOpts[o.id]) lines.push({ name:o.name+ql(tq), val:coPrice(o)*tq }); });
+    if (s.blindIdx > 0) { const b = TINYS_BLIND_OPTS[s.blindIdx]; lines.push({ name:`ロールスクリーン ${b.label}×${s.blindCount}枚${ql(tq)}`, val:blPrice(b)*s.blindCount*tq }); }
+    TINYS_MISC_OPTS.forEach(o => { if (s.miscOpts[o.id]) lines.push({ name:o.name+ql(tq), val:mxPrice(o)*tq }); });
+    if (s.designLv > 0) {
+      const dl = DESIGN_LEVELS[s.designLv - 1];
+      const totalBase = TINYS_MODELS.reduce((sum, m) => sum + mPrice(m)*(s.modelQtys[m.id]||0), 0);
+      const unitPrice = totalBase / Math.max(1, tq);
+      const basicFee = Math.round(unitPrice * 0.1 * dl.coef);
+      const mfgFee = tq > 1 ? Math.round(basicFee * designQtyCoef(tq) * (tq - 1)) : 0;
+      lines.push({ name:`基本設計費（Lv${s.designLv}）`, val: basicFee });
+      if (mfgFee > 0) lines.push({ name:`製造管理費（Lv${s.designLv}・${tq}台）`, val: mfgFee });
+    }
+    (s.customOpts||[]).forEach(o => { if (o.name && o.price > 0) lines.push({ name:`${o.name}${o.qty > 1 ? `×${o.qty}` : ''}`, val: o.price * (o.qty||1) }); });
+    sections.push({ title:'Tinys INSPIRATION', key:'tinys', lines });
   }
 
   if (hasModel(state.roadie)) {
@@ -1096,12 +1293,22 @@ function collectLines() {
     const lines = [];
     ROADIE_MODELS.forEach(m => {
       const qty = s.modelQtys[m.id]||0; if (!qty) return;
-      lines.push({ name:`【ベース】ROADIE ${m.label}${ql(qty)}`, val:m.price*qty, cls:'base' });
+      lines.push({ name:`【ベース】ROADIE ${m.label}${ql(qty)}`, val:mPrice(m)*qty, cls:'base' });
     });
-    ROADIE_SIZE_OPTS.forEach(o => { if (s.sizeOpts[o.id] && size && o.prices[size]) lines.push({ name:o.name+ql(tq), val:o.prices[size]*tq }); });
-    ROADIE_COMMON_OPTS.forEach(o => { if (s.commonOpts[o.id]) lines.push({ name:o.name+ql(tq), val:o.price*tq }); });
-    ROADIE_MISC_OPTS.forEach(o => { if (s.miscOpts[o.id]) lines.push({ name:o.name+ql(tq), val:o.price*tq }); });
-    sections.push({ title:'ROADIE', lines });
+    ROADIE_SIZE_OPTS.forEach(o => { if (s.sizeOpts[o.id] && size && soPrice(o, size)) lines.push({ name:o.name+ql(tq), val:soPrice(o, size)*tq }); });
+    ROADIE_COMMON_OPTS.forEach(o => { if (s.commonOpts[o.id]) lines.push({ name:o.name+ql(tq), val:coPrice(o)*tq }); });
+    ROADIE_MISC_OPTS.forEach(o => { if (s.miscOpts[o.id]) lines.push({ name:o.name+ql(tq), val:mxPrice(o)*tq }); });
+    if (s.designLv > 0) {
+      const dl = DESIGN_LEVELS[s.designLv - 1];
+      const totalBase = ROADIE_MODELS.reduce((sum, m) => sum + mPrice(m)*(s.modelQtys[m.id]||0), 0);
+      const unitPrice = totalBase / Math.max(1, tq);
+      const basicFee = Math.round(unitPrice * 0.1 * dl.coef);
+      const mfgFee = tq > 1 ? Math.round(basicFee * designQtyCoef(tq) * (tq - 1)) : 0;
+      lines.push({ name:`基本設計費（Lv${s.designLv}）`, val: basicFee });
+      if (mfgFee > 0) lines.push({ name:`製造管理費（Lv${s.designLv}・${tq}台）`, val: mfgFee });
+    }
+    (s.customOpts||[]).forEach(o => { if (o.name && o.price > 0) lines.push({ name:`${o.name}${o.qty > 1 ? `×${o.qty}` : ''}`, val: o.price * (o.qty||1) }); });
+    sections.push({ title:'ROADIE', key:'roadie', lines });
   }
 
   if (hasModel(state.chassis)) {
@@ -1110,29 +1317,42 @@ function collectLines() {
     const lines = [];
     CHASSIS_MODELS.forEach(m => {
       const qty = s.modelQtys[m.id]||0; if (!qty) return;
-      lines.push({ name:`【ベース】${m.label}${ql(qty)}`, val:m.price*qty, cls:'base' });
+      lines.push({ name:`【ベース】${m.label}${ql(qty)}`, val:mPrice(m)*qty, cls:'base' });
     });
-    CHASSIS_OPTS.forEach(o => { if (s.opts[o.id]) lines.push({ name:o.name+ql(tq), val:o.price*tq }); });
-    sections.push({ title:'シャーシ', lines });
+    CHASSIS_OPTS.forEach(o => { if (s.opts[o.id]) lines.push({ name:o.name+ql(tq), val:chPrice(o)*tq }); });
+    sections.push({ title:'シャーシ', key:'chassis', lines });
   }
 
-  const tr = TRANSPORT_OPTS[state.transportIdx];
-  const rc = REGION_OPTS[state.miscCostIdx];
+  const isYLW = (state.chassis.modelQtys['ch6'] || 0) > 0;
+  const tr  = isYLW ? null : TRANSPORT_OPTS[state.transportIdx];
+  const ylw = isYLW ? YLW_TRANSPORT_OPTS[state.ylwTransportIdx] : null;
+  const rc  = REGION_OPTS[state.miscCostIdx];
   const shared = [];
-  const activeSeries = [
+  const nonChassisSeries = [
     { label:'Tinys INSPIRATION', qty: seriesQty(state.tinys), has: hasModel(state.tinys) },
     { label:'ROADIE',            qty: seriesQty(state.roadie), has: hasModel(state.roadie) },
-    { label:'シャーシ',          qty: seriesQty(state.chassis), has: hasModel(state.chassis) },
   ].filter(s => s.has);
+  const chassisSeries = [
+    { label:'シャーシ', qty: seriesQty(state.chassis), has: hasModel(state.chassis) },
+  ].filter(s => s.has);
+  const activeSeries = [...nonChassisSeries, ...chassisSeries];
   const multi = activeSeries.length > 1;
-  if (tr?.price > 0) {
-    activeSeries.forEach(s => {
-      shared.push({ name: multi ? `配送費用（${tr.label}）${s.label}${ql(s.qty)}` : `配送費用（${tr.label}）${ql(s.qty)}`, val: tr.price * s.qty });
+  // 通常の距離別配送（YLW600以外）
+  if (tr && trPrice(tr) > 0) {
+    const targets = isYLW ? nonChassisSeries : activeSeries;
+    targets.forEach(s => {
+      shared.push({ name: multi ? `配送費用（${tr.label}）${s.label}${ql(s.qty)}` : `配送費用（${tr.label}）${ql(s.qty)}`, val: trPrice(tr) * s.qty });
     });
   }
-  if (rc?.price > 0) {
+  // YLW600 エリア別配送
+  if (ylw && ylw.price > 0) {
+    const qty = seriesQty(state.chassis);
+    const label = `${ylw.region ? ylw.region + '/' : ''}${ylw.label}`;
+    shared.push({ name: multi ? `配送費用（${label}）シャーシ${ql(qty)}` : `配送費用（${label}）${ql(qty)}`, val: ylw.price * qty });
+  }
+  if (rc && rgPrice(rc) > 0) {
     activeSeries.forEach(s => {
-      shared.push({ name: multi ? `諸経費（${rc.label}）${s.label}${ql(s.qty)}` : `諸経費（${rc.label}）${ql(s.qty)}`, val: rc.price * s.qty });
+      shared.push({ name: multi ? `諸経費（${rc.label}）${s.label}${ql(s.qty)}` : `諸経費（${rc.label}）${ql(s.qty)}`, val: rgPrice(rc) * s.qty });
     });
   }
   if (shared.length) sections.push({ title:'配送・諸経費', lines:shared });
@@ -1179,11 +1399,11 @@ function updateSummary() {
   // Progress
   const anyModel = hasModel(state.tinys) || hasModel(state.roadie) || hasModel(state.chassis);
   const anyOpt = !!(
-    Object.values(state.tinys.sizeOpts).some(Boolean) || Object.values(state.tinys.commonOpts).some(Boolean) || state.tinys.blindIdx > 0 || Object.values(state.tinys.miscOpts).some(Boolean) ||
-    Object.values(state.roadie.sizeOpts).some(Boolean) || Object.values(state.roadie.commonOpts).some(Boolean) || Object.values(state.roadie.miscOpts).some(Boolean) ||
+    Object.values(state.tinys.sizeOpts).some(Boolean) || Object.values(state.tinys.commonOpts).some(Boolean) || state.tinys.blindIdx > 0 || Object.values(state.tinys.miscOpts).some(Boolean) || state.tinys.designLv > 0 ||
+    Object.values(state.roadie.sizeOpts).some(Boolean) || Object.values(state.roadie.commonOpts).some(Boolean) || Object.values(state.roadie.miscOpts).some(Boolean) || state.roadie.designLv > 0 ||
     Object.values(state.chassis.opts||{}).some(Boolean)
   );
-  const hasTransport = state.transportIdx > 0;
+  const hasTransport = state.transportIdx > 0 || state.ylwTransportIdx > 0;
   const hasMisc = state.miscCostIdx > 0;
   const pct = (anyModel?40:0) + (anyOpt?25:0) + (hasTransport?20:0) + (hasMisc?15:0);
   document.getElementById('progFill').style.width = pct + '%';
@@ -1233,11 +1453,11 @@ function copyEstimate() {
 // Reset & Main update
 // ============================================================
 function resetAll() {
-  state.transportIdx = 0; state.miscCostIdx = 0; state.discount = 0;
+  state.transportIdx = 0; state.ylwTransportIdx = 0; state.miscCostIdx = 0; state.discount = 0;
+  state.customerName = ''; state.staffName = ''; state.area = ''; state.areaPref = ''; state.areaCity = ''; state.areaSub = '';
   const di = document.getElementById('discInput'); if (di) di.value = '';
-  state.customer = { name:'', contact:'', area:'' };
-  state.tinys   = { modelQtys:{}, sizeOpts:{}, commonOpts:{}, blindIdx:0, blindCount:1, miscOpts:{} };
-  state.roadie  = { modelQtys:{}, sizeOpts:{}, commonOpts:{}, miscOpts:{} };
+  state.tinys   = { modelQtys:{}, sizeOpts:{}, commonOpts:{}, blindIdx:0, blindCount:1, miscOpts:{}, designLv:0, customOpts:[] };
+  state.roadie  = { modelQtys:{}, sizeOpts:{}, commonOpts:{}, miscOpts:{}, designLv:0, customOpts:[] };
   state.chassis = { modelQtys:{}, opts:{} };
   update();
 }
@@ -1246,76 +1466,78 @@ function resetAll() {
 // Completion page
 // ============================================================
 function confirmEstimate() {
-  if (state.currentView !== 'quote') { goView('quote'); return; }
   const sections = collectLines();
   if (!sections.length) { alert('モデルを選択してください'); return; }
+  showCompletionFromData(buildQuoteData(sections), true);
+}
 
+// 集約データを作成（保存と表示の両方で使う）
+function buildQuoteData(sections) {
   let grand = 0;
   sections.forEach(s => s.lines.forEach(l => grand += l.val));
   const disc = state.discount || 0;
   const pre = grand - disc;
   const tax = Math.round(pre * 1.1);
-
-  const now = new Date();
-  const datetime =
-    now.getFullYear() + '/' +
-    String(now.getMonth()+1).padStart(2,'0') + '/' +
-    String(now.getDate()).padStart(2,'0') + ' ' +
-    String(now.getHours()).padStart(2,'0') + ':' +
-    String(now.getMinutes()).padStart(2,'0');
-
-  const record = {
-    id: Date.now(),
-    datetime,
-    customer: { ...state.customer },
+  return {
+    id: Date.now().toString(36) + Math.random().toString(36).slice(2,6),
+    createdAt: new Date().toISOString(),
+    customerName: state.customerName || '',
+    staffName: state.staffName || '',
+    area: state.area || '',
+    seriesKeys: sections.filter(s => s.key).map(s => s.key),
     sections,
-    grand,
     discount: disc,
-    pre,
-    tax,
+    totalPre: pre,
+    totalTax: tax,
   };
-
-  // 履歴に自動保存
-  const list = loadHistory();
-  list.unshift(record);
-  saveHistoryList(list);
-
-  renderCompletionHtml(record);
-  document.getElementById('completionPage').style.display = 'block';
-  document.body.classList.add('comp-open');
-  document.body.style.overflow = 'hidden';
-  document.getElementById('completionPage').scrollTop = 0;
 }
 
-function renderCompletionHtml(record) {
-  document.getElementById('compDate').textContent = '発行日：' + record.datetime;
+// 完了ページを表示する（保存もする）
+function showCompletionFromData(q, saveToHistory) {
+  const d = new Date(q.createdAt);
+  document.getElementById('compDate').textContent = '発行日：' +
+    d.getFullYear() + '/' + String(d.getMonth()+1).padStart(2,'0') + '/' + String(d.getDate()).padStart(2,'0');
 
   let html = '';
-  const cust = record.customer || {};
-  const custParts = [];
-  if (cust.name)    custParts.push(escapeHtml(cust.name));
-  if (cust.contact) custParts.push('ご担当：' + escapeHtml(cust.contact));
-  if (cust.area)    custParts.push('エリア：' + escapeHtml(cust.area));
-  if (custParts.length) {
-    html += `<div class="comp-sec-hdr">お客様情報</div>`;
-    html += `<div class="comp-line"><span class="comp-ln">${custParts.join('　')}</span><span class="comp-lv"></span></div>`;
+  // 顧客情報
+  const custLines = [];
+  if (q.customerName) custLines.push(`顧客名：${escapeHtml(q.customerName)} 様`);
+  if (q.staffName)    custLines.push(`担当者：${escapeHtml(q.staffName)}`);
+  if (q.area)         custLines.push(`エリア：${escapeHtml(q.area)}`);
+  if (custLines.length) {
+    html += `<div class="comp-sec-hdr">顧客情報</div>`;
+    custLines.forEach(line => {
+      const [label, val] = line.split('：');
+      html += `<div class="comp-line"><span class="comp-ln">${label}</span><span class="comp-lv">${val}</span></div>`;
+    });
   }
 
-  (record.sections||[]).forEach(sec => {
-    html += `<div class="comp-sec-hdr">${escapeHtml(sec.title)}</div>`;
+  q.sections.forEach(sec => {
+    html += `<div class="comp-sec-hdr">${sec.title}</div>`;
     sec.lines.forEach(l => {
       html += `<div class="comp-line ${l.cls||''}"><span class="comp-ln">${escapeHtml(l.name)}</span><span class="comp-lv">${fmt(l.val)}</span></div>`;
     });
   });
-  if (record.discount > 0) {
+  if (q.discount > 0) {
     html += `<div class="comp-divider"></div>`;
-    html += `<div class="comp-line disc"><span class="comp-ln">値引き</span><span class="comp-lv">−${fmt(record.discount)}</span></div>`;
+    html += `<div class="comp-line disc"><span class="comp-ln">値引き</span><span class="comp-lv">−${fmt(q.discount)}</span></div>`;
   }
   html += `<div class="comp-divider"></div>`;
-  html += `<div class="comp-tot-row"><span>合計（税前）</span><span>${fmt(record.pre)}</span></div>`;
-  html += `<div class="comp-tot-row big"><span>合計（税込10%）</span><span>${fmt(record.tax)}</span></div>`;
+  html += `<div class="comp-tot-row"><span>合計（税前）</span><span>${fmt(q.totalPre)}</span></div>`;
+  html += `<div class="comp-tot-row big"><span>合計（税込10%）</span><span>${fmt(q.totalTax)}</span></div>`;
+  html += `<div class="comp-disclaimer">※見積もりシミュレーションになります。正式なお見積もりは詳細ヒアリングの上、別途担当より提出致します。</div>`;
 
   document.getElementById('compBody').innerHTML = html;
+  document.getElementById('completionPage').style.display = 'block';
+  document.body.classList.add('comp-open');
+  document.body.style.overflow = 'hidden';
+  document.getElementById('completionPage').scrollTop = 0;
+
+  if (saveToHistory) {
+    const quotes = loadQuotes();
+    quotes.unshift(q);
+    saveQuotes(quotes);
+  }
 }
 
 function closeCompletion() {
@@ -1331,20 +1553,557 @@ function printCompletion() {
 }
 
 function update() {
-  document.body.classList.remove('view-quote','view-history','view-admin');
-  document.body.classList.add('view-' + state.currentView);
   buildHeader();
-  if (state.currentView === 'quote') {
-    renderQuoteView();
-    updateSummary();
-  } else if (state.currentView === 'history') {
-    renderHistoryView();
-  } else if (state.currentView === 'admin') {
-    renderAdminView();
-  }
+  renderForm();
+  updateSummary();
 }
 
-applyPriceOverrides();
+// ============================================================
+// Mode switching (create / admin / history)
+// ============================================================
+function switchMode(m) {
+  state.mode = m;
+  document.querySelectorAll('[data-mode-btn]').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.modeBtn === m);
+  });
+  document.getElementById('appCreate').style.display  = (m === 'create')  ? '' : 'none';
+  document.getElementById('appHistory').style.display = (m === 'history') ? '' : 'none';
+  document.getElementById('appAdmin').style.display   = (m === 'admin')   ? '' : 'none';
+  // hide series nav and confirm button when not in create mode
+  document.getElementById('sNav').style.display = (m === 'create') ? '' : 'none';
+  document.getElementById('hdrConfirmBtn').style.display = (m === 'create') ? '' : 'none';
+  document.getElementById('adminSaveBar').classList.toggle('visible', m === 'admin');
+  if (m === 'admin')   renderAdmin();
+  if (m === 'history') renderHistory();
+  window.scrollTo({ top: 0 });
+}
+
+// ============================================================
+// ADMIN VIEW
+// ============================================================
+function marginCell(price, cost) {
+  if (!price) return '<span class="margin-cell">—</span>';
+  if (!cost)  return '<span class="margin-cell margin-good">100.0%</span>';
+  const m = (price - cost) / price * 100;
+  const cls = m >= 35 ? 'margin-good' : m >= 25 ? 'margin-mid' : 'margin-bad';
+  return `<span class="margin-cell ${cls}">${m.toFixed(1)}%</span>`;
+}
+
+function priceRow(label, size, priceKey, costKey, price, cost) {
+  const memoKey = priceKey.replace(/:price$/, ':memo');
+  const memoVal = escapeAttr(getMemo(priceKey));
+  return `<tr>
+    <td class="item-name">${escapeHtml(label)}</td>
+    <td>${size ? `<span class="item-size">${size}</span>` : ''}</td>
+    <td><input type="number" step="10000" data-key="${priceKey}" value="${price||0}"></td>
+    <td><input type="number" step="10000" data-key="${costKey}" value="${cost||0}"></td>
+    <td class="margin-col">${marginCell(price, cost)}</td>
+    <td><input type="text" class="memo-inp" data-memo-key="${memoKey}" placeholder="メモ" value="${memoVal}"></td>
+  </tr>`;
+}
+
+function renderStaffSection() {
+  const rows = STAFF_LIST.map((s, i) => `
+    <div class="staff-item">
+      <input type="text" class="staff-name-input" value="${escapeAttr(s)}" data-idx="${i}"
+        onchange="updateStaffName(${i}, this.value)"
+        onblur="updateStaffName(${i}, this.value)">
+      <button class="custom-opt-del" onclick="deleteStaffMember(${i})" title="削除">×</button>
+    </div>`).join('');
+  return `
+    <div class="admin-section">
+      <h3>担当者管理</h3>
+      <div id="staffListContainer">
+        ${rows || '<div style="color:var(--t3);font-size:0.82rem;padding:4px 0">担当者が登録されていません</div>'}
+      </div>
+      <div class="staff-add-row">
+        <input type="text" id="newStaffInput" placeholder="新しい担当者名" maxlength="30">
+        <button class="staff-add-btn" onclick="addStaffMember()">＋ 追加</button>
+      </div>
+    </div>`;
+}
+
+function updateStaffName(idx, name) {
+  name = (name || '').trim();
+  if (!name || STAFF_LIST[idx] === name) return;
+  STAFF_LIST[idx] = name;
+  saveStaff(STAFF_LIST);
+  updateStaffSelect();
+}
+
+function deleteStaffMember(idx) {
+  if (!confirm(`「${STAFF_LIST[idx]}」を削除しますか？`)) return;
+  STAFF_LIST.splice(idx, 1);
+  saveStaff(STAFF_LIST);
+  if (state.staffName === '') { /* already empty */ }
+  updateStaffSelect();
+  renderAdmin();
+}
+
+function addStaffMember() {
+  const input = document.getElementById('newStaffInput');
+  const name = (input ? input.value : '').trim();
+  if (!name) { if (input) input.focus(); return; }
+  if (STAFF_LIST.includes(name)) { alert('その担当者名は既に登録されています'); return; }
+  STAFF_LIST.push(name);
+  saveStaff(STAFF_LIST);
+  if (input) input.value = '';
+  updateStaffSelect();
+  renderAdmin();
+}
+
+function updateStaffSelect() {
+  const sel = document.getElementById('staffName');
+  if (!sel) return;
+  const cur = state.staffName;
+  sel.innerHTML = '<option value="">（未選択）</option>' +
+    STAFF_LIST.map(s => `<option value="${escapeAttr(s)}"${s===cur?' selected':''}>${escapeHtml(s)}</option>`).join('');
+}
+
+function renderAdmin() {
+  let html = renderStaffSection();
+  const tableStart = (title, hasSize) => `
+    <div class="admin-section">
+      <h3>${title}</h3>
+      <table class="price-table">
+        <thead><tr>
+          <th style="min-width:140px">項目</th>
+          <th>${hasSize ? 'サイズ' : ''}</th>
+          <th>売価</th>
+          <th>原価</th>
+          <th>利益率</th>
+          <th>メモ</th>
+        </tr></thead><tbody>`;
+  const tableEnd = `</tbody></table></div>`;
+
+  // Tinys Models
+  html += tableStart('Tinys INSPIRATION｜ベースモデル', false);
+  TINYS_MODELS.forEach(m => {
+    html += priceRow(m.label, '', `model:${m.id}:price`, `model:${m.id}:cost`, mPrice(m), mCost(m));
+  });
+  html += tableEnd;
+
+  // Tinys Size opts
+  html += tableStart('Tinys INSPIRATION｜サイズ連動オプション', true);
+  TINYS_SIZE_OPTS.forEach(opt => {
+    ['6m','7.2m','9m'].forEach(size => {
+      if (opt.prices[size] == null && !PRICE_OVR[`sizeOpt:${opt.id}:${size}:price`]) return;
+      html += priceRow(opt.name, size, `sizeOpt:${opt.id}:${size}:price`, `sizeOpt:${opt.id}:${size}:cost`, soPrice(opt, size), soCost(opt, size));
+    });
+  });
+  html += tableEnd;
+
+  // Tinys Common
+  html += tableStart('Tinys INSPIRATION｜共通オプション', false);
+  TINYS_COMMON_OPTS.forEach(opt => {
+    html += priceRow(opt.name, '', `commonOpt:${opt.id}:price`, `commonOpt:${opt.id}:cost`, coPrice(opt), coCost(opt));
+  });
+  html += tableEnd;
+
+  // Blinds
+  html += tableStart('ロールスクリーン・ブラインド', false);
+  TINYS_BLIND_OPTS.filter(b => b.idx > 0).forEach(b => {
+    html += priceRow(b.label, '', `blind:${b.idx}:price`, `blind:${b.idx}:cost`, blPrice(b), blCost(b));
+  });
+  html += tableEnd;
+
+  // Tinys Misc
+  html += tableStart('Tinys INSPIRATION｜設計・手続き関連', false);
+  TINYS_MISC_OPTS.forEach(opt => {
+    html += priceRow(opt.name, '', `misc:${opt.id}:price`, `misc:${opt.id}:cost`, mxPrice(opt), mxCost(opt));
+  });
+  html += tableEnd;
+
+  // ROADIE Models
+  html += tableStart('ROADIE｜ベースモデル', false);
+  ROADIE_MODELS.forEach(m => {
+    html += priceRow(m.label, '', `model:${m.id}:price`, `model:${m.id}:cost`, mPrice(m), mCost(m));
+  });
+  html += tableEnd;
+
+  // ROADIE Size opts
+  html += tableStart('ROADIE｜サイズ連動オプション', true);
+  ROADIE_SIZE_OPTS.forEach(opt => {
+    ['mini','6m','7.2m'].forEach(size => {
+      if (opt.prices[size] == null) return;
+      html += priceRow(opt.name, size, `sizeOpt:${opt.id}:${size}:price`, `sizeOpt:${opt.id}:${size}:cost`, soPrice(opt, size), soCost(opt, size));
+    });
+  });
+  html += tableEnd;
+
+  // ROADIE Common
+  html += tableStart('ROADIE｜共通オプション', false);
+  ROADIE_COMMON_OPTS.forEach(opt => {
+    html += priceRow(opt.name, '', `commonOpt:${opt.id}:price`, `commonOpt:${opt.id}:cost`, coPrice(opt), coCost(opt));
+  });
+  html += tableEnd;
+
+  // ROADIE Misc
+  html += tableStart('ROADIE｜設計・手続き関連', false);
+  ROADIE_MISC_OPTS.forEach(opt => {
+    html += priceRow(opt.name, '', `misc:${opt.id}:price`, `misc:${opt.id}:cost`, mxPrice(opt), mxCost(opt));
+  });
+  html += tableEnd;
+
+  // Chassis Models
+  html += tableStart('シャーシ｜ベースモデル', false);
+  CHASSIS_MODELS.forEach(m => {
+    html += priceRow(m.label, '', `model:${m.id}:price`, `model:${m.id}:cost`, mPrice(m), mCost(m));
+  });
+  html += tableEnd;
+
+  // Chassis Opts
+  html += tableStart('シャーシ｜オプション', false);
+  CHASSIS_OPTS.forEach(opt => {
+    html += priceRow(opt.name, '', `chopt:${opt.id}:price`, `chopt:${opt.id}:cost`, chPrice(opt), chCost(opt));
+  });
+  html += tableEnd;
+
+  // Transport
+  html += tableStart('配送費用', false);
+  TRANSPORT_OPTS.filter(t => t.idx > 0).forEach(t => {
+    html += priceRow(t.label, '', `transport:${t.idx}:price`, `transport:${t.idx}:cost`, trPrice(t), trCost(t));
+  });
+  html += tableEnd;
+
+  // Region
+  html += tableStart('諸経費（エリア別）', false);
+  REGION_OPTS.filter(r => r.idx > 0).forEach(r => {
+    html += priceRow(r.label, '', `region:${r.idx}:price`, `region:${r.idx}:cost`, rgPrice(r), rgCost(r));
+  });
+  html += tableEnd;
+
+  const root = document.getElementById('adminContent');
+  root.innerHTML = html;
+  // Live margin update
+  root.addEventListener('input', e => {
+    const inp = e.target;
+    if (!inp.matches('input[type="number"]')) return;
+    const row = inp.closest('tr');
+    const inputs = row.querySelectorAll('input[type="number"]');
+    const p = parseFloat(inputs[0].value) || 0;
+    const c = parseFloat(inputs[1].value) || 0;
+    row.querySelector('.margin-col').innerHTML = marginCell(p, c);
+  });
+}
+
+function uploadAdminCSV(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const text = e.target.result.replace(/^\uFEFF/, ''); // strip BOM
+    const lines = text.split(/\r?\n/).filter(l => l.trim());
+    if (lines.length < 2) { alert('CSVのデータが見つかりません。'); return; }
+
+    // Parse CSV (handles quoted fields)
+    function parseCSVLine(line) {
+      const result = [];
+      let cur = '', inQ = false;
+      for (let i = 0; i < line.length; i++) {
+        const c = line[i];
+        if (c === '"') {
+          if (inQ && line[i+1] === '"') { cur += '"'; i++; }
+          else inQ = !inQ;
+        } else if (c === ',' && !inQ) {
+          result.push(cur); cur = '';
+        } else {
+          cur += c;
+        }
+      }
+      result.push(cur);
+      return result;
+    }
+
+    const headers = parseCSVLine(lines[0]);
+    // Expected: カテゴリ, 項目, サイズ, 売価, 原価, 利益率, メモ
+    const idxPrice = 3, idxCost = 4, idxMemo = 6;
+
+    // Build lookup: label+size -> {priceKey, costKey, memoKey}
+    const lookup = {};
+    function reg(label, size, pk, ck, mk) {
+      lookup[label + '|' + (size || '')] = { pk, ck, mk };
+    }
+    TINYS_MODELS.forEach(m => reg(m.label, '', `model:${m.id}:price`, `model:${m.id}:cost`, `model:${m.id}:memo`));
+    TINYS_SIZE_OPTS.forEach(opt => ['6m','7.2m','9m'].forEach(sz => reg(opt.name, sz, `sizeOpt:${opt.id}:${sz}:price`, `sizeOpt:${opt.id}:${sz}:cost`, `sizeOpt:${opt.id}:${sz}:memo`)));
+    TINYS_COMMON_OPTS.forEach(opt => reg(opt.name, '', `commonOpt:${opt.id}:price`, `commonOpt:${opt.id}:cost`, `commonOpt:${opt.id}:memo`));
+    TINYS_BLIND_OPTS.filter(b => b.idx > 0).forEach(b => reg(b.label, '', `blind:${b.idx}:price`, `blind:${b.idx}:cost`, `blind:${b.idx}:memo`));
+    TINYS_MISC_OPTS.forEach(opt => reg(opt.name, '', `misc:${opt.id}:price`, `misc:${opt.id}:cost`, `misc:${opt.id}:memo`));
+    ROADIE_MODELS.forEach(m => reg(m.label, '', `model:${m.id}:price`, `model:${m.id}:cost`, `model:${m.id}:memo`));
+    ROADIE_SIZE_OPTS.forEach(opt => ['mini','6m','7.2m'].forEach(sz => reg(opt.name, sz, `sizeOpt:${opt.id}:${sz}:price`, `sizeOpt:${opt.id}:${sz}:cost`, `sizeOpt:${opt.id}:${sz}:memo`)));
+    ROADIE_COMMON_OPTS.forEach(opt => reg(opt.name, '', `commonOpt:${opt.id}:price`, `commonOpt:${opt.id}:cost`, `commonOpt:${opt.id}:memo`));
+    ROADIE_MISC_OPTS.forEach(opt => reg(opt.name, '', `misc:${opt.id}:price`, `misc:${opt.id}:cost`, `misc:${opt.id}:memo`));
+    CHASSIS_MODELS.forEach(m => reg(m.label, '', `model:${m.id}:price`, `model:${m.id}:cost`, `model:${m.id}:memo`));
+    CHASSIS_OPTS.forEach(opt => reg(opt.name, '', `chopt:${opt.id}:price`, `chopt:${opt.id}:cost`, `chopt:${opt.id}:memo`));
+    TRANSPORT_OPTS.filter(t => t.idx > 0).forEach(t => reg(t.label, '', `transport:${t.idx}:price`, `transport:${t.idx}:cost`, `transport:${t.idx}:memo`));
+    REGION_OPTS.filter(r => r.idx > 0).forEach(r => reg(r.label, '', `region:${r.idx}:price`, `region:${r.idx}:cost`, `region:${r.idx}:memo`));
+
+    const prices = {}, memos = {};
+    let updated = 0, skipped = 0;
+    for (let i = 1; i < lines.length; i++) {
+      const cols = parseCSVLine(lines[i]);
+      const label = cols[1] || '';
+      const size  = cols[2] || '';
+      const key = label + '|' + size;
+      const entry = lookup[key];
+      if (!entry) { skipped++; continue; }
+      const price = parseFloat(cols[idxPrice]);
+      const cost  = parseFloat(cols[idxCost]);
+      const memo  = (cols[idxMemo] || '').trim();
+      if (!isNaN(price)) prices[entry.pk] = price;
+      if (!isNaN(cost))  prices[entry.ck] = cost;
+      if (memo) memos[entry.mk] = memo;
+      updated++;
+    }
+
+    PRICE_OVR = prices;
+    saveOverrides(prices);
+    MEMO_DATA = memos;
+    saveMemos(memos);
+    renderAdmin();
+    // reset input so same file can be uploaded again
+    event.target.value = '';
+    alert(`${updated}件を読み込みました。${skipped > 0 ? `（${skipped}行スキップ）` : ''}\n保存済みです。`);
+  };
+  reader.readAsText(file, 'UTF-8');
+}
+
+function saveAdminPrices() {
+  const prices = {};
+  document.querySelectorAll('#adminContent input[type="number"]').forEach(inp => {
+    const key = inp.dataset.key;
+    const v = parseFloat(inp.value);
+    if (!isNaN(v)) prices[key] = v;
+  });
+  PRICE_OVR = prices;
+  saveOverrides(prices);
+  const memos = {};
+  document.querySelectorAll('#adminContent input[data-memo-key]').forEach(inp => {
+    const key = inp.dataset.memoKey;
+    if (inp.value.trim()) memos[key] = inp.value.trim();
+  });
+  MEMO_DATA = memos;
+  saveMemos(memos);
+  alert('保存しました。');
+  renderAdmin();
+}
+
+function downloadAdminCSV() {
+  const rows = [['カテゴリ', '項目', 'サイズ', '売価', '原価', '利益率', 'メモ']];
+
+  function addRows(title, items) {
+    items.forEach(item => {
+      const priceInp = document.querySelector(`#adminContent input[data-key="${item.pk}"]`);
+      const costInp  = document.querySelector(`#adminContent input[data-key="${item.ck}"]`);
+      const memoInp  = document.querySelector(`#adminContent input[data-memo-key="${item.mk}"]`);
+      const price = priceInp ? parseFloat(priceInp.value) || 0 : item.price;
+      const cost  = costInp  ? parseFloat(costInp.value)  || 0 : item.cost;
+      const margin = price > 0 ? Math.round((price - cost) / price * 1000) / 10 : 0;
+      const memo  = memoInp ? memoInp.value : '';
+      rows.push([title, item.label, item.size || '', price, cost, margin + '%', memo]);
+    });
+  }
+
+  // Tinys Models
+  addRows('Tinys INSPIRATION｜ベースモデル', TINYS_MODELS.map(m => ({
+    label: m.label, size: '', pk: `model:${m.id}:price`, ck: `model:${m.id}:cost`,
+    mk: `model:${m.id}:memo`, price: mPrice(m), cost: mCost(m)
+  })));
+
+  // Tinys Size Opts
+  const tinysSizeItems = [];
+  TINYS_SIZE_OPTS.forEach(opt => {
+    ['6m','7.2m','9m'].forEach(size => {
+      if (opt.prices[size] == null && !PRICE_OVR[`sizeOpt:${opt.id}:${size}:price`]) return;
+      tinysSizeItems.push({ label: opt.name, size, pk: `sizeOpt:${opt.id}:${size}:price`, ck: `sizeOpt:${opt.id}:${size}:cost`, mk: `sizeOpt:${opt.id}:${size}:memo`, price: soPrice(opt, size), cost: soCost(opt, size) });
+    });
+  });
+  addRows('Tinys INSPIRATION｜サイズ連動オプション', tinysSizeItems);
+
+  // Tinys Common
+  addRows('Tinys INSPIRATION｜共通オプション', TINYS_COMMON_OPTS.map(opt => ({
+    label: opt.name, size: '', pk: `commonOpt:${opt.id}:price`, ck: `commonOpt:${opt.id}:cost`,
+    mk: `commonOpt:${opt.id}:memo`, price: coPrice(opt), cost: coCost(opt)
+  })));
+
+  // Blinds
+  addRows('ロールスクリーン・ブラインド', TINYS_BLIND_OPTS.filter(b => b.idx > 0).map(b => ({
+    label: b.label, size: '', pk: `blind:${b.idx}:price`, ck: `blind:${b.idx}:cost`,
+    mk: `blind:${b.idx}:memo`, price: blPrice(b), cost: blCost(b)
+  })));
+
+  // Tinys Misc
+  addRows('Tinys INSPIRATION｜設計・手続き関連', TINYS_MISC_OPTS.map(opt => ({
+    label: opt.name, size: '', pk: `misc:${opt.id}:price`, ck: `misc:${opt.id}:cost`,
+    mk: `misc:${opt.id}:memo`, price: mxPrice(opt), cost: mxCost(opt)
+  })));
+
+  // ROADIE Models
+  addRows('ROADIE｜ベースモデル', ROADIE_MODELS.map(m => ({
+    label: m.label, size: '', pk: `model:${m.id}:price`, ck: `model:${m.id}:cost`,
+    mk: `model:${m.id}:memo`, price: mPrice(m), cost: mCost(m)
+  })));
+
+  // ROADIE Size Opts
+  const roadieSizeItems = [];
+  ROADIE_SIZE_OPTS.forEach(opt => {
+    ['mini','6m','7.2m'].forEach(size => {
+      if (opt.prices[size] == null) return;
+      roadieSizeItems.push({ label: opt.name, size, pk: `sizeOpt:${opt.id}:${size}:price`, ck: `sizeOpt:${opt.id}:${size}:cost`, mk: `sizeOpt:${opt.id}:${size}:memo`, price: soPrice(opt, size), cost: soCost(opt, size) });
+    });
+  });
+  addRows('ROADIE｜サイズ連動オプション', roadieSizeItems);
+
+  // ROADIE Common
+  addRows('ROADIE｜共通オプション', ROADIE_COMMON_OPTS.map(opt => ({
+    label: opt.name, size: '', pk: `commonOpt:${opt.id}:price`, ck: `commonOpt:${opt.id}:cost`,
+    mk: `commonOpt:${opt.id}:memo`, price: coPrice(opt), cost: coCost(opt)
+  })));
+
+  // ROADIE Misc
+  addRows('ROADIE｜設計・手続き関連', ROADIE_MISC_OPTS.map(opt => ({
+    label: opt.name, size: '', pk: `misc:${opt.id}:price`, ck: `misc:${opt.id}:cost`,
+    mk: `misc:${opt.id}:memo`, price: mxPrice(opt), cost: mxCost(opt)
+  })));
+
+  // Chassis Models
+  addRows('シャーシ｜ベースモデル', CHASSIS_MODELS.map(m => ({
+    label: m.label, size: '', pk: `model:${m.id}:price`, ck: `model:${m.id}:cost`,
+    mk: `model:${m.id}:memo`, price: mPrice(m), cost: mCost(m)
+  })));
+
+  // Chassis Opts
+  addRows('シャーシ｜オプション', CHASSIS_OPTS.map(opt => ({
+    label: opt.name, size: '', pk: `chopt:${opt.id}:price`, ck: `chopt:${opt.id}:cost`,
+    mk: `chopt:${opt.id}:memo`, price: chPrice(opt), cost: chCost(opt)
+  })));
+
+  // Transport
+  addRows('配送費用', TRANSPORT_OPTS.filter(t => t.idx > 0).map(t => ({
+    label: t.label, size: '', pk: `transport:${t.idx}:price`, ck: `transport:${t.idx}:cost`,
+    mk: `transport:${t.idx}:memo`, price: trPrice(t), cost: trCost(t)
+  })));
+
+  // Region
+  addRows('諸経費（エリア別）', REGION_OPTS.filter(r => r.idx > 0).map(r => ({
+    label: r.label, size: '', pk: `region:${r.idx}:price`, ck: `region:${r.idx}:cost`,
+    mk: `region:${r.idx}:memo`, price: rgPrice(r), cost: rgCost(r)
+  })));
+
+  const csv = '\uFEFF' + rows.map(r => r.map(v => `"${String(v).replace(/"/g, '""')}"`).join(',')).join('\r\n');
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  const today = new Date().toISOString().slice(0,10).replace(/-/g,'');
+  a.download = `yadokari_prices_${today}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function resetAdminPrices() {
+  if (!confirm('全ての価格・メモをデフォルトに戻します。よろしいですか？')) return;
+  localStorage.removeItem(LS_PRICES);
+  localStorage.removeItem(LS_MEMOS);
+  PRICE_OVR = {};
+  MEMO_DATA = {};
+  renderAdmin();
+}
+
+// ============================================================
+// HISTORY VIEW
+// ============================================================
+function renderHistory() {
+  const quotes = loadQuotes();
+  const q = (document.getElementById('histSearch')?.value || '').toLowerCase().trim();
+  const sFilter = document.getElementById('histFilterSeries')?.value || '';
+
+  let filtered = quotes;
+  if (sFilter) filtered = filtered.filter(qt => (qt.seriesKeys || []).includes(sFilter));
+  if (q) filtered = filtered.filter(qt => {
+    const haystack = [
+      qt.customerName, qt.staffName, qt.area,
+      ...(qt.sections || []).map(s => s.title),
+      ...(qt.sections || []).flatMap(s => s.lines.map(l => l.name))
+    ].join(' ').toLowerCase();
+    return haystack.includes(q);
+  });
+
+  document.getElementById('histCount').textContent = `${filtered.length} 件 / 全 ${quotes.length} 件`;
+
+  const list = document.getElementById('histList');
+  if (!filtered.length) {
+    list.innerHTML = `<div class="hist-empty">${quotes.length ? '該当する見積もりがありません' : 'まだ見積もりが保存されていません。見積もりを確定すると履歴に追加されます。'}</div>`;
+    return;
+  }
+
+  const seriesLabel = { tinys:'Tinys INSPIRATION', roadie:'ROADIE', chassis:'シャーシ' };
+
+  list.innerHTML = filtered.map(qt => {
+    const d = new Date(qt.createdAt);
+    const dateStr = `${d.getFullYear()}/${String(d.getMonth()+1).padStart(2,'0')}/${String(d.getDate()).padStart(2,'0')}`;
+    const tags = (qt.seriesKeys || []).map(k => `<span class="hist-tag">${seriesLabel[k] || k}</span>`).join('');
+    return `
+      <div class="hist-card">
+        <div class="hist-card-top">
+          <div class="hist-name">${escapeHtml(qt.customerName) || '<span style="color:#9CA3AF">（未記入）</span>'}</div>
+          <div class="hist-date">${dateStr}</div>
+        </div>
+        <div class="hist-meta">
+          <div class="hist-meta-item"><span class="hist-meta-lbl">担当者</span><span class="hist-meta-val">${escapeHtml(qt.staffName) || '—'}</span></div>
+          <div class="hist-meta-item"><span class="hist-meta-lbl">エリア</span><span class="hist-meta-val">${escapeHtml(qt.area) || '—'}</span></div>
+        </div>
+        <div class="hist-series">${tags}</div>
+        <div class="hist-totals">
+          <span class="hist-pre">税前 ${fmt(qt.totalPre)}</span>
+          <span class="hist-tax">${fmt(qt.totalTax)}（税込）</span>
+        </div>
+        <div class="hist-actions">
+          <button class="hist-btn primary" onclick="viewQuote('${qt.id}')">詳細・PDF</button>
+          <button class="hist-btn danger" onclick="deleteQuote('${qt.id}')">削除</button>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function viewQuote(id) {
+  const qt = loadQuotes().find(q => q.id === id);
+  if (!qt) return;
+  showCompletionFromData(qt, false);
+}
+
+function deleteQuote(id) {
+  if (!confirm('この見積もりを削除しますか？')) return;
+  const quotes = loadQuotes().filter(q => q.id !== id);
+  saveQuotes(quotes);
+  renderHistory();
+}
+
+function exportHistoryCSV() {
+  const quotes = loadQuotes();
+  if (!quotes.length) { alert('履歴がありません'); return; }
+  const seriesLabel = { tinys:'Tinys INSPIRATION', roadie:'ROADIE', chassis:'シャーシ' };
+  const rows = [['作成日','顧客名','担当者名','エリア','シリーズ','合計(税前)','合計(税込)']];
+  quotes.forEach(qt => {
+    const d = new Date(qt.createdAt);
+    const dateStr = `${d.getFullYear()}/${String(d.getMonth()+1).padStart(2,'0')}/${String(d.getDate()).padStart(2,'0')}`;
+    rows.push([
+      dateStr,
+      qt.customerName || '',
+      qt.staffName || '',
+      qt.area || '',
+      (qt.seriesKeys || []).map(k => seriesLabel[k] || k).join(' / '),
+      qt.totalPre, qt.totalTax
+    ]);
+  });
+  const csv = rows.map(r => r.map(v => `"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `yadokari_mitsumori_${new Date().toISOString().slice(0,10)}.csv`;
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+}
+
 update();
 </script>
 </body>
