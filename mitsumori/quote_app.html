@@ -329,22 +329,21 @@
     .hist-filter { padding: 10px 14px; border: 1px solid var(--border); border-radius: 10px; font-size: 0.82rem; background: white; cursor: pointer; font-family: inherit; color: var(--t1); }
     .hist-export { padding: 10px 18px; background: white; border: 1px solid var(--border); color: var(--t1); border-radius: 10px; font-size: 0.82rem; font-weight: 600; cursor: pointer; }
     .hist-export:hover { background: var(--bg); }
-    .hist-list { display: flex; flex-direction: column; gap: 10px; }
-    .hist-card { background: white; border: 1px solid var(--border); border-radius: 12px; padding: 16px 20px; }
-    .hist-card-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 10px; flex-wrap: wrap; }
-    .hist-name { font-size: 1rem; font-weight: 700; }
-    .hist-date { font-size: 0.75rem; color: var(--t3); }
-    .hist-meta { display: flex; gap: 18px; flex-wrap: wrap; margin-bottom: 10px; }
-    .hist-meta-item { display: flex; flex-direction: column; gap: 2px; }
-    .hist-meta-lbl { font-size: 0.68rem; color: var(--t3); font-weight: 600; letter-spacing: .04em; }
-    .hist-meta-val { font-size: 0.82rem; color: var(--t1); font-weight: 500; }
-    .hist-series { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
-    .hist-tag { display: inline-block; padding: 3px 9px; background: var(--p-light); color: var(--p); border-radius: 12px; font-size: 0.7rem; font-weight: 600; }
-    .hist-totals { display: flex; justify-content: flex-end; gap: 16px; align-items: baseline; margin-bottom: 10px; }
-    .hist-pre { font-size: 0.78rem; color: var(--t3); }
-    .hist-tax { font-size: 1.1rem; font-weight: 800; color: var(--t1); }
-    .hist-actions { display: flex; gap: 8px; justify-content: flex-end; flex-wrap: wrap; }
-    .hist-btn { padding: 7px 14px; border-radius: 8px; font-size: 0.78rem; font-weight: 600; cursor: pointer; border: 1px solid var(--border); background: white; color: var(--t1); font-family: inherit; }
+    .hist-list { display: flex; flex-direction: column; gap: 8px; }
+    .hist-card { background: white; border: 1px solid var(--border); border-radius: 12px; padding: 10px 14px; display: flex; flex-direction: column; gap: 4px; }
+    .hist-row-main { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+    .hist-left { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; min-width: 0; }
+    .hist-name { font-size: 0.95rem; font-weight: 700; }
+    .hist-right { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+    .hist-series { display: flex; flex-wrap: wrap; gap: 4px; }
+    .hist-tag { display: inline-block; padding: 2px 8px; background: var(--p-light); color: var(--p); border-radius: 12px; font-size: 0.68rem; font-weight: 600; }
+    .hist-totals { display: flex; gap: 10px; align-items: baseline; }
+    .hist-pre { font-size: 0.75rem; color: var(--t3); }
+    .hist-tax { font-size: 1rem; font-weight: 800; color: var(--t1); }
+    .hist-actions { display: flex; gap: 6px; flex-wrap: wrap; }
+    .hist-sub { font-size: 0.72rem; color: var(--t3); display: flex; gap: 14px; flex-wrap: wrap; }
+    .hist-sub b { color: var(--t2); font-weight: 600; }
+    .hist-btn { padding: 6px 12px; border-radius: 8px; font-size: 0.75rem; font-weight: 600; cursor: pointer; border: 1px solid var(--border); background: white; color: var(--t1); font-family: inherit; }
     .hist-btn:hover { background: var(--bg); }
     .hist-btn.primary { background: var(--p); color: white; border-color: var(--p); }
     .hist-btn.primary:hover { background: var(--p-hover); }
@@ -2270,22 +2269,26 @@ function renderHistory() {
     const tags = (qt.seriesKeys || []).map(k => `<span class="hist-tag">${seriesLabel[k] || k}</span>`).join('');
     return `
       <div class="hist-card">
-        <div class="hist-card-top">
-          <div class="hist-name">${escapeHtml(qt.customerName) || '<span style="color:#9CA3AF">（未記入）</span>'}</div>
-          <div class="hist-date">${dateStr}</div>
+        <div class="hist-row-main">
+          <div class="hist-left">
+            <span class="hist-name">${escapeHtml(qt.customerName) || '<span style="color:#9CA3AF">（未記入）</span>'}</span>
+            <span class="hist-series">${tags}</span>
+          </div>
+          <div class="hist-right">
+            <div class="hist-totals">
+              <span class="hist-pre">税前 ${fmt(qt.totalPre)}</span>
+              <span class="hist-tax">${fmt(qt.totalTax)}（税込）</span>
+            </div>
+            <div class="hist-actions">
+              <button class="hist-btn primary" onclick="viewQuote('${qt.id}')">詳細・PDF</button>
+              <button class="hist-btn danger" onclick="deleteQuote('${qt.id}')">削除</button>
+            </div>
+          </div>
         </div>
-        <div class="hist-meta">
-          <div class="hist-meta-item"><span class="hist-meta-lbl">担当者</span><span class="hist-meta-val">${escapeHtml(qt.staffName) || '—'}</span></div>
-          <div class="hist-meta-item"><span class="hist-meta-lbl">エリア</span><span class="hist-meta-val">${escapeHtml(qt.area) || '—'}</span></div>
-        </div>
-        <div class="hist-series">${tags}</div>
-        <div class="hist-totals">
-          <span class="hist-pre">税前 ${fmt(qt.totalPre)}</span>
-          <span class="hist-tax">${fmt(qt.totalTax)}（税込）</span>
-        </div>
-        <div class="hist-actions">
-          <button class="hist-btn primary" onclick="viewQuote('${qt.id}')">詳細・PDF</button>
-          <button class="hist-btn danger" onclick="deleteQuote('${qt.id}')">削除</button>
+        <div class="hist-sub">
+          <span>${dateStr}</span>
+          <span>担当者 <b>${escapeHtml(qt.staffName) || '—'}</b></span>
+          <span>エリア <b>${escapeHtml(qt.area) || '—'}</b></span>
         </div>
       </div>`;
   }).join('');
