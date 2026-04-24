@@ -226,6 +226,8 @@
     .comp-btn-back:hover { background: var(--bg); }
     .comp-btn-print { padding: 10px 22px; background: var(--p); color: white; border: none; border-radius: 8px; font-size: 0.85rem; font-weight: 700; cursor: pointer; }
     .comp-btn-print:hover { background: var(--p-hover); }
+    .comp-btn-new { padding: 10px 22px; background: white; color: var(--p); border: 1px solid var(--p-mid); border-radius: 8px; font-size: 0.85rem; font-weight: 700; cursor: pointer; }
+    .comp-btn-new:hover { background: var(--p-light); }
     .no-sel { text-align: center; color: var(--t3); font-size: 0.83rem; padding: 16px 0; }
 
     /* INTERNAL SIMULATION PAGE */
@@ -393,7 +395,7 @@
       .comp-body { padding: 20px 18px; }
       .comp-notes-sec { padding: 16px 18px 20px; }
       .comp-actions { padding: 14px 18px; flex-wrap: wrap; }
-      .comp-btn-back, .comp-btn-print { flex: 1; text-align: center; }
+      .comp-btn-back, .comp-btn-print, .comp-btn-new { flex: 1; text-align: center; }
       /* admin tables: allow horizontal scroll */
       .admin-section { padding: 14px 16px; }
       .admin-hdr-sub, .hist-count { display: none; }
@@ -491,9 +493,7 @@
       <div class="notes-area">
         <div class="notes-ttl">ナンバー登録費用の目安（別途）</div>
         <ul class="notes-list">
-          <li>20ft 水回りあり：1台あたり約18万円</li>
-          <li>20ft スケルトン：1台あたり約15万円</li>
-          <li>30ft 水回りあり：1台あたり約25万円</li>
+          <li>1台あたり約8万円</li>
         </ul>
       </div>
     </div>
@@ -556,14 +556,13 @@
     <div class="comp-notes-sec">
       <div class="comp-notes-ttl">ナンバー登録費用の目安（別途）</div>
       <ul>
-        <li>20ft 水回りあり：1台あたり約18万円</li>
-        <li>20ft スケルトン：1台あたり約15万円</li>
-        <li>30ft 水回りあり：1台あたり約25万円</li>
+        <li>1台あたり約8万円</li>
       </ul>
     </div>
     <div class="comp-actions">
       <button class="comp-btn-back" onclick="closeCompletion()">← 戻って修正</button>
       <button class="comp-btn-print" onclick="printCompletion()">PDFに書き出す</button>
+      <button class="comp-btn-new" onclick="openNewQuote()">新しい見積もりを作る</button>
     </div>
   </div>
 </div>
@@ -1573,7 +1572,7 @@ function copyEstimate() {
     text += '\n';
   });
   if (disc > 0) text += `${pad('値引き',24)}  −${fmt(disc)}\n\n`;
-  text += `────────────────────────\n${pad('合計（税前）',24)}  ${fmt(pre)}\n${pad('合計（税込10%）',24)}  ${fmt(tax)}\n━━━━━━━━━━━━━━━━━━━━━━━━\nナンバー登録費用の目安（別途）\n・20ft 水回りあり：1台あたり約18万円\n・20ft スケルトン：1台あたり約15万円\n・30ft 水回りあり：1台あたり約25万円\n`;
+  text += `────────────────────────\n${pad('合計（税前）',24)}  ${fmt(pre)}\n${pad('合計（税込10%）',24)}  ${fmt(tax)}\n━━━━━━━━━━━━━━━━━━━━━━━━\nナンバー登録費用の目安（別途）\n・1台あたり約8万円\n`;
 
   const btn = document.getElementById('copyBtn');
   navigator.clipboard.writeText(text).then(() => {
@@ -1693,6 +1692,12 @@ function printCompletion() {
   document.body.classList.add('printing');
   window.print();
   setTimeout(() => document.body.classList.remove('printing'), 500);
+}
+
+function openNewQuote() {
+  // 別タブで開くとstateは初期化された状態で起動する
+  const url = location.href.split('?')[0].split('#')[0];
+  window.open(url, '_blank');
 }
 
 // ============================================================
