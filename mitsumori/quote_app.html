@@ -31,7 +31,9 @@
     .hdr { height: var(--hh); background: var(--surface); border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 24px; position: sticky; top: 0; z-index: 100; gap: 24px; }
     .logo { font-size: 0.82rem; font-weight: 800; letter-spacing: 0.02em; white-space: nowrap; line-height: 1.2; }
     .logo-by { font-size: 0.55rem; font-weight: 500; color: var(--t3); letter-spacing: 0.04em; display: block; }
-    .s-nav { display: flex; gap: 2px; flex: 1; }
+    .s-nav-wrap { display: flex; flex: 1; min-width: 0; align-items: stretch; position: relative; }
+    .s-nav { display: flex; gap: 2px; flex: 1; min-width: 0; }
+    .s-nav-hint { display: none; }
     .s-btn { padding: 6px 14px; border-radius: 8px; border: none; background: transparent; font-size: 0.96rem; font-weight: 700; color: #111827; cursor: pointer; transition: all .15s; white-space: nowrap; display: flex; align-items: center; gap: 6px; }
     .s-btn:hover { background: var(--bg); color: var(--t1); }
     .s-btn.active { background: var(--p-light); color: var(--p); font-weight: 700; }
@@ -386,9 +388,16 @@
       .sel-grid { grid-template-columns: 1fr; }
       .hdr { flex-wrap: wrap; height: auto; padding: 10px 12px 0; gap: 0; }
       .btn-pdf { margin-left: auto; }
-      .s-nav { order: 3; width: 100%; flex: none; border-top: 1px solid var(--border); padding: 12px 0; margin-top: 8px; overflow-x: auto; gap: 0; -webkit-mask-image: linear-gradient(to right, black calc(100% - 28px), transparent); mask-image: linear-gradient(to right, black calc(100% - 28px), transparent); }
+      .s-nav-wrap { order: 3; width: 100%; flex: none; border-top: 1px solid var(--border); margin-top: 8px; position: relative; }
+      .s-nav { width: 100%; flex: 1; padding: 12px 0; overflow-x: auto; gap: 0; -webkit-overflow-scrolling: touch; }
       .s-btn { padding: 5px 10px; font-size: 1.04rem; font-weight: 700; white-space: nowrap; }
-      .s-nav::after { content: ''; flex: 0 0 24px; }
+      .s-nav::after { content: ''; flex: 0 0 36px; }
+      .s-nav-hint { display: flex; position: absolute; right: 0; top: 0; bottom: 0; align-items: center; justify-content: flex-end; padding: 0 8px 0 28px; pointer-events: none; background: linear-gradient(to right, transparent, white 55%); color: var(--p); font-weight: 800; font-size: 1.4rem; line-height: 1; transition: opacity .2s; animation: s-nav-hint-bounce 1.4s ease-in-out infinite; }
+      .s-nav-wrap.at-end .s-nav-hint { opacity: 0; }
+      @keyframes s-nav-hint-bounce {
+        0%, 100% { transform: translateX(0); }
+        50% { transform: translateX(4px); }
+      }
       .mg-row .qty-btn { width: 36px; height: 36px; font-size: 1rem; }
       .mg-row .qty-val { font-size: 0.88rem; min-width: 32px; }
       /* customer grid: 1 column */
@@ -456,7 +465,7 @@
 
 <header class="hdr">
   <div class="logo" style="cursor:pointer" onclick="switchMode('create')">見積もりシミュレーター</div>
-  <nav class="s-nav" id="sNav"></nav>
+  <div class="s-nav-wrap"><nav class="s-nav" id="sNav"></nav><span class="s-nav-hint" id="sNavHint">›</span></div>
   <div class="hdr-modes">
     <button class="mode-nb active" data-mode-btn="create" onclick="switchMode('create')">見積もり作成</button>
     <button class="mode-nb" data-mode-btn="history" onclick="switchMode('history')">履歴</button>
@@ -1025,6 +1034,24 @@ function buildHeader() {
   });
   const titles = { tinys:'Tinys INSPIRATION', roadie:'ROADIE', chassis:'シャーシ', other:'その他車両' };
   document.getElementById('sbTitle').textContent = titles[state.active];
+  setupSNavHint();
+}
+
+function setupSNavHint() {
+  const nav = document.getElementById('sNav');
+  const wrap = nav.parentElement;
+  const update = () => {
+    const overflow = nav.scrollWidth > nav.clientWidth + 1;
+    const atEnd = nav.scrollLeft + nav.clientWidth >= nav.scrollWidth - 2;
+    wrap.classList.toggle('at-end', !overflow || atEnd);
+  };
+  if (!nav._hintBound) {
+    nav.addEventListener('scroll', update, { passive: true });
+    window.addEventListener('resize', update);
+    nav._hintBound = true;
+  }
+  // 描画直後にレイアウト確定後で評価
+  requestAnimationFrame(update);
 }
 
 // ============================================================
