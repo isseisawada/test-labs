@@ -1599,6 +1599,10 @@ function resetAll() {
   state.tinys   = { modelQtys:{}, sizeOpts:{}, commonOpts:{}, blindIdx:0, blindCount:1, miscOpts:{}, designLv:0, customOpts:[] };
   state.roadie  = { modelQtys:{}, sizeOpts:{}, commonOpts:{}, miscOpts:{}, designLv:0, customOpts:[] };
   state.chassis = { modelQtys:{}, opts:{} };
+  // 社内シミュレーションの手入力原価もリセット
+  if (typeof _internalCostOverrides !== 'undefined') {
+    Object.keys(_internalCostOverrides).forEach(k => delete _internalCostOverrides[k]);
+  }
   update();
 }
 
@@ -1707,6 +1711,10 @@ function openNewQuote() {
 // 社内用シミュレーション
 // ============================================================
 let _internalQuote = null;
+// 手入力した原価を「最終見積もりに反映」されるまで保持する
+// key: `${sectionTitle}::${lineName}`, value: 数値
+const _internalCostOverrides = {};
+const intCostKey = (secTitle, lineName) => `${secTitle}::${lineName}`;
 
 const intMarginCls = (p, c) => {
   if (!p) return '';
@@ -1723,6 +1731,23 @@ function showInternalSimulation() {
   const sections = collectLines();
   if (!sections.length) { alert('モデルを選択してください'); return; }
   _internalQuote = buildQuoteData(sections);
+
+  // 編集可能判定用に元の原価を退避し、手入力原価をマージ
+  _internalQuote.sections.forEach(sec => {
+    sec.lines.forEach(l => {
+      l._origCost = l.cost || 0;
+      const k = intCostKey(sec.title, l.name);
+      if (_internalCostOverrides[k] != null) {
+        l.cost = _internalCostOverrides[k];
+      }
+    });
+  });
+  // 合計を再計算
+  let cost = 0;
+  _internalQuote.sections.forEach(s => s.lines.forEach(l => cost += (l.cost || 0)));
+  _internalQuote.totalCost = cost;
+  _internalQuote.totalGross = _internalQuote.totalPre - cost;
+  _internalQuote.marginPct = _internalQuote.totalPre > 0 ? _internalQuote.totalGross / _internalQuote.totalPre * 100 : 0;
 
   const d = new Date(_internalQuote.createdAt);
   document.getElementById('intDate').textContent = '発行日：' +
@@ -1754,10 +1779,10 @@ function renderInternalSimulation() {
     html += `<tr class="section-hdr"><td colspan="5">${escapeHtml(sec.title)}</td></tr>`;
     sec.lines.forEach((l, li) => {
       const c = l.cost || 0;
-      const editable = c === 0;
+      const editable = (l._origCost || 0) === 0;
       const gross = l.val - c;
       const costCell = editable
-        ? `<input type="number" class="int-cost-input" data-si="${si}" data-li="${li}" value="0" placeholder="0" min="0" step="1000">`
+        ? `<input type="number" class="int-cost-input" data-si="${si}" data-li="${li}" value="${c || ''}" placeholder="0" min="0" step="1000">`
         : fmt(c);
       html += `<tr class="${l.cls||''}">`+
         `<td>${escapeHtml(l.name)}</td>`+
@@ -1780,8 +1805,15 @@ function renderInternalSimulation() {
       const si = +e.target.dataset.si;
       const li = +e.target.dataset.li;
       const newCost = parseFloat(e.target.value) || 0;
-      _internalQuote.sections[si].lines[li].cost = newCost;
       const line = _internalQuote.sections[si].lines[li];
+      line.cost = newCost;
+      // 「最終見積もりに反映」までセッション内に保存
+      const k = intCostKey(_internalQuote.sections[si].title, line.name);
+      if (newCost === 0 && e.target.value === '') {
+        delete _internalCostOverrides[k];
+      } else {
+        _internalCostOverrides[k] = newCost;
+      }
       const gross = line.val - newCost;
       document.getElementById(`int-gross-${si}-${li}`).textContent = fmt(gross);
       const marginEl = document.getElementById(`int-margin-${si}-${li}`);
@@ -1831,6 +1863,8 @@ function applyInternalSimulationToFinal() {
   // 内部ページを閉じて、確定ページに遷移（履歴保存も実行）
   document.getElementById('internalPage').style.display = 'none';
   _internalQuote = null;
+  // 最終反映時に手入力原価のオーバーライドをクリア
+  Object.keys(_internalCostOverrides).forEach(k => delete _internalCostOverrides[k]);
   showCompletionFromData(q, true);
 }
 
