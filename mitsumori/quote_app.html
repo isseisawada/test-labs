@@ -279,6 +279,10 @@
     .bottom-nav-bar .btn-save:hover { background: var(--p-hover); }
     .btn-label-short { display: none; }
     body { padding-bottom: 64px; }
+    .admin-tab-nav { display: flex; gap: 4px; padding: 4px; background: white; border: 1px solid var(--border); border-radius: 10px; margin-bottom: 14px; flex-wrap: wrap; overflow-x: auto; }
+    .admin-tab { padding: 8px 16px; background: transparent; color: var(--t2); border: none; border-radius: 8px; font-size: 0.85rem; font-weight: 600; cursor: pointer; font-family: inherit; white-space: nowrap; transition: all .15s; }
+    .admin-tab:hover { background: var(--bg); color: var(--t1); }
+    .admin-tab[data-active] { background: var(--p-light); color: var(--p); }
     .admin-section { background: white; border: 1px solid var(--border); border-radius: 14px; padding: 20px 24px; margin-bottom: 14px; position: relative; }
     .admin-section h3 { font-size: 0.95rem; font-weight: 700; margin-bottom: 14px; color: var(--t1); display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
     .admin-scroll { overflow-x: auto; }
@@ -2054,8 +2058,22 @@ function updateStaffSelect() {
     STAFF_LIST.map(s => `<option value="${escapeAttr(s)}"${s===cur?' selected':''}>${escapeHtml(s)}</option>`).join('');
 }
 
+let _adminTab = 'common';
+
+const ADMIN_TABS = [
+  { id:'common',  label:'共通オプション' },
+  { id:'tinys',   label:'Tinys INSPIRATION' },
+  { id:'roadie',  label:'ROADIE' },
+  { id:'chassis', label:'シャーシ' },
+  { id:'other',   label:'その他車両' },
+];
+
 function renderAdmin() {
-  let html = renderStaffSection();
+  const tab = _adminTab;
+  let html = `<nav class="admin-tab-nav">${
+    ADMIN_TABS.map(t => `<button class="admin-tab" data-tab="${t.id}"${t.id===tab?' data-active':''}>${t.label}</button>`).join('')
+  }</nav>`;
+
   const tableStart = (title, hasSize) => `
     <div class="admin-section">
       <h3><span>${title}</span><span class="scroll-hint">横にスクロール →</span></h3>
@@ -2071,142 +2089,151 @@ function renderAdmin() {
         </tr></thead><tbody>`;
   const tableEnd = `</tbody></table></div></div>`;
 
-  // Tinys Models
-  html += tableStart('Tinys INSPIRATION｜ベースモデル', false);
-  TINYS_MODELS.forEach(m => {
-    html += priceRow(m.label, '', `model:${m.id}:price`, `model:${m.id}:cost`, mPrice(m), mCost(m));
-  });
-  html += tableEnd;
+  if (tab === 'common') {
+    html += renderStaffSection();
 
-  // Tinys Size opts
-  html += tableStart('Tinys INSPIRATION｜サイズ連動オプション', true);
-  TINYS_SIZE_OPTS.forEach(opt => {
-    ['6m','7.2m','9m'].forEach(size => {
-      if (opt.prices[size] == null && !PRICE_OVR[`sizeOpt:${opt.id}:${size}:price`]) return;
-      html += priceRow(opt.name, size, `sizeOpt:${opt.id}:${size}:price`, `sizeOpt:${opt.id}:${size}:cost`, soPrice(opt, size), soCost(opt, size));
+    // 配送費用（距離別）
+    html += tableStart('配送費用（距離別）', false);
+    TRANSPORT_OPTS.filter(t => t.idx > 0).forEach(t => {
+      html += priceRow(t.label, '', `transport:${t.idx}:price`, `transport:${t.idx}:cost`, trPrice(t), trCost(t));
     });
-  });
-  html += tableEnd;
+    html += tableEnd;
 
-  // Tinys Common
-  html += tableStart('Tinys INSPIRATION｜共通オプション', false);
-  TINYS_COMMON_OPTS.forEach(opt => {
-    html += priceRow(opt.name, '', `commonOpt:${opt.id}:price`, `commonOpt:${opt.id}:cost`, coPrice(opt), coCost(opt));
-  });
-  html += tableEnd;
-
-  // Blinds
-  html += tableStart('ロールスクリーン・ブラインド', false);
-  TINYS_BLIND_OPTS.filter(b => b.idx > 0).forEach(b => {
-    html += priceRow(b.label, '', `blind:${b.idx}:price`, `blind:${b.idx}:cost`, blPrice(b), blCost(b));
-  });
-  html += tableEnd;
-
-  // Tinys Misc
-  html += tableStart('Tinys INSPIRATION｜設計・手続き関連', false);
-  TINYS_MISC_OPTS.forEach(opt => {
-    html += priceRow(opt.name, '', `misc:${opt.id}:price`, `misc:${opt.id}:cost`, mxPrice(opt), mxCost(opt));
-  });
-  html += tableEnd;
-
-  // ROADIE Models
-  html += tableStart('ROADIE｜ベースモデル', false);
-  ROADIE_MODELS.forEach(m => {
-    html += priceRow(m.label, '', `model:${m.id}:price`, `model:${m.id}:cost`, mPrice(m), mCost(m));
-  });
-  html += tableEnd;
-
-  // ROADIE Size opts
-  html += tableStart('ROADIE｜サイズ連動オプション', true);
-  ROADIE_SIZE_OPTS.forEach(opt => {
-    ['mini','6m','7.2m'].forEach(size => {
-      if (opt.prices[size] == null) return;
-      html += priceRow(opt.name, size, `sizeOpt:${opt.id}:${size}:price`, `sizeOpt:${opt.id}:${size}:cost`, soPrice(opt, size), soCost(opt, size));
+    // YLW Transport
+    html += tableStart('配送費用（YLW600 エリア別）', false);
+    YLW_TRANSPORT_OPTS.filter(o => o.idx > 0).forEach(o => {
+      const lbl = o.region ? `【${o.region}】${o.label}` : o.label;
+      html += priceRow(lbl, '', `ylwTransport:${o.idx}:price`, `ylwTransport:${o.idx}:cost`, ylwPrice(o), ylwCost(o));
     });
-  });
-  html += tableEnd;
+    html += tableEnd;
 
-  // ROADIE Common
-  html += tableStart('ROADIE｜共通オプション', false);
-  ROADIE_COMMON_OPTS.forEach(opt => {
-    html += priceRow(opt.name, '', `commonOpt:${opt.id}:price`, `commonOpt:${opt.id}:cost`, coPrice(opt), coCost(opt));
-  });
-  html += tableEnd;
+    // Chassis Transport (YCL/YNR)
+    html += tableStart('配送費用（YCL/YNR 都道府県別）', false);
+    CHASSIS_TRANSPORT_OPTS.filter(o => o.idx > 0).forEach(o => {
+      const lbl = o.region ? `【${o.region}】${o.label}` : o.label;
+      html += priceRow(lbl, '', `chTransport:${o.idx}:price`, `chTransport:${o.idx}:cost`, chtrPrice(o), chtrCost(o));
+    });
+    html += tableEnd;
 
-  // ROADIE Misc
-  html += tableStart('ROADIE｜設計・手続き関連', false);
-  ROADIE_MISC_OPTS.forEach(opt => {
-    html += priceRow(opt.name, '', `misc:${opt.id}:price`, `misc:${opt.id}:cost`, mxPrice(opt), mxCost(opt));
-  });
-  html += tableEnd;
+    // Region
+    html += tableStart('諸経費（エリア別）', false);
+    REGION_OPTS.filter(r => r.idx > 0).forEach(r => {
+      html += priceRow(r.label, '', `region:${r.idx}:price`, `region:${r.idx}:cost`, rgPrice(r), rgCost(r));
+    });
+    html += tableEnd;
+  }
 
-  // Chassis Models
-  html += tableStart('シャーシ｜ベースモデル', false);
-  CHASSIS_MODELS.forEach(m => {
-    html += priceRow(m.label, '', `model:${m.id}:price`, `model:${m.id}:cost`, mPrice(m), mCost(m));
-  });
-  html += tableEnd;
+  if (tab === 'tinys') {
+    html += tableStart('Tinys INSPIRATION｜ベースモデル', false);
+    TINYS_MODELS.forEach(m => {
+      html += priceRow(m.label, '', `model:${m.id}:price`, `model:${m.id}:cost`, mPrice(m), mCost(m));
+    });
+    html += tableEnd;
 
-  // Chassis Opts
-  html += tableStart('シャーシ｜オプション', false);
-  CHASSIS_OPTS.forEach(opt => {
-    html += priceRow(opt.name, '', `chopt:${opt.id}:price`, `chopt:${opt.id}:cost`, chPrice(opt), chCost(opt));
-  });
-  html += tableEnd;
+    html += tableStart('Tinys INSPIRATION｜サイズ連動オプション', true);
+    TINYS_SIZE_OPTS.forEach(opt => {
+      ['6m','7.2m','9m'].forEach(size => {
+        if (opt.prices[size] == null && !PRICE_OVR[`sizeOpt:${opt.id}:${size}:price`]) return;
+        html += priceRow(opt.name, size, `sizeOpt:${opt.id}:${size}:price`, `sizeOpt:${opt.id}:${size}:cost`, soPrice(opt, size), soCost(opt, size));
+      });
+    });
+    html += tableEnd;
 
-  // Other Vehicles - Models
-  html += tableStart('その他車両｜ベースモデル', false);
-  OTHER_MODELS.forEach(m => {
-    html += priceRow(m.label, '', `model:${m.id}:price`, `model:${m.id}:cost`, mPrice(m), mCost(m));
-  });
-  html += tableEnd;
+    html += tableStart('Tinys INSPIRATION｜共通オプション', false);
+    TINYS_COMMON_OPTS.forEach(opt => {
+      html += priceRow(opt.name, '', `commonOpt:${opt.id}:price`, `commonOpt:${opt.id}:cost`, coPrice(opt), coCost(opt));
+    });
+    html += tableEnd;
 
-  // Other Vehicles - Common Opts
-  html += tableStart('その他車両｜共通オプション', false);
-  OTHER_OPTS.forEach(opt => {
-    html += priceRow(opt.name, '', `otherOpt:${opt.id}:price`, `otherOpt:${opt.id}:cost`, otoPrice(opt), otoCost(opt));
-  });
-  html += tableEnd;
+    html += tableStart('ロールスクリーン・ブラインド', false);
+    TINYS_BLIND_OPTS.filter(b => b.idx > 0).forEach(b => {
+      html += priceRow(b.label, '', `blind:${b.idx}:price`, `blind:${b.idx}:cost`, blPrice(b), blCost(b));
+    });
+    html += tableEnd;
 
-  // Other Vehicles - Misc
-  html += tableStart('その他車両｜設計・手続き関連', false);
-  OTHER_MISC_OPTS.forEach(opt => {
-    html += priceRow(opt.name, '', `otherMisc:${opt.id}:price`, `otherMisc:${opt.id}:cost`, omPrice(opt), omCost(opt));
-  });
-  html += tableEnd;
+    html += tableStart('Tinys INSPIRATION｜設計・手続き関連', false);
+    TINYS_MISC_OPTS.forEach(opt => {
+      html += priceRow(opt.name, '', `misc:${opt.id}:price`, `misc:${opt.id}:cost`, mxPrice(opt), mxCost(opt));
+    });
+    html += tableEnd;
+  }
 
-  // Transport
-  html += tableStart('配送費用', false);
-  TRANSPORT_OPTS.filter(t => t.idx > 0).forEach(t => {
-    html += priceRow(t.label, '', `transport:${t.idx}:price`, `transport:${t.idx}:cost`, trPrice(t), trCost(t));
-  });
-  html += tableEnd;
+  if (tab === 'roadie') {
+    html += tableStart('ROADIE｜ベースモデル', false);
+    ROADIE_MODELS.forEach(m => {
+      html += priceRow(m.label, '', `model:${m.id}:price`, `model:${m.id}:cost`, mPrice(m), mCost(m));
+    });
+    html += tableEnd;
 
-  // YLW Transport
-  html += tableStart('配送費用（YLW600 エリア別）', false);
-  YLW_TRANSPORT_OPTS.filter(o => o.idx > 0).forEach(o => {
-    const lbl = o.region ? `【${o.region}】${o.label}` : o.label;
-    html += priceRow(lbl, '', `ylwTransport:${o.idx}:price`, `ylwTransport:${o.idx}:cost`, ylwPrice(o), ylwCost(o));
-  });
-  html += tableEnd;
+    html += tableStart('ROADIE｜サイズ連動オプション', true);
+    ROADIE_SIZE_OPTS.forEach(opt => {
+      ['mini','6m','7.2m'].forEach(size => {
+        if (opt.prices[size] == null) return;
+        html += priceRow(opt.name, size, `sizeOpt:${opt.id}:${size}:price`, `sizeOpt:${opt.id}:${size}:cost`, soPrice(opt, size), soCost(opt, size));
+      });
+    });
+    html += tableEnd;
 
-  // Chassis Transport (YCL/YNR)
-  html += tableStart('配送費用（YCL/YNR 都道府県別）', false);
-  CHASSIS_TRANSPORT_OPTS.filter(o => o.idx > 0).forEach(o => {
-    const lbl = o.region ? `【${o.region}】${o.label}` : o.label;
-    html += priceRow(lbl, '', `chTransport:${o.idx}:price`, `chTransport:${o.idx}:cost`, chtrPrice(o), chtrCost(o));
-  });
-  html += tableEnd;
+    html += tableStart('ROADIE｜共通オプション', false);
+    ROADIE_COMMON_OPTS.forEach(opt => {
+      html += priceRow(opt.name, '', `commonOpt:${opt.id}:price`, `commonOpt:${opt.id}:cost`, coPrice(opt), coCost(opt));
+    });
+    html += tableEnd;
 
-  // Region
-  html += tableStart('諸経費（エリア別）', false);
-  REGION_OPTS.filter(r => r.idx > 0).forEach(r => {
-    html += priceRow(r.label, '', `region:${r.idx}:price`, `region:${r.idx}:cost`, rgPrice(r), rgCost(r));
-  });
-  html += tableEnd;
+    html += tableStart('ROADIE｜設計・手続き関連', false);
+    ROADIE_MISC_OPTS.forEach(opt => {
+      html += priceRow(opt.name, '', `misc:${opt.id}:price`, `misc:${opt.id}:cost`, mxPrice(opt), mxCost(opt));
+    });
+    html += tableEnd;
+  }
+
+  if (tab === 'chassis') {
+    html += tableStart('シャーシ｜ベースモデル', false);
+    CHASSIS_MODELS.forEach(m => {
+      html += priceRow(m.label, '', `model:${m.id}:price`, `model:${m.id}:cost`, mPrice(m), mCost(m));
+    });
+    html += tableEnd;
+
+    html += tableStart('シャーシ｜オプション', false);
+    CHASSIS_OPTS.forEach(opt => {
+      html += priceRow(opt.name, '', `chopt:${opt.id}:price`, `chopt:${opt.id}:cost`, chPrice(opt), chCost(opt));
+    });
+    html += tableEnd;
+  }
+
+  if (tab === 'other') {
+    html += tableStart('その他車両｜ベースモデル', false);
+    OTHER_MODELS.forEach(m => {
+      html += priceRow(m.label, '', `model:${m.id}:price`, `model:${m.id}:cost`, mPrice(m), mCost(m));
+    });
+    html += tableEnd;
+
+    html += tableStart('その他車両｜共通オプション', false);
+    OTHER_OPTS.forEach(opt => {
+      html += priceRow(opt.name, '', `otherOpt:${opt.id}:price`, `otherOpt:${opt.id}:cost`, otoPrice(opt), otoCost(opt));
+    });
+    html += tableEnd;
+
+    html += tableStart('その他車両｜設計・手続き関連', false);
+    OTHER_MISC_OPTS.forEach(opt => {
+      html += priceRow(opt.name, '', `otherMisc:${opt.id}:price`, `otherMisc:${opt.id}:cost`, omPrice(opt), omCost(opt));
+    });
+    html += tableEnd;
+  }
 
   const root = document.getElementById('adminContent');
   root.innerHTML = html;
+
+  // Tab switching
+  root.querySelectorAll('.admin-tab').forEach(btn => {
+    btn.addEventListener('click', () => {
+      _adminTab = btn.dataset.tab;
+      renderAdmin();
+      root.scrollTop = 0;
+      window.scrollTo({ top: 0 });
+    });
+  });
+
   // Live margin update
   root.addEventListener('input', e => {
     const inp = e.target;
@@ -2324,7 +2351,8 @@ function uploadAdminCSV(event) {
 }
 
 function saveAdminPrices() {
-  const prices = {};
+  // タブ分割により他タブの値が消えないよう、既存値とマージ
+  const prices = { ...PRICE_OVR };
   document.querySelectorAll('#adminContent input[type="number"]').forEach(inp => {
     const key = inp.dataset.key;
     const v = parseFloat(inp.value);
@@ -2332,10 +2360,12 @@ function saveAdminPrices() {
   });
   PRICE_OVR = prices;
   saveOverrides(prices);
-  const memos = {};
+  const memos = { ...MEMO_DATA };
   document.querySelectorAll('#adminContent input[data-memo-key]').forEach(inp => {
     const key = inp.dataset.memoKey;
-    if (inp.value.trim()) memos[key] = inp.value.trim();
+    const v = inp.value.trim();
+    if (v) memos[key] = v;
+    else delete memos[key];
   });
   MEMO_DATA = memos;
   saveMemos(memos);
