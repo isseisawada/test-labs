@@ -1524,7 +1524,7 @@ function collectLines() {
       lines.push({ name:`基本設計費（Lv${s.designLv}）`, val: basicFee, cost: 0 });
       if (mfgFee > 0) lines.push({ name:`製造管理費（Lv${s.designLv}・${tq}台）`, val: mfgFee, cost: 0 });
     }
-    (s.customOpts||[]).forEach(o => { if (o.name && o.price > 0) lines.push({ name:`${o.name}${o.qty > 1 ? `×${o.qty}` : ''}`, val: o.price * (o.qty||1), cost: 0 }); });
+    (s.customOpts||[]).forEach(o => { if (o.name || o.price > 0) { const nm = (o.name || '（未記入）') + (o.qty > 1 ? `×${o.qty}` : ''); lines.push({ name:nm, val:(o.price||0) * (o.qty||1), cost: 0 }); } });
     sections.push({ title:'Tinys INSPIRATION', key:'tinys', lines });
   }
 
@@ -1550,7 +1550,7 @@ function collectLines() {
       lines.push({ name:`基本設計費（Lv${s.designLv}）`, val: basicFee, cost: 0 });
       if (mfgFee > 0) lines.push({ name:`製造管理費（Lv${s.designLv}・${tq}台）`, val: mfgFee, cost: 0 });
     }
-    (s.customOpts||[]).forEach(o => { if (o.name && o.price > 0) lines.push({ name:`${o.name}${o.qty > 1 ? `×${o.qty}` : ''}`, val: o.price * (o.qty||1), cost: 0 }); });
+    (s.customOpts||[]).forEach(o => { if (o.name || o.price > 0) { const nm = (o.name || '（未記入）') + (o.qty > 1 ? `×${o.qty}` : ''); lines.push({ name:nm, val:(o.price||0) * (o.qty||1), cost: 0 }); } });
     sections.push({ title:'ROADIE', key:'roadie', lines });
   }
 
