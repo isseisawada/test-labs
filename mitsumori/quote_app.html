@@ -208,7 +208,10 @@
     .comp-logo-w img { height: 28px; width: auto; display: block; filter: brightness(0) invert(1); }
     .comp-logo-w span { font-size: 0.62rem; font-weight: 400; opacity: .75; margin-left: 4px; }
     .comp-ttl { font-size: 1.4rem; font-weight: 800; }
-    .comp-date { font-size: 0.73rem; opacity: .65; margin-top: 4px; }
+    .comp-date, .comp-issuer { font-size: 0.73rem; opacity: .65; margin-top: 4px; }
+    .comp-credit { text-align: center; padding: 12px 36px 18px; font-size: 0.72rem; color: var(--t3); background: var(--bg); }
+    .comp-credit a { color: var(--t3); text-decoration: underline; }
+    .comp-credit a:hover { color: var(--t2); }
     .comp-body { padding: 28px 36px; }
     .comp-sec-hdr { font-size: 0.67rem; font-weight: 700; letter-spacing: .09em; color: var(--t3); text-transform: uppercase; margin: 20px 0 4px; }
     .comp-sec-hdr:first-child { margin-top: 0; }
@@ -578,6 +581,7 @@
     <div class="comp-hdr">
       <div class="comp-logo-w"><img src="mtmr_logo.png" alt="ちゃちゃっと！見積もりシミュレーター"></div>
       <div class="comp-ttl">トレーラーハウス 概算見積もり</div>
+      <div class="comp-issuer">発行元：YADOKARI株式会社</div>
       <div class="comp-date" id="compDate"></div>
     </div>
     <div class="comp-body" id="compBody"></div>
@@ -587,6 +591,7 @@
         <li>1台あたり約8万円</li>
       </ul>
     </div>
+    <div class="comp-credit">Made with Love by © <a href="https://yadokari.net/" target="_blank" rel="noopener">YADOKARI</a></div>
     <div class="comp-actions">
       <button class="comp-btn-back" onclick="closeCompletion()">← 戻って修正</button>
       <button class="comp-btn-print" onclick="printCompletion()">PDFに書き出す</button>
