@@ -386,8 +386,9 @@
       .sel-grid { grid-template-columns: 1fr; }
       .hdr { flex-wrap: wrap; height: auto; padding: 10px 12px 0; gap: 0; }
       .btn-pdf { margin-left: auto; }
-      .s-nav { order: 3; width: 100%; flex: none; border-top: 1px solid var(--border); padding: 10px 0; margin-top: 8px; overflow-x: auto; gap: 0; }
+      .s-nav { order: 3; width: 100%; flex: none; border-top: 1px solid var(--border); padding: 12px 0; margin-top: 8px; overflow-x: auto; gap: 0; -webkit-mask-image: linear-gradient(to right, black calc(100% - 28px), transparent); mask-image: linear-gradient(to right, black calc(100% - 28px), transparent); }
       .s-btn { padding: 5px 10px; font-size: 1.04rem; font-weight: 700; white-space: nowrap; }
+      .s-nav::after { content: ''; flex: 0 0 24px; }
       .mg-row .qty-btn { width: 36px; height: 36px; font-size: 1rem; }
       .mg-row .qty-val { font-size: 0.88rem; min-width: 32px; }
       /* customer grid: 1 column */
