@@ -39,6 +39,7 @@
     .s-btn.has-sel .dot { background: var(--p); }
     .btn-pdf { padding: 7px 16px; background: var(--p); color: #fff; border: none; border-radius: 8px; font-size: 0.83rem; font-weight: 600; cursor: pointer; white-space: nowrap; transition: background .15s; }
     .btn-pdf:hover { background: var(--p-hover); }
+    .hdr-modes { display: flex; gap: 6px; margin-left: auto; flex-shrink: 0; }
 
     /* LAYOUT */
     .app { display: flex; max-width: 1260px; margin: 0 auto; padding: 24px 16px; gap: 18px; align-items: flex-start; }
@@ -274,11 +275,11 @@
     .admin-actions { display: flex; gap: 8px; }
     .admin-actions .btn { padding: 9px 16px; font-size: 0.82rem; font-weight: 600; border-radius: 8px; border: 1px solid var(--border); background: white; color: var(--t1); cursor: pointer; }
     .admin-actions .btn:hover { background: var(--bg); }
-    .bottom-nav-bar { position: fixed; bottom: 0; left: 0; right: 0; z-index: 200; background: white; border-top: 1px solid var(--border); padding: 10px 16px; display: flex; justify-content: center; align-items: center; gap: 8px; box-shadow: 0 -2px 12px rgba(0,0,0,0.08); }
+    .bottom-nav-bar { position: fixed; bottom: 0; left: 0; right: 0; z-index: 200; background: white; border-top: 1px solid var(--border); padding: 10px 16px; display: none; justify-content: center; align-items: center; gap: 8px; box-shadow: 0 -2px 12px rgba(0,0,0,0.08); }
     .bottom-nav-bar .btn-save { padding: 10px 24px; font-size: 0.85rem; font-weight: 700; border-radius: 10px; border: none; background: var(--p); color: white; cursor: pointer; font-family: inherit; transition: background .15s; margin-left: 12px; white-space: nowrap; flex-shrink: 0; }
     .bottom-nav-bar .btn-save:hover { background: var(--p-hover); }
     .btn-label-short { display: none; }
-    body { padding-bottom: 64px; }
+    body[data-mode="admin"] { padding-bottom: 64px; }
     .admin-tab-nav { display: flex; gap: 4px; padding: 4px; background: white; border: 1px solid var(--border); border-radius: 10px; margin-bottom: 14px; flex-wrap: wrap; overflow-x: auto; }
     .admin-tab { padding: 8px 16px; background: transparent; color: var(--t2); border: none; border-radius: 8px; font-size: 0.85rem; font-weight: 600; cursor: pointer; font-family: inherit; white-space: nowrap; transition: all .15s; }
     .admin-tab:hover { background: var(--bg); color: var(--t1); }
@@ -416,7 +417,8 @@
       .btn-label-full { display: none; }
       .btn-label-short { display: inline; }
       .bottom-nav-bar { padding: 8px 10px; gap: 6px; }
-      .bottom-nav-bar .mode-nb { padding: 6px 10px; font-size: 0.75rem; }
+      .bottom-nav-bar .mode-nb, .hdr-modes .mode-nb { padding: 5px 10px; font-size: 0.72rem; }
+      .hdr-modes { gap: 4px; }
       .bottom-nav-bar .btn-save { padding: 8px 14px; font-size: 0.8rem; margin-left: 4px; }
     }
     @media (max-width: 480px) {
@@ -454,7 +456,11 @@
 <header class="hdr">
   <div class="logo" style="cursor:pointer" onclick="switchMode('create')">見積もりシミュレーター</div>
   <nav class="s-nav" id="sNav"></nav>
-  <button class="btn-pdf" id="hdrConfirmBtn" onclick="confirmEstimate()">見積もりを確定</button>
+  <div class="hdr-modes">
+    <button class="mode-nb active" data-mode-btn="create" onclick="switchMode('create')">見積もり作成</button>
+    <button class="mode-nb" data-mode-btn="history" onclick="switchMode('history')">履歴</button>
+    <button class="mode-nb" data-mode-btn="admin" onclick="switchMode('admin')">管理</button>
+  </div>
 </header>
 
 <div class="app" id="appCreate">
@@ -543,11 +549,8 @@
   <div class="hist-list" id="histList"></div>
 </div>
 
-<!-- BOTTOM NAV BAR (always visible) -->
+<!-- BOTTOM SAVE BAR (admin mode only) -->
 <nav class="bottom-nav-bar" id="bottomNav">
-  <button class="mode-nb active" data-mode-btn="create" onclick="switchMode('create')">見積もり作成</button>
-  <button class="mode-nb" data-mode-btn="history" onclick="switchMode('history')">履歴</button>
-  <button class="mode-nb" data-mode-btn="admin" onclick="switchMode('admin')">管理</button>
   <button class="btn-save" id="adminSaveBtn" onclick="saveAdminPrices()" style="display:none"><span class="btn-label-full">修正内容を保存する</span><span class="btn-label-short">修正を保存</span></button>
 </nav>
 
@@ -1969,8 +1972,8 @@ function switchMode(m) {
   document.getElementById('appAdmin').style.display   = (m === 'admin')   ? '' : 'none';
   // hide series nav and confirm button when not in create mode
   document.getElementById('sNav').style.display = (m === 'create') ? '' : 'none';
-  document.getElementById('hdrConfirmBtn').style.display = (m === 'create') ? '' : 'none';
   document.getElementById('adminSaveBtn').style.display = (m === 'admin') ? '' : 'none';
+  document.getElementById('bottomNav').style.display = (m === 'admin') ? 'flex' : 'none';
   if (m === 'admin')   renderAdmin();
   if (m === 'history') renderHistory();
   window.scrollTo({ top: 0 });
