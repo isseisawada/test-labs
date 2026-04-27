@@ -243,6 +243,8 @@
     .int-m-good { color: #065F46; font-weight: 700; }
     .int-m-warn { color: #9A3412; font-weight: 700; }
     .int-summary { margin-top: 20px; padding: 16px 18px; background: #FFF7ED; border: 1px solid #FED7AA; border-radius: 12px; }
+    .int-cost-input { width: 100%; max-width: 130px; padding: 4px 8px; border: 1px solid var(--border); border-radius: 6px; font-size: 0.82rem; font-family: inherit; text-align: right; color: var(--t1); }
+    .int-cost-input:focus { outline: none; border-color: #9A3412; }
     .int-sum-row { display: flex; justify-content: space-between; padding: 4px 0; font-size: 0.86rem; color: var(--t2); }
     .int-sum-row.big { font-size: 1.2rem; font-weight: 800; color: #9A3412; padding-top: 10px; border-top: 1px solid #FED7AA; margin-top: 6px; }
 
@@ -578,6 +580,7 @@
     <div class="comp-body" id="intBody"></div>
     <div class="comp-actions int-actions">
       <button class="comp-btn-back" onclick="closeInternalSimulation()">← 戻って修正</button>
+      <button class="comp-btn-print" onclick="applyInternalSimulationToFinal()">最終見積もりに反映</button>
     </div>
   </div>
 </div>
@@ -1703,26 +1706,36 @@ function openNewQuote() {
 // ============================================================
 // 社内用シミュレーション
 // ============================================================
+let _internalQuote = null;
+
+const intMarginCls = (p, c) => {
+  if (!p) return '';
+  const m = (p - c) / p * 100;
+  return m < 20 ? 'int-m-warn' : 'int-m-good';
+};
+const intMarginTxt = (p, c) => {
+  if (!p) return '—';
+  const m = (p - c) / p * 100;
+  return m.toFixed(1) + '%';
+};
+
 function showInternalSimulation() {
   const sections = collectLines();
   if (!sections.length) { alert('モデルを選択してください'); return; }
-  const q = buildQuoteData(sections);
+  _internalQuote = buildQuoteData(sections);
 
-  const d = new Date(q.createdAt);
+  const d = new Date(_internalQuote.createdAt);
   document.getElementById('intDate').textContent = '発行日：' +
     d.getFullYear() + '/' + String(d.getMonth()+1).padStart(2,'0') + '/' + String(d.getDate()).padStart(2,'0');
 
-  const marginCls = (p, c) => {
-    if (!p) return '';
-    const m = (p - c) / p * 100;
-    return m < 20 ? 'int-m-warn' : 'int-m-good';
-  };
-  const marginTxt = (p, c) => {
-    if (!p) return '—';
-    const m = (p - c) / p * 100;
-    return m.toFixed(1) + '%';
-  };
+  renderInternalSimulation();
+  document.getElementById('internalPage').style.display = 'block';
+  document.body.style.overflow = 'hidden';
+  document.getElementById('internalPage').scrollTop = 0;
+}
 
+function renderInternalSimulation() {
+  const q = _internalQuote;
   let html = '';
   const custLines = [];
   if (q.customerName) custLines.push(`顧客名：${escapeHtml(q.customerName)} 様`);
@@ -1737,46 +1750,88 @@ function showInternalSimulation() {
   }
 
   html += `<table class="int-table" style="margin-top:16px"><thead><tr><th>項目</th><th>売価</th><th>原価</th><th>粗利</th><th>利益率</th></tr></thead><tbody>`;
-  q.sections.forEach(sec => {
+  q.sections.forEach((sec, si) => {
     html += `<tr class="section-hdr"><td colspan="5">${escapeHtml(sec.title)}</td></tr>`;
-    sec.lines.forEach(l => {
+    sec.lines.forEach((l, li) => {
       const c = l.cost || 0;
+      const editable = c === 0;
       const gross = l.val - c;
+      const costCell = editable
+        ? `<input type="number" class="int-cost-input" data-si="${si}" data-li="${li}" value="0" placeholder="0" min="0" step="1000">`
+        : fmt(c);
       html += `<tr class="${l.cls||''}">`+
         `<td>${escapeHtml(l.name)}</td>`+
         `<td>${fmt(l.val)}</td>`+
-        `<td>${fmt(c)}</td>`+
-        `<td>${fmt(gross)}</td>`+
-        `<td class="${marginCls(l.val, c)}">${marginTxt(l.val, c)}</td>`+
+        `<td>${costCell}</td>`+
+        `<td id="int-gross-${si}-${li}">${fmt(gross)}</td>`+
+        `<td id="int-margin-${si}-${li}" class="${intMarginCls(l.val, c)}">${intMarginTxt(l.val, c)}</td>`+
         `</tr>`;
     });
   });
   html += `</tbody></table>`;
 
+  html += `<div class="int-summary" id="intSummary">${buildInternalSummaryHTML(q)}</div>`;
+
+  document.getElementById('intBody').innerHTML = html;
+
+  // 入力イベントをバインド
+  document.querySelectorAll('.int-cost-input').forEach(inp => {
+    inp.addEventListener('input', e => {
+      const si = +e.target.dataset.si;
+      const li = +e.target.dataset.li;
+      const newCost = parseFloat(e.target.value) || 0;
+      _internalQuote.sections[si].lines[li].cost = newCost;
+      const line = _internalQuote.sections[si].lines[li];
+      const gross = line.val - newCost;
+      document.getElementById(`int-gross-${si}-${li}`).textContent = fmt(gross);
+      const marginEl = document.getElementById(`int-margin-${si}-${li}`);
+      marginEl.className = intMarginCls(line.val, newCost);
+      marginEl.textContent = intMarginTxt(line.val, newCost);
+      recalcInternalSummary();
+    });
+  });
+}
+
+function buildInternalSummaryHTML(q) {
+  let html = '';
   const preDisc = q.totalPre + q.discount;
   const costSum = q.totalCost;
-  html += `<div class="int-summary">`;
   html += `<div class="int-sum-row"><span>売価合計（値引き前）</span><span>${fmt(preDisc)}</span></div>`;
   if (q.discount > 0) html += `<div class="int-sum-row" style="color:#9A3412"><span>値引き</span><span>−${fmt(q.discount)}</span></div>`;
   html += `<div class="int-sum-row"><span>売価合計（値引き後・税前）</span><span>${fmt(q.totalPre)}</span></div>`;
   html += `<div class="int-sum-row"><span>原価合計</span><span>${fmt(costSum)}</span></div>`;
   html += `<div class="int-sum-row"><span>粗利</span><span>${fmt(q.totalGross)}</span></div>`;
-  html += `<div class="int-sum-row big"><span>総利益率</span><span class="${marginCls(q.totalPre, costSum)}">${marginTxt(q.totalPre, costSum)}</span></div>`;
+  html += `<div class="int-sum-row big"><span>総利益率</span><span class="${intMarginCls(q.totalPre, costSum)}">${intMarginTxt(q.totalPre, costSum)}</span></div>`;
   if (q.discount > 0) {
     const preMargin = preDisc > 0 ? (preDisc - costSum) / preDisc * 100 : 0;
     html += `<div class="int-sum-row" style="color:var(--t3);font-size:0.78rem;margin-top:6px"><span>値引き前利益率</span><span>${preMargin.toFixed(1)}%</span></div>`;
   }
-  html += `</div>`;
+  return html;
+}
 
-  document.getElementById('intBody').innerHTML = html;
-  document.getElementById('internalPage').style.display = 'block';
-  document.body.style.overflow = 'hidden';
-  document.getElementById('internalPage').scrollTop = 0;
+function recalcInternalSummary() {
+  const q = _internalQuote;
+  let cost = 0;
+  q.sections.forEach(s => s.lines.forEach(l => cost += (l.cost || 0)));
+  q.totalCost = cost;
+  q.totalGross = q.totalPre - cost;
+  q.marginPct = q.totalPre > 0 ? q.totalGross / q.totalPre * 100 : 0;
+  document.getElementById('intSummary').innerHTML = buildInternalSummaryHTML(q);
 }
 
 function closeInternalSimulation() {
   document.getElementById('internalPage').style.display = 'none';
   document.body.style.overflow = '';
+  _internalQuote = null;
+}
+
+function applyInternalSimulationToFinal() {
+  const q = _internalQuote;
+  if (!q) return;
+  // 内部ページを閉じて、確定ページに遷移（履歴保存も実行）
+  document.getElementById('internalPage').style.display = 'none';
+  _internalQuote = null;
+  showCompletionFromData(q, true);
 }
 
 function update() {
