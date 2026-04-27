@@ -32,9 +32,9 @@
     .logo { font-size: 0.82rem; font-weight: 800; letter-spacing: 0.02em; white-space: nowrap; line-height: 1.2; }
     .logo-by { font-size: 0.55rem; font-weight: 500; color: var(--t3); letter-spacing: 0.04em; display: block; }
     .s-nav { display: flex; gap: 2px; flex: 1; }
-    .s-btn { padding: 6px 14px; border-radius: 8px; border: none; background: transparent; font-size: 0.83rem; font-weight: 500; color: var(--t2); cursor: pointer; transition: all .15s; white-space: nowrap; display: flex; align-items: center; gap: 6px; }
+    .s-btn { padding: 6px 14px; border-radius: 8px; border: none; background: transparent; font-size: 0.96rem; font-weight: 700; color: var(--t2); cursor: pointer; transition: all .15s; white-space: nowrap; display: flex; align-items: center; gap: 6px; }
     .s-btn:hover { background: var(--bg); color: var(--t1); }
-    .s-btn.active { background: var(--p-light); color: var(--p); font-weight: 600; }
+    .s-btn.active { background: var(--p-light); color: var(--p); font-weight: 700; }
     .s-btn .dot { width: 6px; height: 6px; border-radius: 50%; background: #D1D5DB; opacity: 1; transition: background .15s; flex-shrink: 0; }
     .s-btn.has-sel .dot { background: var(--p); }
     .btn-pdf { padding: 7px 16px; background: var(--p); color: #fff; border: none; border-radius: 8px; font-size: 0.83rem; font-weight: 600; cursor: pointer; white-space: nowrap; transition: background .15s; }
@@ -386,7 +386,7 @@
       .hdr { flex-wrap: wrap; height: auto; padding: 10px 12px 0; gap: 0; }
       .btn-pdf { margin-left: auto; }
       .s-nav { order: 3; width: 100%; flex: none; border-top: 1px solid var(--border); padding: 6px 0; margin-top: 8px; overflow-x: auto; gap: 0; }
-      .s-btn { padding: 5px 10px; font-size: 0.78rem; white-space: nowrap; }
+      .s-btn { padding: 5px 10px; font-size: 0.91rem; font-weight: 700; white-space: nowrap; }
       .mg-row .qty-btn { width: 36px; height: 36px; font-size: 1rem; }
       .mg-row .qty-val { font-size: 0.88rem; min-width: 32px; }
       /* customer grid: 1 column */
@@ -452,7 +452,7 @@
 <body data-mode="create">
 
 <header class="hdr">
-  <div class="logo" style="cursor:pointer" onclick="switchMode('create')">簡単見積もりシミュレーション</div>
+  <div class="logo" style="cursor:pointer" onclick="switchMode('create')">見積もりシミュレーター</div>
   <nav class="s-nav" id="sNav"></nav>
   <button class="btn-pdf" id="hdrConfirmBtn" onclick="confirmEstimate()">見積もりを確定</button>
 </header>
@@ -555,7 +555,7 @@
 <div id="completionPage" onclick="if(event.target===this)closeCompletion()">
   <div class="comp-sheet">
     <div class="comp-hdr">
-      <div class="comp-logo-w">簡単見積もりシミュレーション</div>
+      <div class="comp-logo-w">見積もりシミュレーター</div>
       <div class="comp-ttl">トレーラーハウス 概算見積もり</div>
       <div class="comp-date" id="compDate"></div>
     </div>
