@@ -533,6 +533,7 @@
       <option value="tinys">Tinys INSPIRATION</option>
       <option value="roadie">ROADIE</option>
       <option value="chassis">シャーシ</option>
+      <option value="other">その他車両</option>
     </select>
   </div>
   <div class="hist-list" id="histList"></div>
@@ -593,6 +594,7 @@ const SERIES = [
   { id:'tinys', label:'Tinys INSPIRATION' },
   { id:'roadie', label:'ROADIE' },
   { id:'chassis', label:'シャーシ' },
+  { id:'other', label:'その他車両' },
 ];
 
 const TINYS_MODELS = [
@@ -680,6 +682,37 @@ const ROADIE_MISC_OPTS = [
   { id:'rm3', name:'車両申請書類', ico:'📋', price:100000, cost:0 },
   { id:'rm4', name:'予備車検',     ico:'🔍', price:80000,  cost:0 },
   { id:'rm5', name:'設置費用',     ico:'🏗️', price:50000,  cost:0 },
+];
+
+// その他車両 — 新車・実車 / 中古車両
+const OTHER_MODELS = [
+  // 新車・実車
+  { id:'oth1',  label:'Tinys INSPIRATION｜7.2m｜エアコン込',           shortLabel:'Tinys 7.2m EAC',  price:7700000,  cost:5308700, ico:'🚐' },
+  { id:'oth2',  label:'Tinys INSPIRATION｜9m｜ロフト付き、エアコン込', shortLabel:'Tinys 9m ロフト',  price:9000000,  cost:6240300, ico:'🚐' },
+  { id:'oth3',  label:'ROADIE｜ロフト付き、エアコン込',                 shortLabel:'ROADIE ロフト',    price:10000000, cost:6999335, ico:'🚐' },
+  { id:'oth4',  label:'ROADIE 逆イニシア｜6m｜3台限定',                 shortLabel:'逆イニシア',       price:0,        cost:0,       ico:'🚐' },
+  { id:'oth5',  label:'ROADIE 狭イニシア｜6m｜2台限定',                 shortLabel:'狭イニシア',       price:0,        cost:0,       ico:'🚐' },
+  { id:'oth6',  label:'MIGRA｜7.2m｜片流れ｜エアコンあり',              shortLabel:'MIGRA 7.2m',      price:8900000,  cost:6133000, ico:'🚐' },
+  { id:'oth7',  label:'林スケルトントレーラー',                          shortLabel:'林スケルトン',    price:3980000,  cost:2550000, ico:'🚐' },
+  // 中古車両
+  { id:'oth8',  label:'ROADIE 寒冷地仕様｜美瑛',                        shortLabel:'ROADIE 美瑛',      price:9000000,  cost:6982945, ico:'🚛' },
+  { id:'oth9',  label:'MIGRA｜7.2m｜片流れ｜エアコンあり（中古）',      shortLabel:'MIGRA 中古',      price:8500000,  cost:5733000, ico:'🚛' },
+  { id:'oth10', label:'MIGRA 太陽光',                                   shortLabel:'MIGRA 太陽光',     price:11900000, cost:9395440, ico:'🚛' },
+  { id:'oth11', label:'分離木造モデル｜水回り追加',                      shortLabel:'分離木造',         price:6900000,  cost:4770949, ico:'🚛' },
+];
+const OTHER_GROUPS = [
+  { size:'新車・実車', models:['oth1','oth2','oth3','oth4','oth5','oth6','oth7'] },
+  { size:'中古車両',   models:['oth8','oth9','oth10','oth11'] },
+];
+const OTHER_OPTS = [
+  { id:'ooj1', name:'水平ジャッキ4個', ico:'⚙️', price:0,      cost:48000  },
+  { id:'ooj2', name:'水平ジャッキ6個', ico:'⚙️', price:100000, cost:72000  },
+  { id:'ooj3', name:'水平ジャッキ8個', ico:'⚙️', price:170000, cost:120000 },
+];
+const OTHER_MISC_OPTS = [
+  { id:'om1', name:'車両申請書類', ico:'📋', price:100000, cost:50000 },
+  { id:'om2', name:'予備車検',     ico:'🔍', price:80000,  cost:50000 },
+  { id:'om3', name:'設置費用',     ico:'🏗️', price:50000,  cost:30000 },
 ];
 // 難易度係数 Lv1(×0.1) 〜 Lv7(×1.3)
 const DESIGN_LEVELS = [
@@ -894,6 +927,7 @@ let state = {
   tinys:   { modelQtys:{}, sizeOpts:{}, commonOpts:{}, blindIdx:0, blindCount:1, miscOpts:{}, designLv:0, customOpts:[] },
   roadie:  { modelQtys:{}, sizeOpts:{}, commonOpts:{}, miscOpts:{}, designLv:0, customOpts:[] },
   chassis: { modelQtys:{}, opts:{} },
+  other:   { modelQtys:{}, opts:{}, miscOpts:{} },
 };
 const hasModel   = (s) => Object.values(s.modelQtys||{}).some(q => q > 0);
 const seriesQty  = (s) => Object.values(s.modelQtys||{}).reduce((a,b) => a+b, 0);
@@ -946,6 +980,10 @@ function ylwPrice(o)  { return ovr(`ylwTransport:${o.idx}:price`, o.price); }
 function ylwCost(o)   { return ovr(`ylwTransport:${o.idx}:cost`,  o.cost || 0); }
 function chtrPrice(o) { return ovr(`chTransport:${o.idx}:price`, o.price); }
 function chtrCost(o)  { return ovr(`chTransport:${o.idx}:cost`,  o.cost || 0); }
+function otoPrice(o)  { return ovr(`otherOpt:${o.id}:price`, o.price); }
+function otoCost(o)   { return ovr(`otherOpt:${o.id}:cost`,  o.cost || 0); }
+function omPrice(o)   { return ovr(`otherMisc:${o.id}:price`, o.price); }
+function omCost(o)    { return ovr(`otherMisc:${o.id}:cost`,  o.cost || 0); }
 
 // ============================================================
 // History storage
@@ -977,7 +1015,7 @@ function buildHeader() {
     btn.onclick = () => { state.active = s.id; update(); };
     nav.appendChild(btn);
   });
-  const titles = { tinys:'Tinys INSPIRATION', roadie:'ROADIE', chassis:'シャーシ' };
+  const titles = { tinys:'Tinys INSPIRATION', roadie:'ROADIE', chassis:'シャーシ', other:'その他車両' };
   document.getElementById('sbTitle').textContent = titles[state.active];
 }
 
@@ -991,6 +1029,7 @@ function renderForm() {
   if (state.active === 'tinys')   renderTinys(el);
   if (state.active === 'roadie')  renderRoadie(el);
   if (state.active === 'chassis') renderChassis(el);
+  if (state.active === 'other')   renderOther(el);
   renderShared(el);
 }
 
@@ -1108,6 +1147,28 @@ function renderRoadie(el) {
 
   renderCustomOptsCard(s, el);
   renderDesignLevelCard(s, ROADIE_MODELS, el);
+}
+
+// ---- その他車両 ----
+function renderOther(el) {
+  const s = state.other;
+  el.appendChild(modelListGrouped('車両を選択', '新車・実車／中古車両から選択', OTHER_GROUPS, OTHER_MODELS, s));
+
+  const tq = seriesQty(s);
+
+  // 共通オプション（水平ジャッキ）
+  const c1 = sectionCard('共通オプション', '');
+  const rows1 = div('opt-rows');
+  OTHER_OPTS.forEach(opt => rows1.appendChild(toggleRow(opt, otoPrice(opt), !!s.opts[opt.id], false, v => { s.opts[opt.id] = v; update(); })));
+  c1.appendChild(rows1);
+  el.appendChild(c1);
+
+  // 設計・手続き関連
+  const c2 = sectionCard('設計・手続き関連', '');
+  const rows2 = div('opt-rows');
+  OTHER_MISC_OPTS.forEach(opt => rows2.appendChild(toggleRow(opt, omPrice(opt), !!s.miscOpts[opt.id], false, v => { s.miscOpts[opt.id] = v; update(); })));
+  c2.appendChild(rows2);
+  el.appendChild(c2);
 }
 
 // ---- Chassis ----
@@ -1231,7 +1292,7 @@ function renderDesignLevelCard(s, modelsArr, el) {
 function renderShared(el) {
   const hasYLW         = (state.chassis.modelQtys['ch6'] || 0) > 0;
   const hasYclYnr      = ['ch1','ch2','ch3','ch4','ch5'].some(id => (state.chassis.modelQtys[id] || 0) > 0);
-  const hasNonChassis  = hasModel(state.tinys) || hasModel(state.roadie);
+  const hasNonChassis  = hasModel(state.tinys) || hasModel(state.roadie) || hasModel(state.other);
   const c = sectionCard('配送設定・諸経費', '');
   c.id = 'sec-ship';
   const g = div('sel-grid');
@@ -1456,6 +1517,19 @@ function collectLines() {
     sections.push({ title:'シャーシ', key:'chassis', lines });
   }
 
+  if (hasModel(state.other)) {
+    const s = state.other;
+    const tq = seriesQty(s);
+    const lines = [];
+    OTHER_MODELS.forEach(m => {
+      const qty = s.modelQtys[m.id]||0; if (!qty) return;
+      lines.push({ name:`【ベース】${m.label}${ql(qty)}`, val:mPrice(m)*qty, cost:mCost(m)*qty, cls:'base' });
+    });
+    OTHER_OPTS.forEach(o => { if (s.opts[o.id]) lines.push({ name:o.name+ql(tq), val:otoPrice(o)*tq, cost:otoCost(o)*tq }); });
+    OTHER_MISC_OPTS.forEach(o => { if (s.miscOpts[o.id]) lines.push({ name:o.name+ql(tq), val:omPrice(o)*tq, cost:omCost(o)*tq }); });
+    sections.push({ title:'その他車両', key:'other', lines });
+  }
+
   const ylwQty   = state.chassis.modelQtys['ch6'] || 0;
   const yclYnrQty = ['ch1','ch2','ch3','ch4','ch5'].reduce((a,id) => a + (state.chassis.modelQtys[id]||0), 0);
   const hasYLW    = ylwQty > 0;
@@ -1468,6 +1542,7 @@ function collectLines() {
   const nonChassisSeries = [
     { label:'Tinys INSPIRATION', qty: seriesQty(state.tinys), has: hasModel(state.tinys) },
     { label:'ROADIE',            qty: seriesQty(state.roadie), has: hasModel(state.roadie) },
+    { label:'その他車両',        qty: seriesQty(state.other),  has: hasModel(state.other) },
   ].filter(s => s.has);
   const chassisSeries = [
     { label:'シャーシ', qty: seriesQty(state.chassis), has: hasModel(state.chassis) },
@@ -1537,11 +1612,12 @@ function updateSummary() {
   }
 
   // Progress
-  const anyModel = hasModel(state.tinys) || hasModel(state.roadie) || hasModel(state.chassis);
+  const anyModel = hasModel(state.tinys) || hasModel(state.roadie) || hasModel(state.chassis) || hasModel(state.other);
   const anyOpt = !!(
     Object.values(state.tinys.sizeOpts).some(Boolean) || Object.values(state.tinys.commonOpts).some(Boolean) || state.tinys.blindIdx > 0 || Object.values(state.tinys.miscOpts).some(Boolean) || state.tinys.designLv > 0 ||
     Object.values(state.roadie.sizeOpts).some(Boolean) || Object.values(state.roadie.commonOpts).some(Boolean) || Object.values(state.roadie.miscOpts).some(Boolean) || state.roadie.designLv > 0 ||
-    Object.values(state.chassis.opts||{}).some(Boolean)
+    Object.values(state.chassis.opts||{}).some(Boolean) ||
+    Object.values(state.other.opts||{}).some(Boolean) || Object.values(state.other.miscOpts||{}).some(Boolean)
   );
   const hasTransport = state.transportIdx > 0 || state.ylwTransportIdx > 0 || state.chTransportIdx > 0;
   const hasMisc = state.miscCostIdx > 0;
@@ -1599,6 +1675,7 @@ function resetAll() {
   state.tinys   = { modelQtys:{}, sizeOpts:{}, commonOpts:{}, blindIdx:0, blindCount:1, miscOpts:{}, designLv:0, customOpts:[] };
   state.roadie  = { modelQtys:{}, sizeOpts:{}, commonOpts:{}, miscOpts:{}, designLv:0, customOpts:[] };
   state.chassis = { modelQtys:{}, opts:{} };
+  state.other   = { modelQtys:{}, opts:{}, miscOpts:{} };
   // 社内シミュレーションの手入力原価もリセット
   if (typeof _internalCostOverrides !== 'undefined') {
     Object.keys(_internalCostOverrides).forEach(k => delete _internalCostOverrides[k]);
@@ -2077,6 +2154,27 @@ function renderAdmin() {
   });
   html += tableEnd;
 
+  // Other Vehicles - Models
+  html += tableStart('その他車両｜ベースモデル', false);
+  OTHER_MODELS.forEach(m => {
+    html += priceRow(m.label, '', `model:${m.id}:price`, `model:${m.id}:cost`, mPrice(m), mCost(m));
+  });
+  html += tableEnd;
+
+  // Other Vehicles - Common Opts
+  html += tableStart('その他車両｜共通オプション', false);
+  OTHER_OPTS.forEach(opt => {
+    html += priceRow(opt.name, '', `otherOpt:${opt.id}:price`, `otherOpt:${opt.id}:cost`, otoPrice(opt), otoCost(opt));
+  });
+  html += tableEnd;
+
+  // Other Vehicles - Misc
+  html += tableStart('その他車両｜設計・手続き関連', false);
+  OTHER_MISC_OPTS.forEach(opt => {
+    html += priceRow(opt.name, '', `otherMisc:${opt.id}:price`, `otherMisc:${opt.id}:cost`, omPrice(opt), omCost(opt));
+  });
+  html += tableEnd;
+
   // Transport
   html += tableStart('配送費用', false);
   TRANSPORT_OPTS.filter(t => t.idx > 0).forEach(t => {
@@ -2335,6 +2433,24 @@ function downloadAdminCSV() {
     mk: `chopt:${opt.id}:memo`, price: chPrice(opt), cost: chCost(opt)
   })));
 
+  // Other Vehicles - Models
+  addRows('その他車両｜ベースモデル', OTHER_MODELS.map(m => ({
+    label: m.label, size: '', pk: `model:${m.id}:price`, ck: `model:${m.id}:cost`,
+    mk: `model:${m.id}:memo`, price: mPrice(m), cost: mCost(m)
+  })));
+
+  // Other Vehicles - Common Opts
+  addRows('その他車両｜共通オプション', OTHER_OPTS.map(opt => ({
+    label: opt.name, size: '', pk: `otherOpt:${opt.id}:price`, ck: `otherOpt:${opt.id}:cost`,
+    mk: `otherOpt:${opt.id}:memo`, price: otoPrice(opt), cost: otoCost(opt)
+  })));
+
+  // Other Vehicles - Misc
+  addRows('その他車両｜設計・手続き関連', OTHER_MISC_OPTS.map(opt => ({
+    label: opt.name, size: '', pk: `otherMisc:${opt.id}:price`, ck: `otherMisc:${opt.id}:cost`,
+    mk: `otherMisc:${opt.id}:memo`, price: omPrice(opt), cost: omCost(opt)
+  })));
+
   // Transport
   addRows('配送費用', TRANSPORT_OPTS.filter(t => t.idx > 0).map(t => ({
     label: t.label, size: '', pk: `transport:${t.idx}:price`, ck: `transport:${t.idx}:cost`,
@@ -2408,7 +2524,7 @@ function renderHistory() {
     return;
   }
 
-  const seriesLabel = { tinys:'Tinys INSPIRATION', roadie:'ROADIE', chassis:'シャーシ' };
+  const seriesLabel = { tinys:'Tinys INSPIRATION', roadie:'ROADIE', chassis:'シャーシ', other:'その他車両' };
 
   list.innerHTML = filtered.map(qt => {
     const d = new Date(qt.createdAt);
