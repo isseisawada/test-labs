@@ -191,6 +191,15 @@ class FreeeClient:
             "purchase_lines": lines,
         }
 
+        # 部門(section)が必須の会社向けに自動付与
+        try:
+            sections = self._get("/api/1/sections", {"company_id": company_id}).get("sections", [])
+            if sections:
+                body["section_id"] = sections[0]["id"]
+                print(f"  部門を自動設定: {sections[0]['name']} (ID={sections[0]['id']})")
+        except Exception:
+            pass
+
         result = self._post("/api/1/expense_applications", body)
         app = result["expense_application"]
         print(f"経費申請を作成しました: ID={app['id']}  タイトル={app['title']}")
