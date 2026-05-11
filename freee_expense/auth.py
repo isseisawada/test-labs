@@ -6,6 +6,8 @@ freee OAuth2 認証モジュール
 
 アクセストークンを .env に保存します。
 """
+from __future__ import annotations
+
 import os
 import json
 import time
