@@ -6,11 +6,7 @@ freee Web 経費申請 自動入力スクリプト（Playwright）
 from __future__ import annotations
 
 import os
-import shutil
 import sys
-import tempfile
-import time
-from datetime import date
 from dotenv import load_dotenv
 
 load_dotenv(os.path.join(os.path.dirname(os.path.abspath(__file__)), ".env"), override=True)
@@ -22,6 +18,9 @@ FREEE_PASSWORD = os.getenv("FREEE_LOGIN_PASSWORD", "")
 COMPANY_ID     = "845775"
 TITLE          = "経費精算申請1/3"
 DESCRIPTION    = "打ち合わせ"
+
+# ログインセッションを保存するファイル（2回目以降はログイン不要）
+SESSION_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), ".freee_session.json")
 
 ENTRIES = [
     (4,  3,  "逗子葉山",   "京急横浜",     347),
@@ -70,22 +69,45 @@ def wait(page: Page, ms: int = 800):
 
 def login(page: Page):
     print("freee にログイン中...")
-    page.goto("https://accounts.secure.freee.co.jp/login", wait_until="networkidle")
+    page.goto("https://accounts.secure.freee.co.jp/login", wait_until="domcontentloaded")
+    wait(page, 1500)
 
-    page.fill('input[name="email"], input[type="email"]', FREEE_EMAIL)
-    page.fill('input[name="password"], input[type="password"]', FREEE_PASSWORD)
-    page.click('button[type="submit"], input[type="submit"]')
+    # メールアドレス入力欄を待つ
+    email_sel = 'input[type="email"], input[name="email"], input[id*="email"], input[placeholder*="メール"]'
+    try:
+        page.wait_for_selector(email_sel, timeout=20000)
+    except PWTimeout:
+        screenshot = os.path.expanduser("~/Desktop/freee_login_debug.png")
+        page.screenshot(path=screenshot)
+        raise RuntimeError(
+            f"ログインページのメール入力欄が見つかりません。\n"
+            f"スクリーンショット: {screenshot}\n"
+            f"現在のURL: {page.url}"
+        )
+
+    page.fill(email_sel, FREEE_EMAIL)
+    wait(page, 300)
+
+    pass_sel = 'input[type="password"], input[name="password"], input[id*="password"]'
+    page.fill(pass_sel, FREEE_PASSWORD)
+    wait(page, 300)
+
+    page.click('button[type="submit"], input[type="submit"], button:has-text("ログイン")')
     page.wait_for_load_state("networkidle")
     wait(page, 2000)
 
     if "login" in page.url or "signin" in page.url:
-        raise RuntimeError("ログイン失敗。FREEE_LOGIN_EMAIL / FREEE_LOGIN_PASSWORD を確認してください。")
+        screenshot = os.path.expanduser("~/Desktop/freee_login_fail.png")
+        page.screenshot(path=screenshot)
+        raise RuntimeError(
+            f"ログイン失敗。FREEE_LOGIN_EMAIL / FREEE_LOGIN_PASSWORD を確認してください。\n"
+            f"スクリーンショット: {screenshot}"
+        )
     print("  ログイン成功")
 
 
 def open_new_application(page: Page):
     print("経費精算の新規申請を開いています...")
-    # 経費精算ページへ
     page.goto(
         f"https://secure.freee.co.jp/expense_applications/new?company_id={COMPANY_ID}",
         wait_until="networkidle",
@@ -104,13 +126,11 @@ def select_form_template(page: Page):
     """申請フォーム（【部長以上：支払申請】経理承認）を選択"""
     print("  申請フォームを選択中...")
     try:
-        # ドロップダウン or セレクトボックス
         form_sel = 'select[name*="template"], select[id*="template"], [data-testid*="template"]'
         if page.locator(form_sel).count() > 0:
             page.select_option(form_sel, label="【部長以上：支払申請】経理承認")
             wait(page, 1500)
             return
-        # ボタン形式の選択肢
         page.click('text=【部長以上：支払申請】経理承認')
         wait(page, 1500)
     except Exception:
@@ -124,7 +144,6 @@ def select_department(page: Page):
         dept_sel = 'select[name*="section"], select[id*="section"], select[name*="department"]'
         opts = page.locator(dept_sel)
         if opts.count() > 0:
-            # 空でない最初の選択肢を選ぶ
             page.evaluate("""(sel) => {
                 const el = document.querySelector(sel);
                 if (el) {
@@ -152,7 +171,6 @@ def add_line_item(page: Page, idx: int, month: int, day: int,
 
     print(f"  [{idx+1:02d}/37] {expense_date}  {route}  ¥{amount:,}")
 
-    # 2行目以降は「行を追加」ボタンをクリック
     if idx > 0:
         add_btn_selectors = [
             'button:has-text("行を追加")',
@@ -170,7 +188,6 @@ def add_line_item(page: Page, idx: int, month: int, day: int,
             except Exception:
                 continue
 
-    # 最後の行を対象に入力
     rows = page.locator('tr[class*="line"], .expense-line, [data-testid*="line-row"], tbody tr').all()
     row = rows[-1] if rows else page
 
@@ -182,7 +199,6 @@ def add_line_item(page: Page, idx: int, month: int, day: int,
                 return True
         except Exception:
             pass
-        # フォールバック: 全体から最後の要素を探す
         try:
             all_targets = page.locator(field_sel)
             if all_targets.count() > 0:
@@ -192,15 +208,12 @@ def add_line_item(page: Page, idx: int, month: int, day: int,
             pass
         return False
 
-    # 日付
     fill_in_row('input[name*="date"], input[placeholder*="日付"], input[type="date"]', expense_date)
     wait(page, 200)
 
-    # 金額
     fill_in_row('input[name*="amount"], input[placeholder*="金額"]', str(amount))
     wait(page, 200)
 
-    # 内容・メモ
     fill_in_row('input[name*="description"], input[name*="memo"], input[placeholder*="内容"], textarea[name*="description"]', memo)
     wait(page, 200)
 
@@ -235,57 +248,22 @@ def main():
     print(f"=== freee 経費申請 自動入力 ({len(ENTRIES)}件 / ¥{total:,}) ===")
     print("※ブラウザを表示して入力します。入力中は操作しないでください。\n")
 
-    # macOS Chrome プロファイルパス（ログイン済みセッションを再利用）
-    chrome_profile = os.path.expanduser(
-        "~/Library/Application Support/Google/Chrome"
-    )
-
-    tmp_profile = None
-    browser = None
     with sync_playwright() as pw:
-        # Chrome が起動中でも使えるよう、プロファイルを一時ディレクトリにコピーして使用
-        if os.path.exists(chrome_profile):
-            print("Chrome プロファイルを一時ディレクトリにコピー中（数秒かかります）...")
-            tmp_dir = tempfile.mkdtemp(prefix="freee_chrome_")
-            tmp_profile = os.path.join(tmp_dir, "Chrome")
-            try:
-                # Default プロファイルのみコピー（Cookies/Local Storage が含まれる）
-                default_src = os.path.join(chrome_profile, "Default")
-                default_dst = os.path.join(tmp_profile, "Default")
-                if os.path.exists(default_src):
-                    shutil.copytree(default_src, default_dst,
-                                    ignore=shutil.ignore_patterns(
-                                        "*.lock", "lockfile", "SingletonLock",
-                                        "SingletonCookie", "SingletonSocket",
-                                        "CrashpadMetrics*", "GrShaderCache",
-                                        "ShaderCache", "GPUCache",
-                                    ))
-                print(f"  コピー完了: {tmp_profile}")
-                ctx = pw.chromium.launch_persistent_context(
-                    tmp_profile,
-                    channel="chrome",
-                    headless=False,
-                    slow_mo=50,
-                    locale="ja-JP",
-                    timezone_id="Asia/Tokyo",
-                    no_viewport=False,
-                    args=["--window-size=1280,900", "--no-first-run",
-                          "--no-default-browser-check"],
-                )
-                page = ctx.new_page()
-            except Exception as copy_err:
-                print(f"  プロファイルコピー失敗 ({copy_err})。通常起動に切り替えます。")
-                shutil.rmtree(tmp_dir, ignore_errors=True)
-                tmp_profile = None
-                browser = pw.chromium.launch(headless=False, slow_mo=50)
-                ctx = browser.new_context(locale="ja-JP", timezone_id="Asia/Tokyo")
-                page = ctx.new_page()
-                page.set_viewport_size({"width": 1280, "height": 900})
+        browser = pw.chromium.launch(headless=False, slow_mo=50)
+
+        # 保存済みセッションがあれば読み込む（再ログイン不要）
+        if os.path.exists(SESSION_FILE):
+            print(f"保存済みセッションを読み込みます: {SESSION_FILE}")
+            ctx = browser.new_context(
+                storage_state=SESSION_FILE,
+                locale="ja-JP",
+                timezone_id="Asia/Tokyo",
+            )
         else:
-            browser = pw.chromium.launch(headless=False, slow_mo=50)
             ctx = browser.new_context(locale="ja-JP", timezone_id="Asia/Tokyo")
-            page = ctx.new_page()
-            page.set_viewport_size({"width": 1280, "height": 900})
+
+        page = ctx.new_page()
+        page.set_viewport_size({"width": 1280, "height": 900})
 
         try:
             # ログイン確認（未ログインなら自動ログイン）
@@ -293,6 +271,9 @@ def main():
             wait(page, 2000)
             if "login" in page.url or "accounts" in page.url:
                 login(page)
+                # セッションを保存（次回以降はログイン不要）
+                ctx.storage_state(path=SESSION_FILE)
+                print(f"  セッションを保存しました: {SESSION_FILE}")
             else:
                 print("  freee ログイン済みを確認")
 
@@ -318,10 +299,7 @@ def main():
             page.wait_for_timeout(60_000)
         finally:
             ctx.close()
-            if browser:
-                browser.close()
-            if tmp_profile:
-                shutil.rmtree(os.path.dirname(tmp_profile), ignore_errors=True)
+            browser.close()
 
 
 if __name__ == "__main__":
