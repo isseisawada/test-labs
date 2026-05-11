@@ -139,7 +139,7 @@ def debug_dump_page(page: Page, label: str = ""):
     return elements
 
 
-
+def open_new_application(page: Page):
     print("経費精算の新規申請を開いています...")
     page.goto(
         f"https://secure.freee.co.jp/expense_applications/new?company_id={COMPANY_ID}",
