@@ -8,7 +8,9 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from datetime import date
 from dotenv import load_dotenv
-load_dotenv()
+# スクリプトと同じディレクトリの .env を確実に読む
+_env_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), ".env")
+load_dotenv(_env_path, override=True)
 
 from freee_expense.client import FreeeClient, ExpenseLine, ExpenseApplication
 

@@ -100,7 +100,7 @@ def refresh_access_token(client_id: str, client_secret: str, refresh_token: str)
 
 def load_token() -> dict | None:
     """環境変数からトークンを読み込む。有効期限切れなら自動リフレッシュ。"""
-    load_dotenv(ENV_FILE)
+    load_dotenv(ENV_FILE, override=True)
     access_token = os.getenv("FREEE_ACCESS_TOKEN")
     refresh_token = os.getenv("FREEE_REFRESH_TOKEN")
     expires_at = os.getenv("FREEE_TOKEN_EXPIRES_AT")
