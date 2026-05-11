@@ -74,6 +74,9 @@ class FreeeClient:
             json=body,
             timeout=30,
         )
+        if not resp.ok:
+            print(f"[API エラー] {resp.status_code} {path}")
+            print(resp.text[:600])
         resp.raise_for_status()
         return resp.json()
 
