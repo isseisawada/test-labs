@@ -176,7 +176,7 @@ class FreeeClient:
             entry: dict = {
                 "amount": line.amount,
                 "description": line.description,
-                "expense_date": line.expense_date.isoformat(),
+                "transaction_date": line.expense_date.isoformat(),
             }
             if line.account_item_id:
                 entry["account_item_id"] = line.account_item_id
