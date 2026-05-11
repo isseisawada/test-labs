@@ -174,8 +174,9 @@ class FreeeClient:
                 "amount": line.amount,
                 "description": line.description,
                 "expense_date": line.expense_date.isoformat(),
-                "account_item_id": line.account_item_id,
             }
+            if line.account_item_id:
+                entry["account_item_id"] = line.account_item_id
             if line.receipt_ids:
                 entry["receipt_ids"] = line.receipt_ids
             lines.append(entry)

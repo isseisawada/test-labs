@@ -63,46 +63,19 @@ ACCOUNT_NAME = "交通費（電車在来線・バス）"
 
 
 def main():
-    import requests as _req
-    _tok = os.getenv("FREEE_ACCESS_TOKEN", "")
-    print(f"[debug] token prefix : {_tok[:20] if _tok else '(empty)'}")
-    _r = _req.get("https://api.freee.co.jp/api/1/users/me",
-                  headers={"Authorization": f"Bearer {_tok}"}, timeout=10)
-    print(f"[debug] /users/me     : HTTP {_r.status_code}")
-    _r2 = _req.get("https://api.freee.co.jp/api/1/companies",
-                   headers={"Authorization": f"Bearer {_tok}"}, timeout=10)
-    print(f"[debug] /companies    : HTTP {_r2.status_code}")
-    if _r2.status_code == 200:
-        for c in _r2.json().get("companies", []):
-            print(f"[debug]   company: {c['display_name']} id={c['id']} role={c.get('role')}")
-
-    # account_items を直接テスト
-    _r3 = _req.get("https://api.freee.co.jp/api/1/account_items",
-                   params={"company_id": 845775},
-                   headers={"Authorization": f"Bearer {_tok}"}, timeout=10)
-    print(f"[debug] /account_items: HTTP {_r3.status_code}")
-    print(f"[debug] response body : {_r3.text[:400]}")
-
     client = FreeeClient()
-    print(f"[debug] client token : {client._access_token[:20] if client._access_token else '(empty)'}")
 
-    # 勘定科目を検索（部分一致）
-    all_items = client.get_account_items()
-    account_item = None
-    for item in all_items:
-        if "交通費" in item["name"] or "旅費交通費" in item["name"]:
-            account_item = item
-            print(f"勘定科目: {item['name']} (ID={item['id']})")
-            break
-
-    if account_item is None:
-        print(f"エラー: 勘定科目「{ACCOUNT_NAME}」が見つかりません。")
-        print("利用可能な勘定科目:")
+    # 勘定科目 API にアクセス権がない場合は None のまま申請（freee 側で後から設定可）
+    account_item_id = None
+    try:
+        all_items = client.get_account_items()
         for item in all_items:
-            print(f"  {item['name']}")
-        sys.exit(1)
-
-    account_item_id = account_item["id"]
+            if "交通費" in item["name"] or "旅費交通費" in item["name"]:
+                account_item_id = item["id"]
+                print(f"勘定科目: {item['name']} (ID={account_item_id})")
+                break
+    except Exception:
+        print("勘定科目の取得をスキップ（権限なし）。freee 画面で後から設定してください。")
 
     # 明細を組み立て
     lines = []
