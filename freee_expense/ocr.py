@@ -58,22 +58,33 @@ class ReceiptInfo:
         )
 
 
-def _encode_image(file_path: str) -> tuple[str, str]:
-    """画像を base64 エンコードして (base64_data, media_type) を返す"""
+SUPPORTED_IMAGE_EXTS = {".jpg", ".jpeg", ".png", ".gif", ".webp"}
+SUPPORTED_EXTS = SUPPORTED_IMAGE_EXTS | {".pdf"}
+
+
+def _encode_file(file_path: str) -> tuple[str, str, str]:
+    """
+    ファイルを base64 エンコードして (base64_data, media_type, content_type) を返す。
+    content_type は "image" または "document"。
+    """
     ext = Path(file_path).suffix.lower()
     if ext in (".jpg", ".jpeg"):
-        media_type = "image/jpeg"
+        return _b64(file_path), "image/jpeg", "image"
     elif ext == ".png":
-        media_type = "image/png"
+        return _b64(file_path), "image/png", "image"
     elif ext == ".gif":
-        media_type = "image/gif"
+        return _b64(file_path), "image/gif", "image"
     elif ext == ".webp":
-        media_type = "image/webp"
+        return _b64(file_path), "image/webp", "image"
+    elif ext == ".pdf":
+        return _b64(file_path), "application/pdf", "document"
     else:
-        raise ValueError(f"サポートされていない画像形式: {ext}")
+        raise ValueError(f"サポートされていない形式: {ext}（対応: jpg/png/gif/webp/pdf）")
 
+
+def _b64(file_path: str) -> str:
     with open(file_path, "rb") as f:
-        return base64.standard_b64encode(f.read()).decode("utf-8"), media_type
+        return base64.standard_b64encode(f.read()).decode("utf-8")
 
 
 def _guess_account_item(vendor: str, description: str) -> str:
@@ -105,17 +116,30 @@ PROMPT = """
 
 def extract_receipt_info(file_path: str, api_key: str | None = None) -> ReceiptInfo:
     """
-    領収書画像から情報を抽出する。
+    領収書ファイル（画像または PDF）から情報を抽出する。
 
     Args:
-        file_path: 領収書画像のパス（JPEG / PNG / GIF / WebP）
+        file_path: 領収書ファイルのパス（JPEG / PNG / GIF / WebP / PDF）
         api_key: Anthropic API キー（省略時は環境変数 ANTHROPIC_API_KEY を使用）
 
     Returns:
         ReceiptInfo
     """
-    client = anthropic.Anthropic(api_key=api_key or os.getenv("ANTHROPIC_API_KEY"))
-    image_data, media_type = _encode_image(file_path)
+    resolved_key = api_key or os.getenv("ANTHROPIC_API_KEY")
+    if not resolved_key:
+        raise ValueError(
+            "ANTHROPIC_API_KEY が設定されていません。.env に記入してください。\n"
+            "取得: https://console.anthropic.com"
+        )
+
+    client = anthropic.Anthropic(api_key=resolved_key)
+    file_data, media_type, content_type = _encode_file(file_path)
+
+    source_block: dict = {
+        "type": "base64",
+        "media_type": media_type,
+        "data": file_data,
+    }
 
     message = client.messages.create(
         model="claude-opus-4-6",
@@ -125,12 +149,8 @@ def extract_receipt_info(file_path: str, api_key: str | None = None) -> ReceiptI
                 "role": "user",
                 "content": [
                     {
-                        "type": "image",
-                        "source": {
-                            "type": "base64",
-                            "media_type": media_type,
-                            "data": image_data,
-                        },
+                        "type": content_type,
+                        "source": source_block,
                     },
                     {"type": "text", "text": PROMPT},
                 ],
@@ -162,9 +182,13 @@ def extract_receipt_info(file_path: str, api_key: str | None = None) -> ReceiptI
 
 
 def extract_receipts_batch(file_paths: list[str], api_key: str | None = None) -> list[ReceiptInfo]:
-    """複数の領収書を一括 OCR する"""
+    """複数の領収書（画像・PDF）を一括 OCR する"""
     results = []
     for path in file_paths:
+        ext = Path(path).suffix.lower()
+        if ext not in SUPPORTED_EXTS:
+            print(f"スキップ（非対応形式）: {os.path.basename(path)}")
+            continue
         print(f"OCR 処理中: {os.path.basename(path)}")
         try:
             info = extract_receipt_info(path, api_key)
