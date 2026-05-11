@@ -63,7 +63,21 @@ ACCOUNT_NAME = "交通費（電車在来線・バス）"
 
 
 def main():
+    import requests as _req
+    _tok = os.getenv("FREEE_ACCESS_TOKEN", "")
+    print(f"[debug] token prefix : {_tok[:20] if _tok else '(empty)'}")
+    _r = _req.get("https://api.freee.co.jp/api/1/users/me",
+                  headers={"Authorization": f"Bearer {_tok}"}, timeout=10)
+    print(f"[debug] /users/me     : HTTP {_r.status_code}")
+    _r2 = _req.get("https://api.freee.co.jp/api/1/companies",
+                   headers={"Authorization": f"Bearer {_tok}"}, timeout=10)
+    print(f"[debug] /companies    : HTTP {_r2.status_code}")
+    if _r2.status_code == 200:
+        for c in _r2.json().get("companies", []):
+            print(f"[debug]   company: {c['display_name']} id={c['id']} role={c.get('role')}")
+
     client = FreeeClient()
+    print(f"[debug] client token : {client._access_token[:20] if client._access_token else '(empty)'}")
 
     # 勘定科目を検索（部分一致）
     all_items = client.get_account_items()
