@@ -108,9 +108,15 @@ def open_new_application(page: Page):
     print("経費精算の新規申請を開いています...")
     page.goto(
         f"https://secure.freee.co.jp/expense_applications/new?company_id={COMPANY_ID}",
-        wait_until="networkidle",
+        wait_until="domcontentloaded",
+        timeout=60000,
     )
-    wait(page, 2000)
+    # ページ内の何らかの入力要素が出るまで待つ
+    try:
+        page.wait_for_selector('input, textarea, select', timeout=15000)
+    except PWTimeout:
+        pass
+    wait(page, 3000)
 
 
 def set_title(page: Page):
@@ -265,8 +271,8 @@ def main():
 
         try:
             # ログイン確認（未ログインなら自動ログイン）
-            page.goto("https://secure.freee.co.jp", wait_until="networkidle")
-            wait(page, 2000)
+            page.goto("https://secure.freee.co.jp", wait_until="domcontentloaded", timeout=60000)
+            wait(page, 3000)
             if "login" in page.url or "accounts" in page.url:
                 login(page)
                 # セッションを保存（次回以降はログイン不要）
