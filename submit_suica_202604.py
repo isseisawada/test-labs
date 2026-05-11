@@ -76,6 +76,13 @@ def main():
         for c in _r2.json().get("companies", []):
             print(f"[debug]   company: {c['display_name']} id={c['id']} role={c.get('role')}")
 
+    # account_items を直接テスト
+    _r3 = _req.get("https://api.freee.co.jp/api/1/account_items",
+                   params={"company_id": 845775},
+                   headers={"Authorization": f"Bearer {_tok}"}, timeout=10)
+    print(f"[debug] /account_items: HTTP {_r3.status_code}")
+    print(f"[debug] response body : {_r3.text[:400]}")
+
     client = FreeeClient()
     print(f"[debug] client token : {client._access_token[:20] if client._access_token else '(empty)'}")
 
