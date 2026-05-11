@@ -233,14 +233,41 @@ def main():
     print(f"=== freee 経費申請 自動入力 ({len(ENTRIES)}件 / ¥{total:,}) ===")
     print("※ブラウザを表示して入力します。入力中は操作しないでください。\n")
 
+    # macOS Chrome プロファイルパス（ログイン済みセッションを再利用）
+    chrome_profile = os.path.expanduser(
+        "~/Library/Application Support/Google/Chrome"
+    )
+
     with sync_playwright() as pw:
-        browser = pw.chromium.launch(headless=False, slow_mo=50)
-        ctx = browser.new_context(locale="ja-JP", timezone_id="Asia/Tokyo")
-        page = ctx.new_page()
-        page.set_viewport_size({"width": 1280, "height": 900})
+        # 既存 Chrome プロファイルがあれば使用（ログイン済みセッション引き継ぎ）
+        if os.path.exists(chrome_profile):
+            print("既存の Chrome セッションを使用します（再ログイン不要）")
+            ctx = pw.chromium.launch_persistent_context(
+                chrome_profile,
+                channel="chrome",
+                headless=False,
+                slow_mo=50,
+                locale="ja-JP",
+                timezone_id="Asia/Tokyo",
+                no_viewport=False,
+                args=["--window-size=1280,900"],
+            )
+            page = ctx.new_page()
+        else:
+            browser = pw.chromium.launch(headless=False, slow_mo=50)
+            ctx = browser.new_context(locale="ja-JP", timezone_id="Asia/Tokyo")
+            page = ctx.new_page()
+            page.set_viewport_size({"width": 1280, "height": 900})
 
         try:
-            login(page)
+            # ログイン確認（未ログインなら自動ログイン）
+            page.goto("https://secure.freee.co.jp", wait_until="networkidle")
+            wait(page, 2000)
+            if "login" in page.url or "accounts" in page.url:
+                login(page)
+            else:
+                print("  freee ログイン済みを確認")
+
             open_new_application(page)
             select_form_template(page)
             select_department(page)
