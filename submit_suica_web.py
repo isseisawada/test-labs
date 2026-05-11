@@ -70,39 +70,37 @@ def wait(page: Page, ms: int = 800):
 def login(page: Page):
     print("freee にログイン中...")
     page.goto("https://accounts.secure.freee.co.jp/login", wait_until="domcontentloaded")
-    wait(page, 1500)
-
-    # メールアドレス入力欄を待つ
-    email_sel = 'input[type="email"], input[name="email"], input[id*="email"], input[placeholder*="メール"]'
-    try:
-        page.wait_for_selector(email_sel, timeout=20000)
-    except PWTimeout:
-        screenshot = os.path.expanduser("~/Desktop/freee_login_debug.png")
-        page.screenshot(path=screenshot)
-        raise RuntimeError(
-            f"ログインページのメール入力欄が見つかりません。\n"
-            f"スクリーンショット: {screenshot}\n"
-            f"現在のURL: {page.url}"
-        )
-
-    page.fill(email_sel, FREEE_EMAIL)
-    wait(page, 300)
-
-    pass_sel = 'input[type="password"], input[name="password"], input[id*="password"]'
-    page.fill(pass_sel, FREEE_PASSWORD)
-    wait(page, 300)
-
-    page.click('button[type="submit"], input[type="submit"], button:has-text("ログイン")')
-    page.wait_for_load_state("networkidle")
     wait(page, 2000)
 
-    if "login" in page.url or "signin" in page.url:
-        screenshot = os.path.expanduser("~/Desktop/freee_login_fail.png")
-        page.screenshot(path=screenshot)
-        raise RuntimeError(
-            f"ログイン失敗。FREEE_LOGIN_EMAIL / FREEE_LOGIN_PASSWORD を確認してください。\n"
-            f"スクリーンショット: {screenshot}"
-        )
+    # 自動ログインを試みる
+    email_sel = 'input[type="email"], input[name="email"], input[id*="email"], input[autocomplete="email"]'
+    auto_ok = False
+    try:
+        page.wait_for_selector(email_sel, timeout=8000)
+        page.fill(email_sel, FREEE_EMAIL)
+        wait(page, 300)
+        page.fill('input[type="password"]', FREEE_PASSWORD)
+        wait(page, 300)
+        page.click('button[type="submit"], input[type="submit"], button:has-text("ログイン")')
+        page.wait_for_load_state("networkidle")
+        wait(page, 2000)
+        auto_ok = True
+    except Exception:
+        pass
+
+    # 自動ログイン失敗 or まだログイン画面 → 手動ログインを促す
+    if not auto_ok or "login" in page.url or "accounts" in page.url:
+        print("\n" + "=" * 60)
+        print("【手動ログインが必要です】")
+        print("開いているブラウザで freee にログインしてください。")
+        print("ログイン完了後、このターミナルで Enter キーを押してください。")
+        print("=" * 60)
+        input("\nログイン完了したら Enter を押してください... ")
+        wait(page, 1000)
+
+    if "login" in page.url or "accounts" in page.url:
+        raise RuntimeError("ログインが確認できません。ブラウザでログインしてから再度 Enter を押してください。")
+
     print("  ログイン成功")
 
 
