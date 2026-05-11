@@ -20,6 +20,27 @@ TITLE          = "経費精算申請1/3"
 DESCRIPTION    = "打ち合わせ"
 ACCOUNT_ITEM   = "交通費（電車在来線・バス）"
 
+# Suica 表記 → freee の駅検索で使う名前のマッピング
+# freee の駅オートコンプリートに合わせて変換する
+STATION_MAP = {
+    "逗子葉山":     "逗子・葉山",
+    "京急横浜":     "横浜",
+    "相鉄横浜":     "横浜",
+    "市営横浜":     "横浜",
+    "市営桜木":     "桜木町",
+    "市営関内":     "関内",
+    "市営上大岡":   "上大岡",
+    "京急上大":     "上大岡",
+    "京急弘明":     "弘明寺",
+    "地下鉄大手町": "大手町",
+    "都市ヶ谷":     "市ヶ谷",
+    "馬喰横山":     "馬喰横山",
+}
+
+
+def map_station(name: str) -> str:
+    return STATION_MAP.get(name, name)
+
 SESSION_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), ".freee_session.json")
 
 ENTRIES = [
@@ -122,17 +143,32 @@ def select_route(page: Page, from_st: str, to_st: str, amount: int):
     page.locator('button:has-text("交通経路を選択")').last.click()
     wait(page, 1500)
 
-    # 出発・到着を入力
-    type_station(page, "departure-station", from_st)
-    type_station(page, "arrival-station",   to_st)
+    # Suica 表記を freee の駅名に変換
+    from_mapped = map_station(from_st)
+    to_mapped   = map_station(to_st)
+    if from_mapped != from_st:
+        print(f"      駅名変換: {from_st} → {from_mapped}")
+    if to_mapped != to_st:
+        print(f"      駅名変換: {to_st} → {to_mapped}")
 
-    # 経路検索（ボタンが有効になるまで少し待つ）
+    # 出発・到着を入力
+    type_station(page, "departure-station", from_mapped)
+    type_station(page, "arrival-station",   to_mapped)
+
+    # 経路検索ボタンが有効になるまで待つ（最大10秒）
     wait(page, 500)
-    search_btn = page.locator('button:has-text("経路検索")')
+    search_btn = page.locator('button:not([disabled]):has-text("経路検索")')
     try:
-        search_btn.wait_for(state="enabled", timeout=3000)
+        search_btn.wait_for(state="visible", timeout=10000)
     except Exception:
-        pass
+        # ボタンが有効にならない = 駅選択失敗 → ダイアログを閉じて失敗を返す
+        print("      経路検索ボタンが有効になりません → キャンセル")
+        try:
+            page.locator('button:has-text("キャンセル")').click()
+        except Exception:
+            page.keyboard.press("Escape")
+        wait(page, 500)
+        return False
     search_btn.click()
     wait(page, 4000)
 
