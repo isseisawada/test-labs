@@ -318,10 +318,20 @@ def main():
 
             open_new_application(page)
 
-            # フォーム構造を調査してデスクトップに保存
-            print("\n【デバッグ】フォーム構造を調査中...")
-            debug_dump_page(page, "form")
-            print("デスクトップの freee_debug_form.png と freee_debug_form.json を確認してください。")
+            # タイトルを設定（正しいセレクタ判明）
+            print(f"  タイトルを設定: {TITLE}")
+            page.fill('#input-title', TITLE)
+            wait(page)
+
+            # 「手動で経費入力」をクリックして1行目の入力欄を出す
+            print("  「手動で経費入力」をクリック...")
+            page.click('button.vb-button--appearanceTertiary:has-text("手動で経費入力")')
+            wait(page, 2000)
+
+            # クリック後のフォーム構造を調査
+            print("\n【デバッグ】手動入力後のフォーム構造を調査中...")
+            debug_dump_page(page, "after_manual")
+            print("デスクトップの freee_debug_after_manual.png と .json を確認してください。")
             print("スクリプトを終了します。")
             return
 
