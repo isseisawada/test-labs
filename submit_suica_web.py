@@ -18,6 +18,7 @@ FREEE_PASSWORD = os.getenv("FREEE_LOGIN_PASSWORD", "")
 COMPANY_ID     = "845775"
 TITLE          = "経費精算申請1/3"
 DESCRIPTION    = "打ち合わせ"
+ACCOUNT_ITEM   = "交通費（電車在来線・バス）"
 
 SESSION_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), ".freee_session.json")
 
@@ -90,15 +91,129 @@ def login(page: Page):
         print("\n" + "=" * 60)
         print("【手動ログインが必要です】")
         print("開いているブラウザで freee にログインしてください。")
-        print("ログイン完了後、このターミナルで Enter キーを押してください。")
         print("=" * 60)
         input("\nログイン完了したら Enter を押してください... ")
         wait(page, 1000)
 
     if "login" in page.url or "accounts" in page.url:
         raise RuntimeError("ログインが確認できません。")
-
     print("  ログイン成功")
+
+
+def type_station(page: Page, field_id: str, station: str):
+    """駅名をオートコンプリートで入力して最初の候補を選択"""
+    field = page.locator(f'#{field_id}')
+    field.click(click_count=3)
+    field.type(station, delay=80)
+    wait(page, 1200)
+    try:
+        opts = page.locator('[role="option"]')
+        opts.first.wait_for(timeout=4000)
+        print(f"      候補: {opts.first.inner_text().strip()}")
+        opts.first.click()
+        wait(page, 400)
+    except Exception:
+        field.press("Tab")
+        wait(page, 400)
+
+
+def select_route(page: Page, from_st: str, to_st: str, amount: int):
+    """「交通経路を選択」ダイアログで経路を検索・選択"""
+    page.locator('button:has-text("交通経路を選択")').last.click()
+    wait(page, 1500)
+
+    # 出発・到着を入力
+    type_station(page, "departure-station", from_st)
+    type_station(page, "arrival-station",   to_st)
+
+    # 経路検索（ボタンが有効になるまで少し待つ）
+    wait(page, 500)
+    search_btn = page.locator('button:has-text("経路検索")')
+    try:
+        search_btn.wait_for(state="enabled", timeout=3000)
+    except Exception:
+        pass
+    search_btn.click()
+    wait(page, 4000)
+
+    # 経路結果から金額が一致するものを選ぶ、なければ最初を選択
+    try:
+        radios = page.locator('input[type="radio"]:not(.vb-toggleButton__input)')
+        radios.first.wait_for(timeout=6000)
+        count = radios.count()
+
+        selected = False
+        for i in range(count):
+            # ラジオボタンの親要素のテキストで金額を確認
+            try:
+                parent_text = radios.nth(i).locator('xpath=ancestor::tr | xpath=ancestor::li | xpath=ancestor::div[contains(@class,"route")]').first.inner_text()
+                if str(amount) in parent_text.replace(",", "").replace("￥", "").replace("¥", ""):
+                    radios.nth(i).click()
+                    selected = True
+                    break
+            except Exception:
+                pass
+
+        if not selected:
+            radios.first.click()
+        wait(page, 500)
+
+        # 確定ボタン（freee のルートダイアログの閉じるボタン）
+        for btn_text in ["この経路を使用", "選択して閉じる", "確定", "決定", "OK"]:
+            try:
+                btn = page.locator(f'button:has-text("{btn_text}")')
+                if btn.count() > 0 and btn.first.is_visible():
+                    btn.first.click()
+                    wait(page, 1000)
+                    return True
+            except Exception:
+                pass
+
+        # 確定ボタンが見つからない場合、Escape で閉じる
+        page.keyboard.press("Escape")
+        wait(page, 500)
+        return True
+
+    except Exception as e:
+        print(f"      経路選択失敗: {e} → キャンセルして手動入力")
+        try:
+            page.locator('button:has-text("キャンセル")').click()
+        except Exception:
+            page.keyboard.press("Escape")
+        wait(page, 500)
+        return False
+
+
+def select_account_item(page: Page):
+    """経費科目「交通費（電車在来線・バス）」を選択"""
+    try:
+        # 経費科目「選択」ボタンをクリック
+        sel_btn = page.locator('button.vb-button--small:has-text("選択")').last
+        if sel_btn.count() == 0:
+            sel_btn = page.locator('button:has-text("選択")').last
+        sel_btn.wait_for(timeout=3000)
+        sel_btn.click()
+        wait(page, 1500)
+
+        # 検索ボックスがあれば「交通費」と入力
+        search = page.locator(
+            'input[placeholder*="検索"], input[aria-label*="検索"], '
+            'input[type="search"], input[placeholder*="科目"]'
+        )
+        if search.count() > 0:
+            search.first.fill("交通費")
+            wait(page, 800)
+
+        # 「交通費（電車在来線・バス）」をクリック
+        target = page.locator(f'text="{ACCOUNT_ITEM}"')
+        if target.count() == 0:
+            target = page.locator(f':has-text("{ACCOUNT_ITEM}")')
+        target.first.wait_for(timeout=5000)
+        target.first.click()
+        wait(page, 500)
+        print(f"      経費科目: {ACCOUNT_ITEM}")
+    except Exception as e:
+        print(f"      経費科目の選択をスキップ: {e}")
 
 
 def add_line_item(page: Page, idx: int, month: int, day: int,
@@ -110,26 +225,35 @@ def add_line_item(page: Page, idx: int, month: int, day: int,
 
     print(f"  [{idx+1:02d}/{len(ENTRIES)}] {expense_date}  {route}  ¥{amount:,}")
 
-    # 「手動で経費入力」ボタンをクリックして申請行を追加
+    # 「手動で経費入力」で新しい申請行を追加
     page.locator('button:has-text("手動で経費入力")').click()
     wait(page, 800)
 
-    # 最後の日付フィールドに入力（クリアしてから入力）
+    # 日付を設定
     date_field = page.locator('input[aria-label="日付"]').last
     date_field.click(click_count=3)
     date_field.type(expense_date)
     date_field.press("Tab")
     wait(page, 300)
 
-    # 最後の内容フィールドに入力
-    page.locator('textarea[aria-label="内容"]').last.fill(memo)
-    wait(page, 200)
+    # 交通経路ダイアログで経路を入力（到着駅がある場合）
+    route_ok = False
+    if to_st:
+        route_ok = select_route(page, from_st, to_st, amount)
 
-    # 最後の金額フィールドに入力
+    # 経路選択失敗またはバスの場合は内容を手動入力
+    if not route_ok:
+        page.locator('textarea[aria-label="内容"]').last.fill(memo)
+
+    # 金額を設定（経路自動入力でも実際の Suica 金額で上書き）
+    wait(page, 300)
     amount_field = page.locator('input[aria-label="金額"]').last
     amount_field.click(click_count=3)
     amount_field.fill(str(amount))
     wait(page, 200)
+
+    # 経費科目を選択
+    select_account_item(page)
 
 
 def save_draft(page: Page):
@@ -149,7 +273,7 @@ def main():
     print("※ブラウザを表示して入力します。入力中は操作しないでください。\n")
 
     with sync_playwright() as pw:
-        browser = pw.chromium.launch(headless=False, slow_mo=50)
+        browser = pw.chromium.launch(headless=False, slow_mo=30)
 
         if os.path.exists(SESSION_FILE):
             print(f"保存済みセッションを読み込みます: {SESSION_FILE}")
@@ -174,116 +298,33 @@ def main():
             else:
                 print("  freee ログイン済みを確認")
 
-            # 経費精算の新規申請ページへ
             print("経費精算の新規申請を開いています...")
             page.goto(
                 f"https://secure.freee.co.jp/expense_applications/new?company_id={COMPANY_ID}",
                 wait_until="domcontentloaded",
                 timeout=60000,
             )
-            try:
-                page.wait_for_selector('#input-title', timeout=15000)
-            except PWTimeout:
-                raise RuntimeError("フォームの読み込みに失敗しました。ブラウザを確認してください。")
+            page.wait_for_selector('#input-title', timeout=15000)
             wait(page, 2000)
 
             # タイトルを設定
-            print(f"  タイトルを設定: {TITLE}")
+            print(f"  タイトル: {TITLE}")
             title_field = page.locator('#input-title')
             title_field.click(click_count=3)
             title_field.fill(TITLE)
             wait(page, 500)
 
-            # ===== デバッグ：交通経路ダイアログと経費科目ダイアログの構造を調査 =====
-            import json
-            desk = os.path.expanduser("~/Desktop")
+            # 37件の明細を入力
+            print(f"\n明細を入力中（{len(ENTRIES)}件）...")
+            for i, (month, day, from_st, to_st, amount) in enumerate(ENTRIES):
+                add_line_item(page, i, month, day, from_st, to_st, amount)
 
-            # 1行目を追加
-            page.locator('button:has-text("手動で経費入力")').click()
-            wait(page, 1000)
-
-            # 「交通経路を選択」をクリックしてダイアログを開く
-            print("「交通経路を選択」をクリック中...")
-            page.locator('button:has-text("交通経路を選択")').last.click()
-            wait(page, 2000)
-
-            def dump(label):
-                page.screenshot(path=os.path.join(desk, f"freee_debug_{label}.png"), full_page=True)
-                elems = page.evaluate("""() => {
-                    const result = [];
-                    document.querySelectorAll('input,textarea,select,button,[role="option"],[role="listitem"]').forEach(el => {
-                        result.push({
-                            tag: el.tagName,
-                            role: el.getAttribute('role') || '',
-                            type: el.type || '',
-                            id: el.id || '',
-                            ariaLabel: el.getAttribute('aria-label') || '',
-                            placeholder: el.placeholder || '',
-                            value: el.value || '',
-                            className: el.className.substring(0,80),
-                            text: el.textContent.trim().substring(0,60),
-                            outerHTML: el.outerHTML.substring(0,250),
-                        });
-                    });
-                    return result;
-                }""")
-                with open(os.path.join(desk, f"freee_debug_{label}.json"), "w", encoding="utf-8") as f:
-                    json.dump(elems, f, ensure_ascii=False, indent=2)
-                print(f"  dump → freee_debug_{label}.png / .json")
-
-            # 1. 出発駅を入力してオートコンプリートを確認
-            print("出発駅「逗子葉山」を入力中...")
-            page.locator('#departure-station').click()
-            page.locator('#departure-station').type("逗子葉山")
-            wait(page, 1500)
-            dump("autocomplete_departure")
-
-            # 2. オートコンプリートの最初の選択肢をクリック
-            try:
-                first = page.locator('[role="option"]').first
-                first.wait_for(timeout=3000)
-                first_text = first.inner_text()
-                print(f"  最初の候補: {first_text}")
-                first.click()
-                wait(page, 800)
-            except Exception as e:
-                print(f"  オートコンプリート選択失敗: {e}")
-
-            # 3. 到着駅を入力
-            print("到着駅「京急横浜」を入力中...")
-            page.locator('#arrival-station').click()
-            page.locator('#arrival-station').type("京急横浜")
-            wait(page, 1500)
-            dump("autocomplete_arrival")
-
-            try:
-                first = page.locator('[role="option"]').first
-                first.wait_for(timeout=3000)
-                first_text = first.inner_text()
-                print(f"  最初の候補: {first_text}")
-                first.click()
-                wait(page, 800)
-            except Exception as e:
-                print(f"  オートコンプリート選択失敗: {e}")
-
-            # 4. 経路検索
-            print("「経路検索」をクリック中...")
-            try:
-                page.locator('button:has-text("経路検索")').click()
-                wait(page, 4000)
-                dump("route_results")
-            except Exception as e:
-                print(f"  経路検索失敗: {e}")
-                dump("route_results_error")
-
-            print("デスクトップの freee_debug_*.png/.json を確認してください。")
-            return
-            # ===== デバッグここまで =====
+            save_draft(page)
 
             print("\n=== 完了 ===")
             print("ブラウザで内容を確認し、問題なければ「申請」ボタンを押してください。")
             print("ブラウザを閉じるまでこのスクリプトは待機します...")
-            page.wait_for_timeout(180_000)  # 3分間ブラウザを開いたまま
+            page.wait_for_timeout(180_000)
 
         except Exception as e:
             print(f"\nエラー: {e}")
