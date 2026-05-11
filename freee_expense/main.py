@@ -46,6 +46,7 @@ def cmd_receipt(args: argparse.Namespace):
     files: list[str] = args.files
     dry_run: bool = args.dry_run
     title: str = args.title or f"経費申請 {date.today()}"
+    account_override: str | None = getattr(args, "account", None)
 
     print(f"=== 領収書 OCR ({len(files)} 件) ===")
     infos = []
@@ -53,6 +54,8 @@ def cmd_receipt(args: argparse.Namespace):
         print(f"\n[{f}]")
         try:
             info = extract_receipt_info(f)
+            if account_override:
+                info.account_item_name = account_override
             print(info)
             infos.append((f, info))
         except Exception as e:
@@ -309,8 +312,9 @@ def build_parser() -> argparse.ArgumentParser:
 
     # receipt
     p_receipt = sub.add_parser("receipt", help="領収書画像を OCR して経費申請")
-    p_receipt.add_argument("files", nargs="+", metavar="IMAGE", help="領収書画像ファイル（JPEG/PNG）")
+    p_receipt.add_argument("files", nargs="+", metavar="IMAGE", help="領収書ファイル（JPEG/PNG/PDF）")
     p_receipt.add_argument("--title", help="申請タイトル（省略時は自動生成）")
+    p_receipt.add_argument("--account", help="勘定科目を一括指定（例: 雑費、旅費交通費）")
     p_receipt.add_argument("--dry-run", action="store_true", help="freee へ送信せず内容確認のみ")
 
     # suica
