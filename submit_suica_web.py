@@ -6,7 +6,9 @@ freee Web 経費申請 自動入力スクリプト（Playwright）
 from __future__ import annotations
 
 import os
+import shutil
 import sys
+import tempfile
 import time
 from datetime import date
 from dotenv import load_dotenv
@@ -238,21 +240,47 @@ def main():
         "~/Library/Application Support/Google/Chrome"
     )
 
+    tmp_profile = None
+    browser = None
     with sync_playwright() as pw:
-        # 既存 Chrome プロファイルがあれば使用（ログイン済みセッション引き継ぎ）
+        # Chrome が起動中でも使えるよう、プロファイルを一時ディレクトリにコピーして使用
         if os.path.exists(chrome_profile):
-            print("既存の Chrome セッションを使用します（再ログイン不要）")
-            ctx = pw.chromium.launch_persistent_context(
-                chrome_profile,
-                channel="chrome",
-                headless=False,
-                slow_mo=50,
-                locale="ja-JP",
-                timezone_id="Asia/Tokyo",
-                no_viewport=False,
-                args=["--window-size=1280,900"],
-            )
-            page = ctx.new_page()
+            print("Chrome プロファイルを一時ディレクトリにコピー中（数秒かかります）...")
+            tmp_dir = tempfile.mkdtemp(prefix="freee_chrome_")
+            tmp_profile = os.path.join(tmp_dir, "Chrome")
+            try:
+                # Default プロファイルのみコピー（Cookies/Local Storage が含まれる）
+                default_src = os.path.join(chrome_profile, "Default")
+                default_dst = os.path.join(tmp_profile, "Default")
+                if os.path.exists(default_src):
+                    shutil.copytree(default_src, default_dst,
+                                    ignore=shutil.ignore_patterns(
+                                        "*.lock", "lockfile", "SingletonLock",
+                                        "SingletonCookie", "SingletonSocket",
+                                        "CrashpadMetrics*", "GrShaderCache",
+                                        "ShaderCache", "GPUCache",
+                                    ))
+                print(f"  コピー完了: {tmp_profile}")
+                ctx = pw.chromium.launch_persistent_context(
+                    tmp_profile,
+                    channel="chrome",
+                    headless=False,
+                    slow_mo=50,
+                    locale="ja-JP",
+                    timezone_id="Asia/Tokyo",
+                    no_viewport=False,
+                    args=["--window-size=1280,900", "--no-first-run",
+                          "--no-default-browser-check"],
+                )
+                page = ctx.new_page()
+            except Exception as copy_err:
+                print(f"  プロファイルコピー失敗 ({copy_err})。通常起動に切り替えます。")
+                shutil.rmtree(tmp_dir, ignore_errors=True)
+                tmp_profile = None
+                browser = pw.chromium.launch(headless=False, slow_mo=50)
+                ctx = browser.new_context(locale="ja-JP", timezone_id="Asia/Tokyo")
+                page = ctx.new_page()
+                page.set_viewport_size({"width": 1280, "height": 900})
         else:
             browser = pw.chromium.launch(headless=False, slow_mo=50)
             ctx = browser.new_context(locale="ja-JP", timezone_id="Asia/Tokyo")
@@ -290,7 +318,10 @@ def main():
             page.wait_for_timeout(60_000)
         finally:
             ctx.close()
-            browser.close()
+            if browser:
+                browser.close()
+            if tmp_profile:
+                shutil.rmtree(os.path.dirname(tmp_profile), ignore_errors=True)
 
 
 if __name__ == "__main__":
