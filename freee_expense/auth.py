@@ -62,6 +62,7 @@ def get_authorization_url(client_id: str) -> str:
         "response_type": "code",
         "client_id": client_id,
         "redirect_uri": REDIRECT_URI,
+        "scope": "read write",
     }
     return FREEE_AUTH_URL + "?" + urllib.parse.urlencode(params)
 
