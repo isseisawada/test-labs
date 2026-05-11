@@ -191,7 +191,7 @@ class FreeeClient:
             "expense_application_lines": lines,
         }
 
-        result = self._post("/api/1/expense_applications", {"expense_application": body})
+        result = self._post("/api/1/expense_applications", body)
         app = result["expense_application"]
         print(f"経費申請を作成しました: ID={app['id']}  タイトル={app['title']}")
         return app
