@@ -194,12 +194,47 @@ def main():
             title_field.fill(TITLE)
             wait(page, 500)
 
-            # 37件の明細を入力
-            print(f"\n明細を入力中（{len(ENTRIES)}件）...")
-            for i, (month, day, from_st, to_st, amount) in enumerate(ENTRIES):
-                add_line_item(page, i, month, day, from_st, to_st, amount)
+            # ===== デバッグ：交通経路ダイアログと経費科目ダイアログの構造を調査 =====
+            import json
+            desk = os.path.expanduser("~/Desktop")
 
-            save_draft(page)
+            # 1行目を追加
+            page.locator('button:has-text("手動で経費入力")').click()
+            wait(page, 1000)
+
+            # 「交通経路を選択」をクリックしてダイアログを開く
+            print("「交通経路を選択」をクリック中...")
+            page.locator('button:has-text("交通経路を選択")').last.click()
+            wait(page, 2000)
+
+            # ダイアログの要素をダンプ
+            shot1 = os.path.join(desk, "freee_debug_route_dialog.png")
+            page.screenshot(path=shot1, full_page=True)
+            elems1 = page.evaluate("""() => {
+                const result = [];
+                document.querySelectorAll('input, textarea, select, button, [role="dialog"] *, [role="listbox"] *').forEach(el => {
+                    if (['INPUT','TEXTAREA','SELECT','BUTTON'].includes(el.tagName)) {
+                        result.push({
+                            tag: el.tagName,
+                            type: el.type || '',
+                            ariaLabel: el.getAttribute('aria-label') || '',
+                            placeholder: el.placeholder || '',
+                            value: el.value || '',
+                            className: el.className.substring(0,80),
+                            text: el.textContent.trim().substring(0,40),
+                            outerHTML: el.outerHTML.substring(0,250),
+                        });
+                    }
+                });
+                return result;
+            }""")
+            with open(os.path.join(desk, "freee_debug_route_dialog.json"), "w", encoding="utf-8") as f:
+                json.dump(elems1, f, ensure_ascii=False, indent=2)
+            print(f"  route dialog → {shot1}")
+
+            print("スクリプトを終了します。デスクトップの freee_debug_route_dialog.png/.json を確認してください。")
+            return
+            # ===== デバッグここまで =====
 
             print("\n=== 完了 ===")
             print("ブラウザで内容を確認し、問題なければ「申請」ボタンを押してください。")
