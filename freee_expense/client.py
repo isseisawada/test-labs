@@ -188,7 +188,7 @@ class FreeeClient:
             "company_id": company_id,
             "title": application.title,
             "description": application.description,
-            "expense_application_lines": lines,
+            "purchase_lines": lines,
         }
 
         result = self._post("/api/1/expense_applications", body)
