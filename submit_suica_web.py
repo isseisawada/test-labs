@@ -104,7 +104,42 @@ def login(page: Page):
     print("  ログイン成功")
 
 
-def open_new_application(page: Page):
+def debug_dump_page(page: Page, label: str = ""):
+    """フォーム要素をダンプしてデスクトップに保存"""
+    import json
+    desk = os.path.expanduser("~/Desktop")
+    shot = os.path.join(desk, f"freee_debug_{label}.png")
+    page.screenshot(path=shot, full_page=True)
+    print(f"  スクリーンショット保存: {shot}")
+
+    elements = page.evaluate("""() => {
+        const result = [];
+        document.querySelectorAll('input, textarea, select, button').forEach(el => {
+            result.push({
+                tag: el.tagName,
+                type: el.type || '',
+                name: el.name || '',
+                id: el.id || '',
+                placeholder: el.placeholder || '',
+                value: el.value || '',
+                className: el.className.substring(0, 80),
+                ariaLabel: el.getAttribute('aria-label') || '',
+                dataTestid: el.getAttribute('data-testid') || '',
+                text: el.textContent.trim().substring(0, 40),
+                outerHTML: el.outerHTML.substring(0, 200),
+            });
+        });
+        return result;
+    }""")
+
+    dump_path = os.path.join(desk, f"freee_debug_{label}.json")
+    with open(dump_path, "w", encoding="utf-8") as f:
+        json.dump(elements, f, ensure_ascii=False, indent=2)
+    print(f"  要素リスト保存: {dump_path}")
+    return elements
+
+
+
     print("経費精算の新規申請を開いています...")
     page.goto(
         f"https://secure.freee.co.jp/expense_applications/new?company_id={COMPANY_ID}",
@@ -282,13 +317,13 @@ def main():
                 print("  freee ログイン済みを確認")
 
             open_new_application(page)
-            select_form_template(page)
-            select_department(page)
-            set_title(page)
 
-            print(f"\n明細を入力中（{len(ENTRIES)}件）...")
-            for i, (month, day, from_st, to_st, amount) in enumerate(ENTRIES):
-                add_line_item(page, i, month, day, from_st, to_st, amount)
+            # フォーム構造を調査してデスクトップに保存
+            print("\n【デバッグ】フォーム構造を調査中...")
+            debug_dump_page(page, "form")
+            print("デスクトップの freee_debug_form.png と freee_debug_form.json を確認してください。")
+            print("スクリプトを終了します。")
+            return
 
             save_draft(page)
 
