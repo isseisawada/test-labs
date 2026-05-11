@@ -207,32 +207,76 @@ def main():
             page.locator('button:has-text("交通経路を選択")').last.click()
             wait(page, 2000)
 
-            # ダイアログの要素をダンプ
-            shot1 = os.path.join(desk, "freee_debug_route_dialog.png")
-            page.screenshot(path=shot1, full_page=True)
-            elems1 = page.evaluate("""() => {
-                const result = [];
-                document.querySelectorAll('input, textarea, select, button, [role="dialog"] *, [role="listbox"] *').forEach(el => {
-                    if (['INPUT','TEXTAREA','SELECT','BUTTON'].includes(el.tagName)) {
+            def dump(label):
+                page.screenshot(path=os.path.join(desk, f"freee_debug_{label}.png"), full_page=True)
+                elems = page.evaluate("""() => {
+                    const result = [];
+                    document.querySelectorAll('input,textarea,select,button,[role="option"],[role="listitem"]').forEach(el => {
                         result.push({
                             tag: el.tagName,
+                            role: el.getAttribute('role') || '',
                             type: el.type || '',
+                            id: el.id || '',
                             ariaLabel: el.getAttribute('aria-label') || '',
                             placeholder: el.placeholder || '',
                             value: el.value || '',
                             className: el.className.substring(0,80),
-                            text: el.textContent.trim().substring(0,40),
+                            text: el.textContent.trim().substring(0,60),
                             outerHTML: el.outerHTML.substring(0,250),
                         });
-                    }
-                });
-                return result;
-            }""")
-            with open(os.path.join(desk, "freee_debug_route_dialog.json"), "w", encoding="utf-8") as f:
-                json.dump(elems1, f, ensure_ascii=False, indent=2)
-            print(f"  route dialog → {shot1}")
+                    });
+                    return result;
+                }""")
+                with open(os.path.join(desk, f"freee_debug_{label}.json"), "w", encoding="utf-8") as f:
+                    json.dump(elems, f, ensure_ascii=False, indent=2)
+                print(f"  dump → freee_debug_{label}.png / .json")
 
-            print("スクリプトを終了します。デスクトップの freee_debug_route_dialog.png/.json を確認してください。")
+            # 1. 出発駅を入力してオートコンプリートを確認
+            print("出発駅「逗子葉山」を入力中...")
+            page.locator('#departure-station').click()
+            page.locator('#departure-station').type("逗子葉山")
+            wait(page, 1500)
+            dump("autocomplete_departure")
+
+            # 2. オートコンプリートの最初の選択肢をクリック
+            try:
+                first = page.locator('[role="option"]').first
+                first.wait_for(timeout=3000)
+                first_text = first.inner_text()
+                print(f"  最初の候補: {first_text}")
+                first.click()
+                wait(page, 800)
+            except Exception as e:
+                print(f"  オートコンプリート選択失敗: {e}")
+
+            # 3. 到着駅を入力
+            print("到着駅「京急横浜」を入力中...")
+            page.locator('#arrival-station').click()
+            page.locator('#arrival-station').type("京急横浜")
+            wait(page, 1500)
+            dump("autocomplete_arrival")
+
+            try:
+                first = page.locator('[role="option"]').first
+                first.wait_for(timeout=3000)
+                first_text = first.inner_text()
+                print(f"  最初の候補: {first_text}")
+                first.click()
+                wait(page, 800)
+            except Exception as e:
+                print(f"  オートコンプリート選択失敗: {e}")
+
+            # 4. 経路検索
+            print("「経路検索」をクリック中...")
+            try:
+                page.locator('button:has-text("経路検索")').click()
+                wait(page, 4000)
+                dump("route_results")
+            except Exception as e:
+                print(f"  経路検索失敗: {e}")
+                dump("route_results_error")
+
+            print("デスクトップの freee_debug_*.png/.json を確認してください。")
             return
             # ===== デバッグここまで =====
 
