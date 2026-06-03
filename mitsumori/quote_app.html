@@ -1728,9 +1728,7 @@ function resetAll() {
   state.chassis = { modelQtys:{}, opts:{} };
   state.other   = { modelQtys:{}, opts:{}, miscOpts:{} };
   // 社内シミュレーションの手入力原価もリセット
-  if (typeof _internalCostOverrides !== 'undefined') {
-    Object.keys(_internalCostOverrides).forEach(k => delete _internalCostOverrides[k]);
-  }
+  if (typeof clearInternalCostOverrides === 'function') clearInternalCostOverrides();
   update();
 }
 
@@ -1860,10 +1858,22 @@ function openNewQuote() {
 // 社内用シミュレーション
 // ============================================================
 let _internalQuote = null;
-// 手入力した原価を「最終見積もりに反映」されるまで保持する
+// 手入力した原価を「最終見積もりに反映」されるまで保持する（localStorage永続化）
 // key: `${sectionTitle}::${lineName}`, value: 数値
-const _internalCostOverrides = {};
+const LS_INT_OVR = 'yadokari_internal_cost_overrides_v1';
+const _internalCostOverrides = (() => {
+  try { return JSON.parse(localStorage.getItem(LS_INT_OVR) || '{}') || {}; }
+  catch (_) { return {}; }
+})();
 const intCostKey = (secTitle, lineName) => `${secTitle}::${lineName}`;
+function saveInternalCostOverrides() {
+  try { localStorage.setItem(LS_INT_OVR, JSON.stringify(_internalCostOverrides)); }
+  catch (_) { /* ignore */ }
+}
+function clearInternalCostOverrides() {
+  Object.keys(_internalCostOverrides).forEach(k => delete _internalCostOverrides[k]);
+  saveInternalCostOverrides();
+}
 
 const intMarginCls = (p, c) => {
   if (!p) return '';
@@ -1956,13 +1966,14 @@ function renderInternalSimulation() {
       const newCost = parseFloat(e.target.value) || 0;
       const line = _internalQuote.sections[si].lines[li];
       line.cost = newCost;
-      // 「最終見積もりに反映」までセッション内に保存
+      // 「最終見積もりに反映」までlocalStorageに保存
       const k = intCostKey(_internalQuote.sections[si].title, line.name);
       if (newCost === 0 && e.target.value === '') {
         delete _internalCostOverrides[k];
       } else {
         _internalCostOverrides[k] = newCost;
       }
+      saveInternalCostOverrides();
       const gross = line.val - newCost;
       document.getElementById(`int-gross-${si}-${li}`).textContent = fmt(gross);
       const marginEl = document.getElementById(`int-margin-${si}-${li}`);
@@ -2013,7 +2024,7 @@ function applyInternalSimulationToFinal() {
   document.getElementById('internalPage').style.display = 'none';
   _internalQuote = null;
   // 最終反映時に手入力原価のオーバーライドをクリア
-  Object.keys(_internalCostOverrides).forEach(k => delete _internalCostOverrides[k]);
+  clearInternalCostOverrides();
   showCompletionFromData(q, true);
 }
 
