@@ -1030,6 +1030,7 @@ function omCost(o)    { return ovr(`otherMisc:${o.id}:cost`,  o.cost || 0); }
 // ============================================================
 // History storage
 // ============================================================
+let _editingQuoteId = null;  // 「修正」中の見積もりID（確定時に旧データを置き換える）
 function loadQuotes() {
   try { return JSON.parse(localStorage.getItem(LS_QUOTES) || '[]'); } catch(e) { return []; }
 }
@@ -1798,6 +1799,8 @@ function resetAll() {
   state.roadie  = { modelQtys:{}, sizeOpts:{}, commonOpts:{}, miscOpts:{}, designLv:0, customOpts:[] };
   state.chassis = { modelQtys:{}, opts:{} };
   state.other   = { modelQtys:{}, opts:{}, miscOpts:{} };
+  // 修正中フラグを解除（リセット後は新規見積もり扱い。元の履歴は保持される）
+  _editingQuoteId = null;
   // 社内シミュレーションの手入力原価もリセット
   if (typeof clearInternalCostOverrides === 'function') clearInternalCostOverrides();
   update();
@@ -1907,7 +1910,12 @@ function showCompletionFromData(q, saveToHistory) {
   document.getElementById('completionPage').scrollTop = 0;
 
   if (saveToHistory) {
-    const quotes = loadQuotes();
+    let quotes = loadQuotes();
+    // 「修正」由来の場合は旧見積もりを置き換える（確定したこのタイミングで初めて削除）
+    if (_editingQuoteId) {
+      quotes = quotes.filter(x => x.id !== _editingQuoteId);
+      _editingQuoteId = null;
+    }
     quotes.unshift(q);
     saveQuotes(quotes);
   }
@@ -2788,9 +2796,9 @@ function editQuote(id) {
   state.areaCity        = fs.areaCity || '';
   state.areaSub         = fs.areaSub || '';
   state.active          = fs.active || 'tinys';
-  // 元の見積もりは履歴から削除（再保存時に重複を防ぐ）
-  const quotes = loadQuotes().filter(q => q.id !== id);
-  saveQuotes(quotes);
+  // 元の見積もりはまだ削除しない。再保存（確定）時に重複を防ぐため id を控えておく。
+  // ここで削除してしまうと、確定せずにタブを閉じた場合に履歴が失われる。
+  _editingQuoteId = id;
   switchMode('create');
   update();
   window.scrollTo({ top: 0 });
