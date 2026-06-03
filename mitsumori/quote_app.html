@@ -324,6 +324,14 @@
     .margin-good { color: #059669; }
     .margin-mid  { color: #D97706; }
     .margin-bad  { color: var(--red); }
+    .price-table input.cst-name-inp { width: 150px; padding: 5px 8px; border: 1px solid var(--border); border-radius: 6px; font-size: 0.82rem; color: var(--t1); font-family: inherit; text-align: left; }
+    .price-table input.cst-name-inp:focus { outline: none; border-color: var(--p); }
+    .cst-memo-cell { white-space: nowrap; }
+    .cst-del-btn { margin-left: 6px; width: 24px; height: 24px; border: 1px solid #FECACA; background: #FEF2F2; color: var(--red); border-radius: 6px; font-size: 0.95rem; line-height: 1; cursor: pointer; vertical-align: middle; }
+    .cst-del-btn:hover { background: #FEE2E2; }
+    .admin-add-row { padding: 12px 24px 4px; }
+    .admin-add-btn { padding: 8px 16px; border: 1px dashed var(--p-mid); background: var(--p-light); color: var(--p); border-radius: 8px; font-size: 0.8rem; font-weight: 700; cursor: pointer; font-family: inherit; transition: all .15s; }
+    .admin-add-btn:hover { background: #E0DDFB; }
     .design-lv-wrap { padding: 4px 0; }
     .design-lv-btns { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 6px; }
     .dlv-btn { padding: 5px 12px; border: 1px solid var(--border); border-radius: 6px; background: white; font-size: 0.78rem; font-weight: 600; color: var(--t2); cursor: pointer; transition: all .15s; font-family: inherit; }
@@ -1026,6 +1034,156 @@ function omPrice(o)   { return ovr(`otherMisc:${o.id}:price`, o.price); }
 function omCost(o)    { return ovr(`otherMisc:${o.id}:cost`,  o.cost || 0); }
 
 // ============================================================
+// 管理画面のカスタム追加行（各セクションに行を追加）
+// ============================================================
+const LS_CUSTOM = 'yadokari_custom_items_v1';
+function loadCustom() { try { return JSON.parse(localStorage.getItem(LS_CUSTOM) || '{}') || {}; } catch(e){ return {}; } }
+let CUSTOM_ITEMS = loadCustom();
+function saveCustom() { try { localStorage.setItem(LS_CUSTOM, JSON.stringify(CUSTOM_ITEMS)); } catch(e){} }
+let _customSeq = 1;
+
+// 各管理セクションの定義（kind: idx=配送/諸経費/ブラインド, model=ベースモデル, opt=オプション, size=サイズ連動）
+const ADMIN_SECTIONS = {
+  transport:    { kind:'idx',  arr:TRANSPORT_OPTS,         prefix:'transport',    field:'label' },
+  ylwTransport: { kind:'idx',  arr:YLW_TRANSPORT_OPTS,     prefix:'ylwTransport', field:'label', region:'追加' },
+  chTransport:  { kind:'idx',  arr:CHASSIS_TRANSPORT_OPTS, prefix:'chTransport',  field:'label', region:'追加' },
+  region:       { kind:'idx',  arr:REGION_OPTS,            prefix:'region',       field:'label' },
+  tinysBlind:   { kind:'idx',  arr:TINYS_BLIND_OPTS,       prefix:'blind',        field:'label' },
+  tinysModel:   { kind:'model',arr:TINYS_MODELS,   groups:TINYS_GROUPS,   prefix:'model', field:'label' },
+  tinysSize:    { kind:'size', arr:TINYS_SIZE_OPTS,        prefix:'sizeOpt', field:'name', sizes:['6m','7.2m','9m'] },
+  tinysCommon:  { kind:'opt',  arr:TINYS_COMMON_OPTS,      prefix:'commonOpt', field:'name' },
+  tinysMisc:    { kind:'opt',  arr:TINYS_MISC_OPTS,        prefix:'misc',  field:'name' },
+  roadieModel:  { kind:'model',arr:ROADIE_MODELS,  groups:ROADIE_GROUPS,  prefix:'model', field:'label' },
+  roadieSize:   { kind:'size', arr:ROADIE_SIZE_OPTS,       prefix:'sizeOpt', field:'name', sizes:['mini','6m','7.2m'] },
+  roadieCommon: { kind:'opt',  arr:ROADIE_COMMON_OPTS,     prefix:'commonOpt', field:'name' },
+  roadieMisc:   { kind:'opt',  arr:ROADIE_MISC_OPTS,       prefix:'misc',  field:'name' },
+  chassisModel: { kind:'model',arr:CHASSIS_MODELS, groups:CHASSIS_GROUPS, prefix:'model', field:'label' },
+  chassisOpt:   { kind:'opt',  arr:CHASSIS_OPTS,           prefix:'chopt', field:'name' },
+  otherModel:   { kind:'model',arr:OTHER_MODELS,   groups:OTHER_GROUPS,   prefix:'model', field:'label' },
+  otherCommon:  { kind:'opt',  arr:OTHER_OPTS,             prefix:'otherOpt',  field:'name' },
+  otherMisc:    { kind:'opt',  arr:OTHER_MISC_OPTS,        prefix:'otherMisc', field:'name' },
+};
+const customItemKey = (item) => item.id != null ? item.id : item.idx;
+function nextCustomId()  { return 'cst_' + Date.now().toString(36) + '_' + (_customSeq++); }
+function nextCustomIdx(arr) { let mx = 1000; arr.forEach(o => { if (typeof o.idx==='number' && o.idx>=mx) mx = o.idx+1; }); return mx; }
+
+// 保存済みカスタム定義を配列へ反映（起動時1回）
+function applyCustomItems() {
+  Object.values(ADMIN_SECTIONS).forEach(def => {
+    if (def.kind === 'model' && def.groups && !def._customGroup) {
+      def._customGroup = { size:'追加モデル', models:[] };
+      def.groups.push(def._customGroup);
+    }
+  });
+  Object.keys(CUSTOM_ITEMS).forEach(secId => {
+    const def = ADMIN_SECTIONS[secId]; if (!def) return;
+    (CUSTOM_ITEMS[secId] || []).forEach(ci => buildAndPush(def, ci));
+  });
+}
+function buildAndPush(def, ci) {
+  let item = null;
+  if (def.kind === 'idx') {
+    item = { idx: ci.idx, label: ci.name || '', price: ci.price||0, cost: ci.cost||0, _custom:true };
+    if (def.region) item.region = def.region;
+  } else if (def.kind === 'model') {
+    item = { id: ci.id, label: ci.name || '', price: ci.price||0, cost: ci.cost||0, ico:'➕', size:null, _custom:true };
+    if (def._customGroup) def._customGroup.models.push(ci.id);
+  } else if (def.kind === 'opt') {
+    item = { id: ci.id, name: ci.name || '', price: ci.price||0, cost: ci.cost||0, ico:'➕', sub:'', _custom:true };
+  } else if (def.kind === 'size') {
+    const prices = {}, costs = {};
+    (def.sizes||[]).forEach(sz => { prices[sz] = ci.price||0; costs[sz] = ci.cost||0; });
+    item = { id: ci.id, name: ci.name || '', prices, costs, ico:'➕', sub:'', _custom:true };
+  }
+  if (item) def.arr.push(item);
+  return item;
+}
+function addCustomRow(secId) {
+  const def = ADMIN_SECTIONS[secId]; if (!def) return;
+  const ci = { name:'', price:0, cost:0 };
+  if (def.kind === 'idx') ci.idx = nextCustomIdx(def.arr); else ci.id = nextCustomId();
+  (CUSTOM_ITEMS[secId] = CUSTOM_ITEMS[secId] || []).push(ci);
+  buildAndPush(def, ci);
+  saveCustom();
+  renderAdmin();
+}
+function deleteCustomRow(secId, key) {
+  const def = ADMIN_SECTIONS[secId]; if (!def) return;
+  if (!confirm('この行を削除しますか？')) return;
+  CUSTOM_ITEMS[secId] = (CUSTOM_ITEMS[secId]||[]).filter(ci => String(customItemKey(ci)) !== String(key));
+  const i = def.arr.findIndex(o => String(customItemKey(o)) === String(key) && o._custom);
+  if (i >= 0) def.arr.splice(i, 1);
+  if (def.kind === 'model' && def._customGroup) def._customGroup.models = def._customGroup.models.filter(id => String(id) !== String(key));
+  saveCustom();
+  renderAdmin();
+}
+function updateCustomName(secId, key, name) {
+  const def = ADMIN_SECTIONS[secId]; if (!def) return;
+  const ci = (CUSTOM_ITEMS[secId]||[]).find(c => String(customItemKey(c)) === String(key));
+  if (ci) ci.name = name;
+  const item = def.arr.find(o => String(customItemKey(o)) === String(key) && o._custom);
+  if (item) item[def.field] = name;
+  saveCustom();
+}
+function updateCustomField(secId, key, field, value) {
+  const def = ADMIN_SECTIONS[secId]; if (!def) return;
+  const ci = (CUSTOM_ITEMS[secId]||[]).find(c => String(customItemKey(c)) === String(key));
+  const item = def.arr.find(o => String(customItemKey(o)) === String(key) && o._custom);
+  if (field === 'memo') { if (ci) ci.memo = value; saveCustom(); return; }
+  const num = parseFloat(value) || 0;
+  if (ci) ci[field] = num;
+  if (item) {
+    if (def.kind === 'size') {
+      const tgt = field === 'price' ? 'prices' : 'costs';
+      item[tgt] = item[tgt] || {};
+      (def.sizes||[]).forEach(sz => { item[tgt][sz] = num; });
+    } else {
+      item[field] = num;
+    }
+  }
+  saveCustom();
+  const row = document.querySelector(`#adminContent tr[data-custom-key="${key}"]`);
+  if (row) {
+    const p = parseFloat(row.querySelector('.cst-price-inp').value)||0;
+    const c = parseFloat(row.querySelector('.cst-cost-inp').value)||0;
+    const mc = row.querySelector('.margin-col'); if (mc) mc.innerHTML = marginCell(p, c);
+  }
+}
+function customEffPrice(secId, item) {
+  const def = ADMIN_SECTIONS[secId];
+  if (def.kind === 'size') return (item.prices && item.prices[def.sizes[0]]) || 0;
+  return item.price || 0;
+}
+function customEffCost(secId, item) {
+  const def = ADMIN_SECTIONS[secId];
+  if (def.kind === 'size') return (item.costs && item.costs[def.sizes[0]]) || 0;
+  return item.cost || 0;
+}
+// カスタム行のHTML（編集可能な名前・売価・原価・メモ・削除）
+function customPriceRow(secId, item) {
+  const key = customItemKey(item);
+  const ci = (CUSTOM_ITEMS[secId]||[]).find(c => String(customItemKey(c)) === String(key)) || {};
+  const name = item[ADMIN_SECTIONS[secId].field] || '';
+  const price = customEffPrice(secId, item);
+  const cost  = customEffCost(secId, item);
+  return `<tr data-custom-key="${key}">
+    <td class="item-name"><input type="text" class="cst-name-inp" value="${escapeAttr(name)}" placeholder="項目名" oninput="updateCustomName('${secId}','${key}',this.value)"></td>
+    <td></td>
+    <td><input type="number" step="10000" class="cst-price-inp" value="${price||0}" oninput="updateCustomField('${secId}','${key}','price',this.value)"></td>
+    <td><input type="number" step="10000" class="cst-cost-inp" value="${cost||0}" oninput="updateCustomField('${secId}','${key}','cost',this.value)"></td>
+    <td class="margin-col">${marginCell(price, cost)}</td>
+    <td class="cst-memo-cell"><input type="text" class="memo-inp" value="${escapeAttr(ci.memo||'')}" placeholder="メモ" oninput="updateCustomField('${secId}','${key}','memo',this.value)"><button class="cst-del-btn" title="削除" onclick="deleteCustomRow('${secId}','${key}')">×</button></td>
+  </tr>`;
+}
+function customRows(secId) {
+  const def = ADMIN_SECTIONS[secId]; if (!def) return '';
+  return def.arr.filter(o => o._custom).map(o => customPriceRow(secId, o)).join('');
+}
+function addRowBtn(secId) {
+  return `<div class="admin-add-row"><button class="admin-add-btn" onclick="addCustomRow('${secId}')">＋ 行を追加</button></div>`;
+}
+
+// ============================================================
 // History storage
 // ============================================================
 let _editingQuoteId = null;  // 「修正」中の見積もりID（確定時に旧データを置き換える）
@@ -1458,6 +1616,7 @@ function modelListGrouped(title, sub, groups, modelsArr, s) {
   c.id = 'sec-model';
   const modelMap = Object.fromEntries(modelsArr.map(m => [m.id, m]));
   groups.forEach(grp => {
+    if (!grp.models.some(mid => modelMap[mid])) return; // 空グループ（カスタム未登録の「追加モデル」等）は表示しない
     const grpDiv = div('mg-group');
     const hdr = div('mg-hdr'); hdr.textContent = grp.size;
     grpDiv.appendChild(hdr);
@@ -1506,8 +1665,9 @@ function toggleRow(opt, price, checked, disabled, onChange) {
 }
 
 function buildBlindRow(s) {
-  const blindPrice = s.blindIdx > 0 ? blPrice(TINYS_BLIND_OPTS[s.blindIdx]) * s.blindCount : null;
-  const isOn = s.blindIdx > 0;
+  const blindSel = s.blindIdx > 0 ? TINYS_BLIND_OPTS.find(b => b.idx === s.blindIdx) : null;
+  const blindPrice = blindSel ? blPrice(blindSel) * s.blindCount : null;
+  const isOn = !!blindSel;
   const row = div('blind-row');
   const top = div('blind-row-top');
   const ico = div('opt-ico'); ico.textContent = '🪟';
@@ -1564,7 +1724,7 @@ function collectLines() {
     });
     TINYS_SIZE_OPTS.forEach(o => { if (s.sizeOpts[o.id] && size && soPrice(o, size)) lines.push({ name:o.name+ql(tq), val:soPrice(o, size)*tq, cost:soCost(o, size)*tq }); });
     TINYS_COMMON_OPTS.forEach(o => { if (s.commonOpts[o.id]) lines.push({ name:o.name+ql(tq), val:coPrice(o)*tq, cost:coCost(o)*tq }); });
-    if (s.blindIdx > 0) { const b = TINYS_BLIND_OPTS[s.blindIdx]; lines.push({ name:`ロールスクリーン ${b.label}×${s.blindCount}枚${ql(tq)}`, val:blPrice(b)*s.blindCount*tq, cost:blCost(b)*s.blindCount*tq }); }
+    if (s.blindIdx > 0) { const b = TINYS_BLIND_OPTS.find(x => x.idx === s.blindIdx); if (b) lines.push({ name:`ロールスクリーン ${b.label}×${s.blindCount}枚${ql(tq)}`, val:blPrice(b)*s.blindCount*tq, cost:blCost(b)*s.blindCount*tq }); }
     TINYS_MISC_OPTS.forEach(o => { if (s.miscOpts[o.id]) lines.push({ name:o.name+ql(tq), val:mxPrice(o)*tq, cost:mxCost(o)*tq }); });
     if (s.designLv > 0) {
       const dl = DESIGN_LEVELS[s.designLv - 1];
@@ -1634,9 +1794,9 @@ function collectLines() {
   const yclYnrQty = ['ch1','ch2','ch3','ch4','ch5'].reduce((a,id) => a + (state.chassis.modelQtys[id]||0), 0);
   const hasYLW    = ylwQty > 0;
   const hasYclYnr = yclYnrQty > 0;
-  const ylw = hasYLW    ? YLW_TRANSPORT_OPTS[state.ylwTransportIdx]  : null;
-  const ch  = hasYclYnr ? CHASSIS_TRANSPORT_OPTS[state.chTransportIdx] : null;
-  const rc  = REGION_OPTS[state.miscCostIdx];
+  const ylw = hasYLW    ? YLW_TRANSPORT_OPTS.find(o => o.idx === state.ylwTransportIdx)  : null;
+  const ch  = hasYclYnr ? CHASSIS_TRANSPORT_OPTS.find(o => o.idx === state.chTransportIdx) : null;
+  const rc  = REGION_OPTS.find(o => o.idx === state.miscCostIdx);
   const shared = [];
   const nonChassisSeries = [
     { key:'tinys',  label:'Tinys INSPIRATION', qty: seriesQty(state.tinys), has: hasModel(state.tinys) },
@@ -1657,7 +1817,7 @@ function collectLines() {
         shared.push({ name: multi ? `${base}${sr.label}` : base, val: s.transportCustom || 0, cost: 0 });
       }
     } else {
-      const tr = TRANSPORT_OPTS[s.transportIdx];
+      const tr = TRANSPORT_OPTS.find(o => o.idx === s.transportIdx);
       if (tr && trPrice(tr) > 0) {
         shared.push({ name: multi ? `配送費用（${tr.label}）${sr.label}${ql(sr.qty)}` : `配送費用（${tr.label}）${ql(sr.qty)}`, val: trPrice(tr) * sr.qty, cost: trCost(tr) * sr.qty });
       }
@@ -2167,6 +2327,7 @@ function switchMode(m) {
   document.getElementById('sNav').style.display = (m === 'create') ? '' : 'none';
   document.getElementById('adminSaveBtn').style.display = (m === 'admin') ? '' : 'none';
   document.getElementById('bottomNav').style.display = (m === 'admin') ? 'flex' : 'none';
+  if (m === 'create')  update();   // 管理画面で追加/削除したカスタム項目を作成画面に反映
   if (m === 'admin')   renderAdmin();
   if (m === 'history') renderHistory();
   window.scrollTo({ top: 0 });
@@ -2283,138 +2444,139 @@ function renderAdmin() {
           <th>利益率</th>
           <th>メモ</th>
         </tr></thead><tbody>`;
-  const tableEnd = `</tbody></table></div></div>`;
+  // 末尾にカスタム行＋「行を追加」ボタンを付けてセクションを閉じる
+  const tableEndAdd = (secId) => customRows(secId) + `</tbody></table></div>` + addRowBtn(secId) + `</div>`;
 
   if (tab === 'common') {
     html += renderStaffSection();
 
     // 配送費用（距離別）
     html += tableStart('配送費用（距離別）', false);
-    TRANSPORT_OPTS.filter(t => t.idx > 0).forEach(t => {
+    TRANSPORT_OPTS.filter(t => t.idx > 0 && !t._custom).forEach(t => {
       html += priceRow(t.label, '', `transport:${t.idx}:price`, `transport:${t.idx}:cost`, trPrice(t), trCost(t));
     });
-    html += tableEnd;
+    html += tableEndAdd('transport');
 
     // YLW Transport
     html += tableStart('配送費用（YLW600 エリア別）', false);
-    YLW_TRANSPORT_OPTS.filter(o => o.idx > 0).forEach(o => {
+    YLW_TRANSPORT_OPTS.filter(o => o.idx > 0 && !o._custom).forEach(o => {
       const lbl = o.region ? `【${o.region}】${o.label}` : o.label;
       html += priceRow(lbl, '', `ylwTransport:${o.idx}:price`, `ylwTransport:${o.idx}:cost`, ylwPrice(o), ylwCost(o));
     });
-    html += tableEnd;
+    html += tableEndAdd('ylwTransport');
 
     // Chassis Transport (YCL/YNR)
     html += tableStart('配送費用（YCL/YNR 都道府県別）', false);
-    CHASSIS_TRANSPORT_OPTS.filter(o => o.idx > 0).forEach(o => {
+    CHASSIS_TRANSPORT_OPTS.filter(o => o.idx > 0 && !o._custom).forEach(o => {
       const lbl = o.region ? `【${o.region}】${o.label}` : o.label;
       html += priceRow(lbl, '', `chTransport:${o.idx}:price`, `chTransport:${o.idx}:cost`, chtrPrice(o), chtrCost(o));
     });
-    html += tableEnd;
+    html += tableEndAdd('chTransport');
 
     // Region
     html += tableStart('諸経費（エリア別）', false);
-    REGION_OPTS.filter(r => r.idx > 0).forEach(r => {
+    REGION_OPTS.filter(r => r.idx > 0 && !r._custom).forEach(r => {
       html += priceRow(r.label, '', `region:${r.idx}:price`, `region:${r.idx}:cost`, rgPrice(r), rgCost(r));
     });
-    html += tableEnd;
+    html += tableEndAdd('region');
   }
 
   if (tab === 'tinys') {
     html += tableStart('Tinys INSPIRATION｜ベースモデル', false);
-    TINYS_MODELS.forEach(m => {
+    TINYS_MODELS.filter(m => !m._custom).forEach(m => {
       html += priceRow(m.label, '', `model:${m.id}:price`, `model:${m.id}:cost`, mPrice(m), mCost(m));
     });
-    html += tableEnd;
+    html += tableEndAdd('tinysModel');
 
     html += tableStart('Tinys INSPIRATION｜サイズ連動オプション', true);
-    TINYS_SIZE_OPTS.forEach(opt => {
+    TINYS_SIZE_OPTS.filter(o => !o._custom).forEach(opt => {
       ['6m','7.2m','9m'].forEach(size => {
         if (opt.prices[size] == null && !PRICE_OVR[`sizeOpt:${opt.id}:${size}:price`]) return;
         html += priceRow(opt.name, size, `sizeOpt:${opt.id}:${size}:price`, `sizeOpt:${opt.id}:${size}:cost`, soPrice(opt, size), soCost(opt, size));
       });
     });
-    html += tableEnd;
+    html += tableEndAdd('tinysSize');
 
     html += tableStart('Tinys INSPIRATION｜共通オプション', false);
-    TINYS_COMMON_OPTS.forEach(opt => {
+    TINYS_COMMON_OPTS.filter(o => !o._custom).forEach(opt => {
       html += priceRow(opt.name, '', `commonOpt:${opt.id}:price`, `commonOpt:${opt.id}:cost`, coPrice(opt), coCost(opt));
     });
-    html += tableEnd;
+    html += tableEndAdd('tinysCommon');
 
     html += tableStart('ロールスクリーン・ブラインド', false);
-    TINYS_BLIND_OPTS.filter(b => b.idx > 0).forEach(b => {
+    TINYS_BLIND_OPTS.filter(b => b.idx > 0 && !b._custom).forEach(b => {
       html += priceRow(b.label, '', `blind:${b.idx}:price`, `blind:${b.idx}:cost`, blPrice(b), blCost(b));
     });
-    html += tableEnd;
+    html += tableEndAdd('tinysBlind');
 
     html += tableStart('Tinys INSPIRATION｜設計・手続き関連', false);
-    TINYS_MISC_OPTS.forEach(opt => {
+    TINYS_MISC_OPTS.filter(o => !o._custom).forEach(opt => {
       html += priceRow(opt.name, '', `misc:${opt.id}:price`, `misc:${opt.id}:cost`, mxPrice(opt), mxCost(opt));
     });
-    html += tableEnd;
+    html += tableEndAdd('tinysMisc');
   }
 
   if (tab === 'roadie') {
     html += tableStart('ROADIE｜ベースモデル', false);
-    ROADIE_MODELS.forEach(m => {
+    ROADIE_MODELS.filter(m => !m._custom).forEach(m => {
       html += priceRow(m.label, '', `model:${m.id}:price`, `model:${m.id}:cost`, mPrice(m), mCost(m));
     });
-    html += tableEnd;
+    html += tableEndAdd('roadieModel');
 
     html += tableStart('ROADIE｜サイズ連動オプション', true);
-    ROADIE_SIZE_OPTS.forEach(opt => {
+    ROADIE_SIZE_OPTS.filter(o => !o._custom).forEach(opt => {
       ['mini','6m','7.2m'].forEach(size => {
         if (opt.prices[size] == null) return;
         html += priceRow(opt.name, size, `sizeOpt:${opt.id}:${size}:price`, `sizeOpt:${opt.id}:${size}:cost`, soPrice(opt, size), soCost(opt, size));
       });
     });
-    html += tableEnd;
+    html += tableEndAdd('roadieSize');
 
     html += tableStart('ROADIE｜共通オプション', false);
-    ROADIE_COMMON_OPTS.forEach(opt => {
+    ROADIE_COMMON_OPTS.filter(o => !o._custom).forEach(opt => {
       html += priceRow(opt.name, '', `commonOpt:${opt.id}:price`, `commonOpt:${opt.id}:cost`, coPrice(opt), coCost(opt));
     });
-    html += tableEnd;
+    html += tableEndAdd('roadieCommon');
 
     html += tableStart('ROADIE｜設計・手続き関連', false);
-    ROADIE_MISC_OPTS.forEach(opt => {
+    ROADIE_MISC_OPTS.filter(o => !o._custom).forEach(opt => {
       html += priceRow(opt.name, '', `misc:${opt.id}:price`, `misc:${opt.id}:cost`, mxPrice(opt), mxCost(opt));
     });
-    html += tableEnd;
+    html += tableEndAdd('roadieMisc');
   }
 
   if (tab === 'chassis') {
     html += tableStart('シャーシ｜ベースモデル', false);
-    CHASSIS_MODELS.forEach(m => {
+    CHASSIS_MODELS.filter(m => !m._custom).forEach(m => {
       html += priceRow(m.label, '', `model:${m.id}:price`, `model:${m.id}:cost`, mPrice(m), mCost(m));
     });
-    html += tableEnd;
+    html += tableEndAdd('chassisModel');
 
     html += tableStart('シャーシ｜オプション', false);
-    CHASSIS_OPTS.forEach(opt => {
+    CHASSIS_OPTS.filter(o => !o._custom).forEach(opt => {
       html += priceRow(opt.name, '', `chopt:${opt.id}:price`, `chopt:${opt.id}:cost`, chPrice(opt), chCost(opt));
     });
-    html += tableEnd;
+    html += tableEndAdd('chassisOpt');
   }
 
   if (tab === 'other') {
     html += tableStart('その他車両｜ベースモデル', false);
-    OTHER_MODELS.forEach(m => {
+    OTHER_MODELS.filter(m => !m._custom).forEach(m => {
       html += priceRow(m.label, '', `model:${m.id}:price`, `model:${m.id}:cost`, mPrice(m), mCost(m));
     });
-    html += tableEnd;
+    html += tableEndAdd('otherModel');
 
     html += tableStart('その他車両｜共通オプション', false);
-    OTHER_OPTS.forEach(opt => {
+    OTHER_OPTS.filter(o => !o._custom).forEach(opt => {
       html += priceRow(opt.name, '', `otherOpt:${opt.id}:price`, `otherOpt:${opt.id}:cost`, otoPrice(opt), otoCost(opt));
     });
-    html += tableEnd;
+    html += tableEndAdd('otherCommon');
 
     html += tableStart('その他車両｜設計・手続き関連', false);
-    OTHER_MISC_OPTS.forEach(opt => {
+    OTHER_MISC_OPTS.filter(o => !o._custom).forEach(opt => {
       html += priceRow(opt.name, '', `otherMisc:${opt.id}:price`, `otherMisc:${opt.id}:cost`, omPrice(opt), omCost(opt));
     });
-    html += tableEnd;
+    html += tableEndAdd('otherMisc');
   }
 
   const root = document.getElementById('adminContent');
@@ -2551,6 +2713,7 @@ function saveAdminPrices() {
   const prices = { ...PRICE_OVR };
   document.querySelectorAll('#adminContent input[type="number"]').forEach(inp => {
     const key = inp.dataset.key;
+    if (!key) return; // カスタム行（data-key無し）は各自のoninputで保存済み
     const v = parseFloat(inp.value);
     if (!isNaN(v)) prices[key] = v;
   });
@@ -2876,6 +3039,7 @@ function exportHistoryCSV() {
   document.body.appendChild(a); a.click(); document.body.removeChild(a);
 }
 
+applyCustomItems();
 update();
 </script>
 </body>
