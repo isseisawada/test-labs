@@ -150,6 +150,8 @@
     .sel-group label { display: block; font-size: 0.78rem; font-weight: 600; color: var(--t2); margin-bottom: 6px; }
     .sel-group select { width: 100%; padding: 9px 32px 9px 11px; border: 1px solid var(--border); border-radius: 8px; font-size: 0.83rem; color: var(--t1); background: var(--surface); cursor: pointer; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='11' height='7' viewBox='0 0 11 7'%3E%3Cpath d='M1 1l4.5 4.5L10 1' stroke='%239CA3AF' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 11px center; }
     .sel-group select:focus { outline: none; border-color: var(--p); }
+    .trans-custom-input { width: 100%; padding: 9px 11px; border: 1px solid var(--border); border-radius: 8px; font-size: 0.83rem; color: var(--t1); background: var(--surface); font-family: inherit; }
+    .trans-custom-input:focus { outline: none; border-color: var(--p); }
 
     /* DISCOUNT */
     .disc-row { display: flex; align-items: center; gap: 12px; }
@@ -955,6 +957,9 @@ let state = {
   transportIdx: 0,
   ylwTransportIdx: 0,
   chTransportIdx: 0,
+  transportCustom: 0,
+  ylwTransportCustom: 0,
+  chTransportCustom: 0,
   miscCostIdx: 0,
   discount: 0,
   tinys:   { modelQtys:{}, sizeOpts:{}, commonOpts:{}, blindIdx:0, blindCount:1, miscOpts:{}, designLv:0, customOpts:[] },
@@ -1348,6 +1353,21 @@ function renderShared(el) {
   c.id = 'sec-ship';
   const g = div('sel-grid');
 
+  // 自由記入オプション付きの配送セレクトを構築するヘルパー
+  const customOpt = (idxKey) => `<option value="-1" ${state[idxKey]===-1?'selected':''}>自由記入</option>`;
+  const customInput = (idxKey, valKey) =>
+    `<input type="number" class="trans-custom-input" placeholder="売価を入力" min="0" step="1000" value="${state[valKey]||''}" style="display:${state[idxKey]===-1?'block':'none'};margin-top:8px">`;
+  const bindCustom = (g1, idxKey, valKey) => {
+    const sel = g1.querySelector('select');
+    const inp = g1.querySelector('input');
+    sel.addEventListener('change', e => {
+      state[idxKey] = +e.target.value;
+      inp.style.display = state[idxKey] === -1 ? 'block' : 'none';
+      updateSummary();
+    });
+    inp.addEventListener('input', e => { state[valKey] = parseFloat(e.target.value) || 0; updateSummary(); });
+  };
+
   // YLW600 配送（エリア別）
   if (hasYLW) {
     const g1 = div('sel-group');
@@ -1356,9 +1376,9 @@ function renderShared(el) {
       const p      = ylwPrice(o);
       const price  = p ? '　' + fmt(p) : '';
       return `<option value="${o.idx}" ${state.ylwTransportIdx===o.idx?'selected':''}>${prefix}${o.label}${price}</option>`;
-    }).join('');
-    g1.innerHTML = `<label>YLW600 配送費用（エリア別）</label><select id="ylwTransSelect">${opts}</select>`;
-    g1.querySelector('select').addEventListener('change', e => { state.ylwTransportIdx = +e.target.value; updateSummary(); });
+    }).join('') + customOpt('ylwTransportIdx');
+    g1.innerHTML = `<label>YLW600 配送費用（エリア別）</label><select id="ylwTransSelect">${opts}</select>${customInput('ylwTransportIdx','ylwTransportCustom')}`;
+    bindCustom(g1, 'ylwTransportIdx', 'ylwTransportCustom');
     g.appendChild(g1);
   }
 
@@ -1370,17 +1390,18 @@ function renderShared(el) {
       const p      = chtrPrice(o);
       const price  = o.quote ? '　別途見積' : (p ? '　' + fmt(p) : '');
       return `<option value="${o.idx}" ${state.chTransportIdx===o.idx?'selected':''}>${prefix}${o.label}${price}</option>`;
-    }).join('');
-    g1.innerHTML = `<label>YCL/YNR 配送費用（都道府県別）</label><select id="chTransSelect">${opts}</select>`;
-    g1.querySelector('select').addEventListener('change', e => { state.chTransportIdx = +e.target.value; updateSummary(); });
+    }).join('') + customOpt('chTransportIdx');
+    g1.innerHTML = `<label>YCL/YNR 配送費用（都道府県別）</label><select id="chTransSelect">${opts}</select>${customInput('chTransportIdx','chTransportCustom')}`;
+    bindCustom(g1, 'chTransportIdx', 'chTransportCustom');
     g.appendChild(g1);
   }
 
   // 距離別配送（Tinys / ROADIE 用）
   if (hasNonChassis) {
     const g1 = div('sel-group');
-    g1.innerHTML = `<label>配送費用（距離別）</label><select id="transSelect">${TRANSPORT_OPTS.map(o => `<option value="${o.idx}" ${state.transportIdx===o.idx?'selected':''}>${o.label}${trPrice(o)?'　'+fmt(trPrice(o)):''}</option>`).join('')}</select>`;
-    g1.querySelector('select').addEventListener('change', e => { state.transportIdx = +e.target.value; updateSummary(); });
+    const opts = TRANSPORT_OPTS.map(o => `<option value="${o.idx}" ${state.transportIdx===o.idx?'selected':''}>${o.label}${trPrice(o)?'　'+fmt(trPrice(o)):''}</option>`).join('') + customOpt('transportIdx');
+    g1.innerHTML = `<label>配送費用（距離別）</label><select id="transSelect">${opts}</select>${customInput('transportIdx','transportCustom')}`;
+    bindCustom(g1, 'transportIdx', 'transportCustom');
     g.appendChild(g1);
   }
 
@@ -1601,18 +1622,24 @@ function collectLines() {
   const activeSeries = [...nonChassisSeries, ...chassisSeries];
   const multi = activeSeries.length > 1;
   // 距離別配送（Tinys / ROADIE 用）
-  if (tr && trPrice(tr) > 0) {
+  if (state.transportIdx === -1) {
+    if (nonChassisSeries.length && (state.transportCustom || 0) > 0) shared.push({ name:'配送費用（自由記入）', val: state.transportCustom || 0, cost: 0 });
+  } else if (tr && trPrice(tr) > 0) {
     nonChassisSeries.forEach(s => {
       shared.push({ name: multi ? `配送費用（${tr.label}）${s.label}${ql(s.qty)}` : `配送費用（${tr.label}）${ql(s.qty)}`, val: trPrice(tr) * s.qty, cost: trCost(tr) * s.qty });
     });
   }
   // YLW600 エリア別配送
-  if (ylw && ylwPrice(ylw) > 0) {
+  if (hasYLW && state.ylwTransportIdx === -1) {
+    if ((state.ylwTransportCustom || 0) > 0) shared.push({ name:'配送費用（自由記入・YLW600）', val: state.ylwTransportCustom || 0, cost: 0 });
+  } else if (ylw && ylwPrice(ylw) > 0) {
     const label = `${ylw.region ? ylw.region + '/' : ''}${ylw.label}`;
     shared.push({ name: multi ? `配送費用（${label}）YLW600${ql(ylwQty)}` : `配送費用（${label}）${ql(ylwQty)}`, val: ylwPrice(ylw) * ylwQty, cost: ylwCost(ylw) * ylwQty });
   }
   // YCL/YNR エリア別配送
-  if (ch && chtrPrice(ch) > 0) {
+  if (hasYclYnr && state.chTransportIdx === -1) {
+    if ((state.chTransportCustom || 0) > 0) shared.push({ name:'配送費用（自由記入・YCL/YNR）', val: state.chTransportCustom || 0, cost: 0 });
+  } else if (ch && chtrPrice(ch) > 0) {
     const label = `${ch.region ? ch.region + '/' : ''}${ch.label}`;
     shared.push({ name: multi ? `配送費用（${label}）YCL/YNR${ql(yclYnrQty)}` : `配送費用（${label}）${ql(yclYnrQty)}`, val: chtrPrice(ch) * yclYnrQty, cost: chtrCost(ch) * yclYnrQty });
   }
@@ -1670,7 +1697,10 @@ function updateSummary() {
     Object.values(state.chassis.opts||{}).some(Boolean) ||
     Object.values(state.other.opts||{}).some(Boolean) || Object.values(state.other.miscOpts||{}).some(Boolean)
   );
-  const hasTransport = state.transportIdx > 0 || state.ylwTransportIdx > 0 || state.chTransportIdx > 0;
+  const hasTransport = state.transportIdx > 0 || state.ylwTransportIdx > 0 || state.chTransportIdx > 0
+    || (state.transportIdx === -1 && (state.transportCustom||0) > 0)
+    || (state.ylwTransportIdx === -1 && (state.ylwTransportCustom||0) > 0)
+    || (state.chTransportIdx === -1 && (state.chTransportCustom||0) > 0);
   const hasMisc = state.miscCostIdx > 0;
   const pct = (anyModel?40:0) + (anyOpt?25:0) + (hasTransport?20:0) + (hasMisc?15:0);
   document.getElementById('progFill').style.width = pct + '%';
@@ -1721,6 +1751,7 @@ function copyEstimate() {
 // ============================================================
 function resetAll() {
   state.transportIdx = 0; state.ylwTransportIdx = 0; state.chTransportIdx = 0; state.miscCostIdx = 0; state.discount = 0;
+  state.transportCustom = 0; state.ylwTransportCustom = 0; state.chTransportCustom = 0;
   state.customerName = ''; state.staffName = ''; state.area = ''; state.areaPref = ''; state.areaCity = ''; state.areaSub = '';
   const di = document.getElementById('discInput'); if (di) di.value = '';
   state.tinys   = { modelQtys:{}, sizeOpts:{}, commonOpts:{}, blindIdx:0, blindCount:1, miscOpts:{}, designLv:0, customOpts:[] };
@@ -1760,6 +1791,9 @@ function buildQuoteData(sections) {
     transportIdx: state.transportIdx || 0,
     ylwTransportIdx: state.ylwTransportIdx || 0,
     chTransportIdx: state.chTransportIdx || 0,
+    transportCustom: state.transportCustom || 0,
+    ylwTransportCustom: state.ylwTransportCustom || 0,
+    chTransportCustom: state.chTransportCustom || 0,
     miscCostIdx: state.miscCostIdx || 0,
     discount: state.discount || 0,
     customerName: state.customerName || '',
@@ -2696,6 +2730,9 @@ function editQuote(id) {
   state.transportIdx    = fs.transportIdx || 0;
   state.ylwTransportIdx = fs.ylwTransportIdx || 0;
   state.chTransportIdx  = fs.chTransportIdx || 0;
+  state.transportCustom    = fs.transportCustom || 0;
+  state.ylwTransportCustom = fs.ylwTransportCustom || 0;
+  state.chTransportCustom  = fs.chTransportCustom || 0;
   state.miscCostIdx     = fs.miscCostIdx || 0;
   state.discount        = fs.discount || 0;
   state.customerName    = fs.customerName || '';
