@@ -607,7 +607,7 @@
     </div>
     <div class="comp-credit">Made with Love by © <a href="https://yadokari.net/" target="_blank" rel="noopener">YADOKARI</a></div>
     <div class="comp-actions">
-      <button class="comp-btn-back" onclick="closeCompletion()">← 戻って修正</button>
+      <button class="comp-btn-back" onclick="completionBack()">← 戻って修正</button>
       <button class="comp-btn-print" onclick="printCompletion()">PDFに書き出す</button>
       <button class="comp-btn-new" onclick="openNewQuote()">新しい見積もりを作る</button>
     </div>
@@ -1187,6 +1187,7 @@ function addRowBtn(secId) {
 // History storage
 // ============================================================
 let _editingQuoteId = null;  // 「修正」中の見積もりID（確定時に旧データを置き換える）
+let _viewingQuoteId = null;  // 履歴から「詳細・PDF」で閲覧中の見積もりID
 function loadQuotes() {
   try { return JSON.parse(localStorage.getItem(LS_QUOTES) || '[]'); } catch(e) { return []; }
 }
@@ -2097,6 +2098,7 @@ function showCompletionFromData(q, saveToHistory) {
   document.getElementById('completionPage').scrollTop = 0;
 
   if (saveToHistory) {
+    _viewingQuoteId = null;  // 新規確定なので「履歴閲覧」ではない
     let quotes = loadQuotes();
     // 「修正」由来の場合は旧見積もりを置き換える（確定したこのタイミングで初めて削除）
     if (_editingQuoteId) {
@@ -2112,6 +2114,14 @@ function closeCompletion() {
   document.getElementById('completionPage').style.display = 'none';
   document.body.classList.remove('comp-open');
   document.body.style.overflow = '';
+  _viewingQuoteId = null;
+}
+
+// 完了ページの「戻って修正」: 履歴から開いた場合はその見積もりを修正、それ以外は閉じる
+function completionBack() {
+  const id = _viewingQuoteId;
+  closeCompletion();
+  if (id) { _viewingQuoteId = null; editQuote(id); }
 }
 
 function printCompletion() {
@@ -2951,6 +2961,7 @@ function viewQuote(id) {
   const qt = loadQuotes().find(q => q.id === id);
   if (!qt) return;
   showCompletionFromData(qt, false);
+  _viewingQuoteId = id;  // この履歴を閲覧中（「戻って修正」で編集可能に）
 }
 
 function deleteQuote(id) {
