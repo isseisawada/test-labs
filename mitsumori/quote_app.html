@@ -153,6 +153,9 @@
     .trans-custom-wrap { display: flex; flex-direction: column; gap: 6px; }
     .trans-custom-label, .trans-custom-input { width: 100%; padding: 9px 11px; border: 1px solid var(--border); border-radius: 8px; font-size: 0.83rem; color: var(--t1); background: var(--surface); font-family: inherit; }
     .trans-custom-label:focus, .trans-custom-input:focus { outline: none; border-color: var(--p); }
+    .cst-price-field { position: relative; }
+    .cst-price-field .cst-yen { position: absolute; left: 11px; top: 50%; transform: translateY(-50%); color: var(--t2); font-size: 0.83rem; pointer-events: none; }
+    .cst-price-field .trans-custom-input { padding-left: 24px; }
 
     /* DISCOUNT */
     .disc-row { display: flex; align-items: center; gap: 12px; }
@@ -1537,7 +1540,7 @@ function renderShared(el) {
   const customInput = (obj, idxKey, valKey, labelKey) =>
     `<div class="trans-custom-wrap" style="display:${obj[idxKey]===-1?'block':'none'};margin-top:8px">`
     + `<input type="text" class="trans-custom-label" placeholder="項目名（任意）" value="${escapeAttr(obj[labelKey]||'')}">`
-    + `<input type="number" class="trans-custom-input" placeholder="売価を入力" min="0" step="1000" value="${obj[valKey]||''}">`
+    + `<div class="cst-price-field"><span class="cst-yen">¥</span><input type="number" class="trans-custom-input" placeholder="売価を入力" min="0" step="1000" value="${obj[valKey]||''}"></div>`
     + `</div>`;
   const bindCustom = (g1, obj, idxKey, valKey, labelKey) => {
     const sel = g1.querySelector('select');
