@@ -1396,8 +1396,9 @@ function renderShared(el) {
     g.appendChild(g1);
   }
 
-  // 距離別配送（Tinys / ROADIE 用）
-  if (hasNonChassis) {
+  // 距離別配送（Tinys / ROADIE / その他車両 用）
+  // モデル未選択時もデフォルトで表示（シャーシ専用配送が出る場合のみ非表示）
+  if (hasNonChassis || (!hasYLW && !hasYclYnr)) {
     const g1 = div('sel-group');
     const opts = TRANSPORT_OPTS.map(o => `<option value="${o.idx}" ${state.transportIdx===o.idx?'selected':''}>${o.label}${trPrice(o)?'　'+fmt(trPrice(o)):''}</option>`).join('') + customOpt('transportIdx');
     g1.innerHTML = `<label>配送費用（距離別）</label><select id="transSelect">${opts}</select>${customInput('transportIdx','transportCustom')}`;
