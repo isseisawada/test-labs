@@ -1033,7 +1033,26 @@ function omCost(o)    { return ovr(`otherMisc:${o.id}:cost`,  o.cost || 0); }
 function loadQuotes() {
   try { return JSON.parse(localStorage.getItem(LS_QUOTES) || '[]'); } catch(e) { return []; }
 }
-function saveQuotes(arr) { localStorage.setItem(LS_QUOTES, JSON.stringify(arr)); }
+function saveQuotes(arr) {
+  // 1) そのまま保存を試行
+  try {
+    localStorage.setItem(LS_QUOTES, JSON.stringify(arr));
+    return true;
+  } catch (e) { /* 容量超過 → 縮小して再試行 */ }
+  // 2) 古い見積もりの formState（修正用データ）を削って容量を確保し再試行
+  try {
+    const trimmed = arr.map((q, i) => {
+      if (i < 15) return q;                 // 最新15件は修正用データを保持
+      const { formState, ...rest } = q;     // それ以前は formState を削除
+      return rest;
+    });
+    localStorage.setItem(LS_QUOTES, JSON.stringify(trimmed));
+    return true;
+  } catch (e2) { /* まだ足りない */ }
+  // 3) それでも保存できない場合はユーザーに通知（黙ってデータを失わせない）
+  alert('ブラウザの保存容量が上限に達したため、見積もりを保存できませんでした。\n古い履歴を削除してから、もう一度お試しください。');
+  return false;
+}
 
 // ============================================================
 // Helpers
