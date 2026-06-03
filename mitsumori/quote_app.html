@@ -384,6 +384,8 @@
     .hist-btn.primary:hover { background: var(--p-hover); }
     .hist-btn.danger { color: var(--red); border-color: #FECACA; }
     .hist-btn.danger:hover { background: #FEF2F2; }
+    .hist-btn.edit { color: #9A3412; border-color: #FED7AA; background: #FFF7ED; }
+    .hist-btn.edit:hover { background: #FFEDD5; }
     .hist-empty { text-align: center; padding: 60px 20px; color: var(--t3); font-size: 0.88rem; background: white; border: 1px dashed var(--border); border-radius: 12px; }
 
     /* RESPONSIVE */
@@ -1750,6 +1752,26 @@ function buildQuoteData(sections) {
   const tax = Math.round(pre * 1.1);
   const gross = pre - grandCost;
   const marginPct = pre > 0 ? gross / pre * 100 : 0;
+  // 編集再現用に現在の入力状態をスナップショット
+  const clone = (o) => JSON.parse(JSON.stringify(o));
+  const formState = {
+    tinys: clone(state.tinys),
+    roadie: clone(state.roadie),
+    chassis: clone(state.chassis),
+    other: clone(state.other || { modelQtys:{}, opts:{}, miscOpts:{} }),
+    transportIdx: state.transportIdx || 0,
+    ylwTransportIdx: state.ylwTransportIdx || 0,
+    chTransportIdx: state.chTransportIdx || 0,
+    miscCostIdx: state.miscCostIdx || 0,
+    discount: state.discount || 0,
+    customerName: state.customerName || '',
+    staffName: state.staffName || '',
+    area: state.area || '',
+    areaPref: state.areaPref || '',
+    areaCity: state.areaCity || '',
+    areaSub: state.areaSub || '',
+    active: state.active || 'tinys',
+  };
   return {
     id: Date.now().toString(36) + Math.random().toString(36).slice(2,6),
     createdAt: new Date().toISOString(),
@@ -1764,6 +1786,7 @@ function buildQuoteData(sections) {
     totalCost: grandCost,
     totalGross: gross,
     marginPct,
+    formState,
   };
 }
 
@@ -2619,6 +2642,7 @@ function renderHistory() {
             </div>
             <div class="hist-actions">
               <button class="hist-btn primary" onclick="event.stopPropagation(); viewQuote('${qt.id}')">詳細・PDF</button>
+              <button class="hist-btn edit" onclick="event.stopPropagation(); editQuote('${qt.id}')">修正</button>
               <button class="hist-btn danger" onclick="event.stopPropagation(); deleteQuote('${qt.id}')">削除</button>
             </div>
           </div>
@@ -2643,6 +2667,39 @@ function deleteQuote(id) {
   const quotes = loadQuotes().filter(q => q.id !== id);
   saveQuotes(quotes);
   renderHistory();
+}
+
+function editQuote(id) {
+  const qt = loadQuotes().find(q => q.id === id);
+  if (!qt) return;
+  if (!qt.formState) {
+    alert('この見積もりは旧バージョンで保存されたため修正できません。\n新しく作成し直してください。');
+    return;
+  }
+  const fs = qt.formState;
+  const clone = (o) => JSON.parse(JSON.stringify(o));
+  state.tinys   = clone(fs.tinys);
+  state.roadie  = clone(fs.roadie);
+  state.chassis = clone(fs.chassis);
+  state.other   = clone(fs.other || { modelQtys:{}, opts:{}, miscOpts:{} });
+  state.transportIdx    = fs.transportIdx || 0;
+  state.ylwTransportIdx = fs.ylwTransportIdx || 0;
+  state.chTransportIdx  = fs.chTransportIdx || 0;
+  state.miscCostIdx     = fs.miscCostIdx || 0;
+  state.discount        = fs.discount || 0;
+  state.customerName    = fs.customerName || '';
+  state.staffName       = fs.staffName || '';
+  state.area            = fs.area || '';
+  state.areaPref        = fs.areaPref || '';
+  state.areaCity        = fs.areaCity || '';
+  state.areaSub         = fs.areaSub || '';
+  state.active          = fs.active || 'tinys';
+  // 元の見積もりは履歴から削除（再保存時に重複を防ぐ）
+  const quotes = loadQuotes().filter(q => q.id !== id);
+  saveQuotes(quotes);
+  switchMode('create');
+  update();
+  window.scrollTo({ top: 0 });
 }
 
 function exportHistoryCSV() {
