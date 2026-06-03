@@ -1814,7 +1814,34 @@ function resetAll() {
 function confirmEstimate() {
   const sections = collectLines();
   if (!sections.length) { alert('モデルを選択してください'); return; }
-  showCompletionFromData(buildQuoteData(sections), true);
+  const q = buildQuoteData(sections);
+  // 社内シミュレーションで手入力済みの原価があれば反映して保存（修正時に失わないため）
+  applyCostOverridesToQuote(q);
+  showCompletionFromData(q, true);
+}
+
+// 手入力原価（_internalCostOverrides）を見積もりに反映する（原価0の行のみ）
+function applyCostOverridesToQuote(q) {
+  const ov = {};
+  let changed = false;
+  q.sections.forEach(sec => sec.lines.forEach(l => {
+    if ((l.cost || 0) === 0) {
+      const k = intCostKey(sec.title, l.name);
+      if (_internalCostOverrides[k] != null) {
+        l.cost = _internalCostOverrides[k];
+        ov[k] = _internalCostOverrides[k];
+        changed = true;
+      }
+    }
+  }));
+  if (changed) {
+    q.costOverrides = { ...(q.costOverrides || {}), ...ov };
+    let cost = 0;
+    q.sections.forEach(s => s.lines.forEach(l => cost += (l.cost || 0)));
+    q.totalCost = cost;
+    q.totalGross = q.totalPre - cost;
+    q.marginPct = q.totalPre > 0 ? q.totalGross / q.totalPre * 100 : 0;
+  }
 }
 
 // 集約データを作成（保存と表示の両方で使う）
@@ -1977,12 +2004,15 @@ function showInternalSimulation() {
   _internalQuote = buildQuoteData(sections);
 
   // 編集可能判定用に元の原価を退避し、手入力原価をマージ
+  // （手入力対象 = 元の原価が0の行のみ。モデル等の固定原価は上書きしない）
   _internalQuote.sections.forEach(sec => {
     sec.lines.forEach(l => {
       l._origCost = l.cost || 0;
-      const k = intCostKey(sec.title, l.name);
-      if (_internalCostOverrides[k] != null) {
-        l.cost = _internalCostOverrides[k];
+      if (l._origCost === 0) {
+        const k = intCostKey(sec.title, l.name);
+        if (_internalCostOverrides[k] != null) {
+          l.cost = _internalCostOverrides[k];
+        }
       }
     });
   });
@@ -2804,11 +2834,15 @@ function editQuote(id) {
   state.areaSub         = fs.areaSub || '';
   state.active          = fs.active || 'tinys';
   // 社内シミュレーションで手入力した原価を復元
+  // 1) costOverrides 由来 2) 保存済み明細の原価から直接（キー不一致でも拾えるよう）
   clearInternalCostOverrides();
   if (qt.costOverrides && typeof qt.costOverrides === 'object') {
     Object.assign(_internalCostOverrides, qt.costOverrides);
-    saveInternalCostOverrides();
   }
+  (qt.sections || []).forEach(sec => (sec.lines || []).forEach(l => {
+    if ((l.cost || 0) > 0) _internalCostOverrides[intCostKey(sec.title, l.name)] = l.cost;
+  }));
+  saveInternalCostOverrides();
   // 元の見積もりはまだ削除しない。再保存（確定）時に重複を防ぐため id を控えておく。
   // ここで削除してしまうと、確定せずにタブを閉じた場合に履歴が失われる。
   _editingQuoteId = id;
