@@ -955,21 +955,19 @@ let state = {
   areaPref: '',
   areaCity: '',
   areaSub: '',
-  transportIdx: 0,
   ylwTransportIdx: 0,
   chTransportIdx: 0,
-  transportCustom: 0,
   ylwTransportCustom: 0,
   chTransportCustom: 0,
-  transportCustomLabel: '',
   ylwTransportCustomLabel: '',
   chTransportCustomLabel: '',
   miscCostIdx: 0,
   discount: 0,
-  tinys:   { modelQtys:{}, sizeOpts:{}, commonOpts:{}, blindIdx:0, blindCount:1, miscOpts:{}, designLv:0, customOpts:[] },
-  roadie:  { modelQtys:{}, sizeOpts:{}, commonOpts:{}, miscOpts:{}, designLv:0, customOpts:[] },
+  // 距離別配送はシリーズごとに独立（transportIdx / transportCustom / transportCustomLabel）
+  tinys:   { modelQtys:{}, sizeOpts:{}, commonOpts:{}, blindIdx:0, blindCount:1, miscOpts:{}, designLv:0, customOpts:[], transportIdx:0, transportCustom:0, transportCustomLabel:'' },
+  roadie:  { modelQtys:{}, sizeOpts:{}, commonOpts:{}, miscOpts:{}, designLv:0, customOpts:[], transportIdx:0, transportCustom:0, transportCustomLabel:'' },
   chassis: { modelQtys:{}, opts:{} },
-  other:   { modelQtys:{}, opts:{}, miscOpts:{} },
+  other:   { modelQtys:{}, opts:{}, miscOpts:{}, transportIdx:0, transportCustom:0, transportCustomLabel:'' },
 };
 const hasModel   = (s) => Object.values(s.modelQtys||{}).some(q => q > 0);
 const seriesQty  = (s) => Object.values(s.modelQtys||{}).reduce((a,b) => a+b, 0);
@@ -1370,73 +1368,72 @@ function renderDesignLevelCard(s, modelsArr, el) {
 }
 
 function renderShared(el) {
-  const hasYLW         = (state.chassis.modelQtys['ch6'] || 0) > 0;
-  const hasYclYnr      = ['ch1','ch2','ch3','ch4','ch5'].some(id => (state.chassis.modelQtys[id] || 0) > 0);
-  const hasNonChassis  = hasModel(state.tinys) || hasModel(state.roadie) || hasModel(state.other);
+  const active = state.active;
   const c = sectionCard('配送設定・諸経費', '');
   c.id = 'sec-ship';
   const g = div('sel-grid');
 
-  // 自由記入オプション付きの配送セレクトを構築するヘルパー
-  const customOpt = (idxKey) => `<option value="-1" ${state[idxKey]===-1?'selected':''}>自由記入</option>`;
-  const customInput = (idxKey, valKey, labelKey) =>
-    `<div class="trans-custom-wrap" style="display:${state[idxKey]===-1?'block':'none'};margin-top:8px">`
-    + `<input type="text" class="trans-custom-label" placeholder="項目名（任意）" value="${escapeAttr(state[labelKey]||'')}">`
-    + `<input type="number" class="trans-custom-input" placeholder="売価を入力" min="0" step="1000" value="${state[valKey]||''}">`
+  // 自由記入オプション付きの配送セレクトを構築するヘルパー（obj は state もしくはシリーズ state）
+  const customOpt = (obj, idxKey) => `<option value="-1" ${obj[idxKey]===-1?'selected':''}>自由記入</option>`;
+  const customInput = (obj, idxKey, valKey, labelKey) =>
+    `<div class="trans-custom-wrap" style="display:${obj[idxKey]===-1?'block':'none'};margin-top:8px">`
+    + `<input type="text" class="trans-custom-label" placeholder="項目名（任意）" value="${escapeAttr(obj[labelKey]||'')}">`
+    + `<input type="number" class="trans-custom-input" placeholder="売価を入力" min="0" step="1000" value="${obj[valKey]||''}">`
     + `</div>`;
-  const bindCustom = (g1, idxKey, valKey, labelKey) => {
+  const bindCustom = (g1, obj, idxKey, valKey, labelKey) => {
     const sel = g1.querySelector('select');
     const wrap = g1.querySelector('.trans-custom-wrap');
     const labelInp = g1.querySelector('.trans-custom-label');
     const priceInp = g1.querySelector('.trans-custom-input');
     sel.addEventListener('change', e => {
-      state[idxKey] = +e.target.value;
-      wrap.style.display = state[idxKey] === -1 ? 'block' : 'none';
+      obj[idxKey] = +e.target.value;
+      wrap.style.display = obj[idxKey] === -1 ? 'block' : 'none';
       updateSummary();
     });
-    labelInp.addEventListener('input', e => { state[labelKey] = e.target.value; updateSummary(); });
-    priceInp.addEventListener('input', e => { state[valKey] = parseFloat(e.target.value) || 0; updateSummary(); });
+    labelInp.addEventListener('input', e => { obj[labelKey] = e.target.value; updateSummary(); });
+    priceInp.addEventListener('input', e => { obj[valKey] = parseFloat(e.target.value) || 0; updateSummary(); });
   };
 
-  // YLW600 配送（エリア別）
-  if (hasYLW) {
+  if (active === 'chassis') {
+    const hasYLW    = (state.chassis.modelQtys['ch6'] || 0) > 0;
+    const hasYclYnr = ['ch1','ch2','ch3','ch4','ch5'].some(id => (state.chassis.modelQtys[id] || 0) > 0);
+    // YLW600 配送（エリア別）
+    if (hasYLW) {
+      const g1 = div('sel-group');
+      const opts = YLW_TRANSPORT_OPTS.map(o => {
+        const prefix = o.region ? `【${o.region}】` : '';
+        const p      = ylwPrice(o);
+        const price  = p ? '　' + fmt(p) : '';
+        return `<option value="${o.idx}" ${state.ylwTransportIdx===o.idx?'selected':''}>${prefix}${o.label}${price}</option>`;
+      }).join('') + customOpt(state, 'ylwTransportIdx');
+      g1.innerHTML = `<label>YLW600 配送費用（エリア別）</label><select>${opts}</select>${customInput(state,'ylwTransportIdx','ylwTransportCustom','ylwTransportCustomLabel')}`;
+      bindCustom(g1, state, 'ylwTransportIdx', 'ylwTransportCustom', 'ylwTransportCustomLabel');
+      g.appendChild(g1);
+    }
+    // YCL/YNR 配送（都道府県別）
+    if (hasYclYnr) {
+      const g1 = div('sel-group');
+      const opts = CHASSIS_TRANSPORT_OPTS.map(o => {
+        const prefix = o.region ? `【${o.region}】` : '';
+        const p      = chtrPrice(o);
+        const price  = o.quote ? '　別途見積' : (p ? '　' + fmt(p) : '');
+        return `<option value="${o.idx}" ${state.chTransportIdx===o.idx?'selected':''}>${prefix}${o.label}${price}</option>`;
+      }).join('') + customOpt(state, 'chTransportIdx');
+      g1.innerHTML = `<label>YCL/YNR 配送費用（都道府県別）</label><select>${opts}</select>${customInput(state,'chTransportIdx','chTransportCustom','chTransportCustomLabel')}`;
+      bindCustom(g1, state, 'chTransportIdx', 'chTransportCustom', 'chTransportCustomLabel');
+      g.appendChild(g1);
+    }
+  } else {
+    // Tinys / ROADIE / その他車両 — そのシリーズ専用の距離別配送
+    const s = state[active];
     const g1 = div('sel-group');
-    const opts = YLW_TRANSPORT_OPTS.map(o => {
-      const prefix = o.region ? `【${o.region}】` : '';
-      const p      = ylwPrice(o);
-      const price  = p ? '　' + fmt(p) : '';
-      return `<option value="${o.idx}" ${state.ylwTransportIdx===o.idx?'selected':''}>${prefix}${o.label}${price}</option>`;
-    }).join('') + customOpt('ylwTransportIdx');
-    g1.innerHTML = `<label>YLW600 配送費用（エリア別）</label><select id="ylwTransSelect">${opts}</select>${customInput('ylwTransportIdx','ylwTransportCustom','ylwTransportCustomLabel')}`;
-    bindCustom(g1, 'ylwTransportIdx', 'ylwTransportCustom', 'ylwTransportCustomLabel');
+    const opts = TRANSPORT_OPTS.map(o => `<option value="${o.idx}" ${s.transportIdx===o.idx?'selected':''}>${o.label}${trPrice(o)?'　'+fmt(trPrice(o)):''}</option>`).join('') + customOpt(s, 'transportIdx');
+    g1.innerHTML = `<label>配送費用（距離別）</label><select>${opts}</select>${customInput(s,'transportIdx','transportCustom','transportCustomLabel')}`;
+    bindCustom(g1, s, 'transportIdx', 'transportCustom', 'transportCustomLabel');
     g.appendChild(g1);
   }
 
-  // YCL/YNR 配送（都道府県別）
-  if (hasYclYnr) {
-    const g1 = div('sel-group');
-    const opts = CHASSIS_TRANSPORT_OPTS.map(o => {
-      const prefix = o.region ? `【${o.region}】` : '';
-      const p      = chtrPrice(o);
-      const price  = o.quote ? '　別途見積' : (p ? '　' + fmt(p) : '');
-      return `<option value="${o.idx}" ${state.chTransportIdx===o.idx?'selected':''}>${prefix}${o.label}${price}</option>`;
-    }).join('') + customOpt('chTransportIdx');
-    g1.innerHTML = `<label>YCL/YNR 配送費用（都道府県別）</label><select id="chTransSelect">${opts}</select>${customInput('chTransportIdx','chTransportCustom','chTransportCustomLabel')}`;
-    bindCustom(g1, 'chTransportIdx', 'chTransportCustom', 'chTransportCustomLabel');
-    g.appendChild(g1);
-  }
-
-  // 距離別配送（Tinys / ROADIE / その他車両 用）
-  // モデル未選択時もデフォルトで表示（シャーシ専用配送が出る場合のみ非表示）
-  if (hasNonChassis || (!hasYLW && !hasYclYnr)) {
-    const g1 = div('sel-group');
-    const opts = TRANSPORT_OPTS.map(o => `<option value="${o.idx}" ${state.transportIdx===o.idx?'selected':''}>${o.label}${trPrice(o)?'　'+fmt(trPrice(o)):''}</option>`).join('') + customOpt('transportIdx');
-    g1.innerHTML = `<label>配送費用（距離別）</label><select id="transSelect">${opts}</select>${customInput('transportIdx','transportCustom','transportCustomLabel')}`;
-    bindCustom(g1, 'transportIdx', 'transportCustom', 'transportCustomLabel');
-    g.appendChild(g1);
-  }
-
-  // 諸経費
+  // 諸経費（全体共通）
   const g2 = div('sel-group');
   g2.innerHTML = `<label>諸経費（エリア別）</label><select id="regionSelect">${REGION_OPTS.map(o => `<option value="${o.idx}" ${state.miscCostIdx===o.idx?'selected':''}>${o.label}${rgPrice(o)?'　'+fmt(rgPrice(o)):''}</option>`).join('')}</select>`;
   g2.querySelector('select').addEventListener('change', e => { state.miscCostIdx = +e.target.value; updateSummary(); });
@@ -1637,32 +1634,35 @@ function collectLines() {
   const yclYnrQty = ['ch1','ch2','ch3','ch4','ch5'].reduce((a,id) => a + (state.chassis.modelQtys[id]||0), 0);
   const hasYLW    = ylwQty > 0;
   const hasYclYnr = yclYnrQty > 0;
-  const tr  = TRANSPORT_OPTS[state.transportIdx];
   const ylw = hasYLW    ? YLW_TRANSPORT_OPTS[state.ylwTransportIdx]  : null;
   const ch  = hasYclYnr ? CHASSIS_TRANSPORT_OPTS[state.chTransportIdx] : null;
   const rc  = REGION_OPTS[state.miscCostIdx];
   const shared = [];
   const nonChassisSeries = [
-    { label:'Tinys INSPIRATION', qty: seriesQty(state.tinys), has: hasModel(state.tinys) },
-    { label:'ROADIE',            qty: seriesQty(state.roadie), has: hasModel(state.roadie) },
-    { label:'その他車両',        qty: seriesQty(state.other),  has: hasModel(state.other) },
+    { key:'tinys',  label:'Tinys INSPIRATION', qty: seriesQty(state.tinys), has: hasModel(state.tinys) },
+    { key:'roadie', label:'ROADIE',            qty: seriesQty(state.roadie), has: hasModel(state.roadie) },
+    { key:'other',  label:'その他車両',        qty: seriesQty(state.other),  has: hasModel(state.other) },
   ].filter(s => s.has);
   const chassisSeries = [
     { label:'シャーシ', qty: seriesQty(state.chassis), has: hasModel(state.chassis) },
   ].filter(s => s.has);
   const activeSeries = [...nonChassisSeries, ...chassisSeries];
   const multi = activeSeries.length > 1;
-  // 距離別配送（Tinys / ROADIE 用）
-  if (state.transportIdx === -1) {
-    if (nonChassisSeries.length && (state.transportCustom || 0) > 0) {
-      const nm = state.transportCustomLabel ? `配送費用（${state.transportCustomLabel}）` : '配送費用（自由記入）';
-      shared.push({ name: nm, val: state.transportCustom || 0, cost: 0 });
+  // 距離別配送（シリーズごとに独立）
+  nonChassisSeries.forEach(sr => {
+    const s = state[sr.key];
+    if (s.transportIdx === -1) {
+      if ((s.transportCustom || 0) > 0) {
+        const base = s.transportCustomLabel ? `配送費用（${s.transportCustomLabel}）` : '配送費用（自由記入）';
+        shared.push({ name: multi ? `${base}${sr.label}` : base, val: s.transportCustom || 0, cost: 0 });
+      }
+    } else {
+      const tr = TRANSPORT_OPTS[s.transportIdx];
+      if (tr && trPrice(tr) > 0) {
+        shared.push({ name: multi ? `配送費用（${tr.label}）${sr.label}${ql(sr.qty)}` : `配送費用（${tr.label}）${ql(sr.qty)}`, val: trPrice(tr) * sr.qty, cost: trCost(tr) * sr.qty });
+      }
     }
-  } else if (tr && trPrice(tr) > 0) {
-    nonChassisSeries.forEach(s => {
-      shared.push({ name: multi ? `配送費用（${tr.label}）${s.label}${ql(s.qty)}` : `配送費用（${tr.label}）${ql(s.qty)}`, val: trPrice(tr) * s.qty, cost: trCost(tr) * s.qty });
-    });
-  }
+  });
   // YLW600 エリア別配送
   if (hasYLW && state.ylwTransportIdx === -1) {
     if ((state.ylwTransportCustom || 0) > 0) {
@@ -1737,8 +1737,10 @@ function updateSummary() {
     Object.values(state.chassis.opts||{}).some(Boolean) ||
     Object.values(state.other.opts||{}).some(Boolean) || Object.values(state.other.miscOpts||{}).some(Boolean)
   );
-  const hasTransport = state.transportIdx > 0 || state.ylwTransportIdx > 0 || state.chTransportIdx > 0
-    || (state.transportIdx === -1 && (state.transportCustom||0) > 0)
+  const seriesHasTransport = (s) => s.transportIdx > 0 || (s.transportIdx === -1 && (s.transportCustom||0) > 0);
+  const hasTransport =
+    seriesHasTransport(state.tinys) || seriesHasTransport(state.roadie) || seriesHasTransport(state.other)
+    || state.ylwTransportIdx > 0 || state.chTransportIdx > 0
     || (state.ylwTransportIdx === -1 && (state.ylwTransportCustom||0) > 0)
     || (state.chTransportIdx === -1 && (state.chTransportCustom||0) > 0);
   const hasMisc = state.miscCostIdx > 0;
@@ -1790,15 +1792,15 @@ function copyEstimate() {
 // Reset & Main update
 // ============================================================
 function resetAll() {
-  state.transportIdx = 0; state.ylwTransportIdx = 0; state.chTransportIdx = 0; state.miscCostIdx = 0; state.discount = 0;
-  state.transportCustom = 0; state.ylwTransportCustom = 0; state.chTransportCustom = 0;
-  state.transportCustomLabel = ''; state.ylwTransportCustomLabel = ''; state.chTransportCustomLabel = '';
+  state.ylwTransportIdx = 0; state.chTransportIdx = 0; state.miscCostIdx = 0; state.discount = 0;
+  state.ylwTransportCustom = 0; state.chTransportCustom = 0;
+  state.ylwTransportCustomLabel = ''; state.chTransportCustomLabel = '';
   state.customerName = ''; state.staffName = ''; state.area = ''; state.areaPref = ''; state.areaCity = ''; state.areaSub = '';
   const di = document.getElementById('discInput'); if (di) di.value = '';
-  state.tinys   = { modelQtys:{}, sizeOpts:{}, commonOpts:{}, blindIdx:0, blindCount:1, miscOpts:{}, designLv:0, customOpts:[] };
-  state.roadie  = { modelQtys:{}, sizeOpts:{}, commonOpts:{}, miscOpts:{}, designLv:0, customOpts:[] };
+  state.tinys   = { modelQtys:{}, sizeOpts:{}, commonOpts:{}, blindIdx:0, blindCount:1, miscOpts:{}, designLv:0, customOpts:[], transportIdx:0, transportCustom:0, transportCustomLabel:'' };
+  state.roadie  = { modelQtys:{}, sizeOpts:{}, commonOpts:{}, miscOpts:{}, designLv:0, customOpts:[], transportIdx:0, transportCustom:0, transportCustomLabel:'' };
   state.chassis = { modelQtys:{}, opts:{} };
-  state.other   = { modelQtys:{}, opts:{}, miscOpts:{} };
+  state.other   = { modelQtys:{}, opts:{}, miscOpts:{}, transportIdx:0, transportCustom:0, transportCustomLabel:'' };
   // 修正中フラグを解除（リセット後は新規見積もり扱い。元の履歴は保持される）
   _editingQuoteId = null;
   // 社内シミュレーションの手入力原価もリセット
@@ -1827,17 +1829,15 @@ function buildQuoteData(sections) {
   // 編集再現用に現在の入力状態をスナップショット
   const clone = (o) => JSON.parse(JSON.stringify(o));
   const formState = {
+    // 距離別配送はシリーズ state 内に含まれるため clone で自動的に保存される
     tinys: clone(state.tinys),
     roadie: clone(state.roadie),
     chassis: clone(state.chassis),
     other: clone(state.other || { modelQtys:{}, opts:{}, miscOpts:{} }),
-    transportIdx: state.transportIdx || 0,
     ylwTransportIdx: state.ylwTransportIdx || 0,
     chTransportIdx: state.chTransportIdx || 0,
-    transportCustom: state.transportCustom || 0,
     ylwTransportCustom: state.ylwTransportCustom || 0,
     chTransportCustom: state.chTransportCustom || 0,
-    transportCustomLabel: state.transportCustomLabel || '',
     ylwTransportCustomLabel: state.ylwTransportCustomLabel || '',
     chTransportCustomLabel: state.chTransportCustomLabel || '',
     miscCostIdx: state.miscCostIdx || 0,
@@ -2776,17 +2776,22 @@ function editQuote(id) {
   }
   const fs = qt.formState;
   const clone = (o) => JSON.parse(JSON.stringify(o));
-  state.tinys   = clone(fs.tinys);
-  state.roadie  = clone(fs.roadie);
+  // シリーズ state には距離別配送（transportIdx等）が含まれるため、不足分を補って復元
+  const withTransport = (o, d) => Object.assign({ transportIdx:0, transportCustom:0, transportCustomLabel:'' }, clone(o || d));
+  state.tinys   = withTransport(fs.tinys,  { modelQtys:{}, sizeOpts:{}, commonOpts:{}, blindIdx:0, blindCount:1, miscOpts:{}, designLv:0, customOpts:[] });
+  state.roadie  = withTransport(fs.roadie, { modelQtys:{}, sizeOpts:{}, commonOpts:{}, miscOpts:{}, designLv:0, customOpts:[] });
   state.chassis = clone(fs.chassis);
-  state.other   = clone(fs.other || { modelQtys:{}, opts:{}, miscOpts:{} });
-  state.transportIdx    = fs.transportIdx || 0;
+  state.other   = withTransport(fs.other,  { modelQtys:{}, opts:{}, miscOpts:{} });
+  // 旧バージョン（共通の距離別配送）の見積もりは Tinys に引き継ぐ
+  if (fs.transportIdx != null && state.tinys.transportIdx === 0 && fs.transportIdx !== 0) {
+    state.tinys.transportIdx       = fs.transportIdx || 0;
+    state.tinys.transportCustom    = fs.transportCustom || 0;
+    state.tinys.transportCustomLabel = fs.transportCustomLabel || '';
+  }
   state.ylwTransportIdx = fs.ylwTransportIdx || 0;
   state.chTransportIdx  = fs.chTransportIdx || 0;
-  state.transportCustom    = fs.transportCustom || 0;
   state.ylwTransportCustom = fs.ylwTransportCustom || 0;
   state.chTransportCustom  = fs.chTransportCustom || 0;
-  state.transportCustomLabel    = fs.transportCustomLabel || '';
   state.ylwTransportCustomLabel = fs.ylwTransportCustomLabel || '';
   state.chTransportCustomLabel  = fs.chTransportCustomLabel || '';
   state.miscCostIdx     = fs.miscCostIdx || 0;
