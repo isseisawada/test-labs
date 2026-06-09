@@ -262,11 +262,13 @@
     /* INTERNAL SIMULATION PAGE */
     #internalPage { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.55); z-index: 200; overflow-y: auto; padding: 40px 16px; }
     #internalPage .comp-hdr { background: #9A3412; }
-    .int-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
-    .int-table th { background: var(--bg); font-weight: 700; color: var(--t2); text-align: right; padding: 8px 10px; border-bottom: 1px solid var(--border); font-size: 0.75rem; }
+    .int-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; margin-top: 16px; }
+    .int-table { width: 100%; min-width: 560px; border-collapse: collapse; font-size: 0.82rem; }
+    .int-table th { background: var(--bg); font-weight: 700; color: var(--t2); text-align: right; padding: 8px 10px; border-bottom: 1px solid var(--border); font-size: 0.75rem; white-space: nowrap; }
     .int-table th:first-child { text-align: left; }
     .int-table td { padding: 8px 10px; border-bottom: 1px solid var(--border); text-align: right; vertical-align: top; }
-    .int-table td:first-child { text-align: left; }
+    .int-table td:not(:first-child) { white-space: nowrap; }
+    .int-table th:first-child, .int-table td:first-child { text-align: left; min-width: 150px; }
     .int-table tr.base td { font-weight: 700; }
     .int-table tr.section-hdr td { background: #F9FAFB; color: var(--t3); font-size: 0.7rem; text-transform: uppercase; letter-spacing: .09em; font-weight: 700; padding-top: 14px; }
     .int-m-good { color: #065F46; font-weight: 700; }
@@ -304,7 +306,7 @@
     .admin-actions .btn { padding: 9px 16px; font-size: 0.82rem; font-weight: 600; border-radius: 8px; border: 1px solid var(--border); background: white; color: var(--t1); cursor: pointer; }
     .admin-actions .btn:hover { background: var(--bg); }
     .bottom-nav-bar { position: fixed; bottom: 0; left: 0; right: 0; z-index: 200; background: white; border-top: 1px solid var(--border); padding: 10px 16px; display: none; justify-content: center; align-items: center; gap: 8px; box-shadow: 0 -2px 12px rgba(0,0,0,0.08); }
-    .bottom-nav-bar .btn-save { padding: 10px 24px; font-size: 0.85rem; font-weight: 700; border-radius: 10px; border: none; background: var(--p); color: white; cursor: pointer; font-family: inherit; transition: background .15s; margin-left: 12px; white-space: nowrap; flex-shrink: 0; }
+    .bottom-nav-bar .btn-save { padding: 10px 36px; font-size: 1.04rem; font-weight: 700; border-radius: 10px; border: none; background: var(--p); color: white; cursor: pointer; font-family: inherit; transition: background .15s; margin-left: 12px; white-space: nowrap; flex-shrink: 0; }
     .bottom-nav-bar .btn-save:hover { background: var(--p-hover); }
     .btn-label-short { display: none; }
     body[data-mode="admin"] { padding-bottom: 64px; }
@@ -469,7 +471,7 @@
       .bottom-nav-bar { padding: 8px 10px; gap: 6px; }
       .bottom-nav-bar .mode-nb, .hdr-modes .mode-nb { padding: 5px 9px; font-size: 0.72rem; }
       .hdr-modes { gap: 4px; }
-      .bottom-nav-bar .btn-save { padding: 8px 14px; font-size: 0.8rem; margin-left: 4px; }
+      .bottom-nav-bar .btn-save { padding: 8px 21px; font-size: 0.99rem; margin-left: 4px; }
       /* モバイル: ロゴ縮小・モードボタン短縮ラベルでヘッダーの横はみ出しを防止 */
       .logo img { width: 116px; }
       .mode-full { display: none; }
@@ -2364,7 +2366,7 @@ function renderInternalSimulation() {
     });
   }
 
-  html += `<table class="int-table" style="margin-top:16px"><thead><tr><th>項目</th><th>売価</th><th>原価</th><th>粗利</th><th>利益率</th></tr></thead><tbody>`;
+  html += `<div class="int-table-wrap"><table class="int-table"><thead><tr><th>項目</th><th>売価</th><th>原価</th><th>粗利</th><th>利益率</th></tr></thead><tbody>`;
   q.sections.forEach((sec, si) => {
     html += `<tr class="section-hdr"><td colspan="5">${escapeHtml(sec.title)}</td></tr>`;
     sec.lines.forEach((l, li) => {
@@ -2383,7 +2385,7 @@ function renderInternalSimulation() {
         `</tr>`;
     });
   });
-  html += `</tbody></table>`;
+  html += `</tbody></table></div>`;
 
   html += `<div class="int-summary" id="intSummary">${buildInternalSummaryHTML(q)}</div>`;
 
