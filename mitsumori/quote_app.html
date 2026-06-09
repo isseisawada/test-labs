@@ -55,6 +55,8 @@
     .btn-pdf:hover { background: var(--p-hover); }
     .hdr-modes { display: flex; gap: 6px; margin-left: auto; flex-shrink: 0; }
     .mode-short { display: none; }
+    /* 作成モード以外はシリーズタブ枠を消す（履歴/管理でヘッダーが横にはみ出すのを防ぐ） */
+    body:not([data-mode="create"]) .s-nav-wrap { display: none; }
 
     /* LAYOUT */
     .app { display: flex; max-width: 1260px; margin: 0 auto; padding: 24px 16px; gap: 18px; align-items: flex-start; }
