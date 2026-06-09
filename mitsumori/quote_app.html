@@ -2266,6 +2266,8 @@ function printCompletion() {
 }
 
 function openNewQuote() {
+  // 新規タブが前の見積もりの手入力原価を引き継がないようクリア（localStorage共有のため）
+  clearInternalCostOverrides();
   // 別タブで開くとstateは初期化された状態で起動する
   const url = location.href.split('?')[0].split('#')[0];
   window.open(url, '_blank');
@@ -2445,8 +2447,8 @@ function applyInternalSimulationToFinal() {
   // 内部ページを閉じて、確定ページに遷移（履歴保存も実行）
   document.getElementById('internalPage').style.display = 'none';
   _internalQuote = null;
-  // 最終反映時に手入力原価のオーバーライドをクリア
-  clearInternalCostOverrides();
+  // 手入力原価はクリアしない。同じ見積もりに「戻って修正」した際に保持されるべきため。
+  // クリアは新規見積もり開始時（リセット／新しい見積もりを作る／別見積もりの修正）に行う。
   showCompletionFromData(q, true);
 }
 
