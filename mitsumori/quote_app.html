@@ -6,10 +6,21 @@
   <meta name="robots" content="noindex, nofollow, noarchive">
   <meta name="googlebot" content="noindex, nofollow, noarchive">
   <title>YADOKARI トレーラーハウス 見積もり</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Noto+Sans+JP:wght@100..900&display=swap" rel="stylesheet">
   <style>
+    /* パスワードゲート */
+    #gate { display: none; position: fixed; inset: 0; z-index: 9999; background: #5B3DE8; align-items: center; justify-content: center; padding: 20px; }
+    .gate-box { background: white; border-radius: 16px; padding: 32px 28px; width: 100%; max-width: 360px; box-shadow: 0 24px 64px rgba(0,0,0,.25); text-align: center; }
+    .gate-title { font-size: 1.1rem; font-weight: 800; color: #111827; }
+    .gate-sub { font-size: 0.8rem; color: #6B7280; margin: 6px 0 18px; }
+    #gateInput { width: 100%; padding: 11px 13px; border: 1px solid #E5E7EB; border-radius: 10px; font-size: 0.95rem; font-family: inherit; box-sizing: border-box; }
+    #gateInput:focus { outline: none; border-color: #5B3DE8; }
+    .gate-err { display: none; color: #DC2626; font-size: 0.78rem; margin-top: 8px; }
+    #gateBtn { width: 100%; margin-top: 16px; padding: 11px; background: #5B3DE8; color: white; border: none; border-radius: 10px; font-size: 0.92rem; font-weight: 700; cursor: pointer; font-family: inherit; }
+    #gateBtn:hover { background: #4A2ED0; }
     :root {
       --p: #5B3DE8;
       --p-hover: #4A2ED0;
@@ -488,6 +499,17 @@
   </style>
 </head>
 <body data-mode="create">
+
+<!-- パスワードゲート -->
+<div id="gate">
+  <div class="gate-box">
+    <div class="gate-title">見積もりシミュレーター</div>
+    <div class="gate-sub">チームの合言葉を入力してください</div>
+    <input type="password" id="gateInput" placeholder="合言葉" autocomplete="off">
+    <div class="gate-err" id="gateErr">合言葉が違います</div>
+    <button id="gateBtn">入る</button>
+  </div>
+</div>
 
 <header class="hdr">
   <div class="logo" style="cursor:pointer" onclick="switchMode('create')"><img src="mtmr_logo.png" alt="ちゃちゃっと！見積もりシミュレーター"></div>
@@ -984,6 +1006,55 @@ const hasModel   = (s) => Object.values(s.modelQtys||{}).some(q => q > 0);
 const seriesQty  = (s) => Object.values(s.modelQtys||{}).reduce((a,b) => a+b, 0);
 
 // ============================================================
+// クラウド同期（Supabase）— 価格/メモ/カスタム項目/担当者/履歴を共有
+// ============================================================
+const SUPABASE_URL = 'https://bvwyyocqynbftjnkzsvw.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_9CZ74mKWN3kdwbXDzZT_dw_QwhkP4ZU';
+const TEAM_PASS = 'yadokari';  // ★チーム共通の合言葉（変更可）
+const sb = (window.supabase && SUPABASE_URL) ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
+
+function cloudSetConfig(key, value) {
+  if (!sb) return;
+  sb.from('shared_config').upsert({ key, value, updated_at: new Date().toISOString() })
+    .then(({ error }) => { if (error) console.warn('cloud config save failed:', key, error.message); });
+}
+function cloudUpsertQuote(q) {
+  if (!sb || !q || !q.id) return;
+  sb.from('quotes').upsert({ id: q.id, data: q, created_at: q.createdAt || new Date().toISOString(), updated_at: new Date().toISOString() })
+    .then(({ error }) => { if (error) console.warn('cloud quote save failed:', error.message); });
+}
+function cloudDeleteQuote(id) {
+  if (!sb || !id) return;
+  sb.from('quotes').delete().eq('id', id)
+    .then(({ error }) => { if (error) console.warn('cloud quote delete failed:', error.message); });
+}
+// 起動時：クラウドから全データ取得。空なら現在のローカル値でseed（初回セットアップ）
+async function cloudLoadAll() {
+  if (!sb) return;
+  const { data: cfg, error: e1 } = await sb.from('shared_config').select('key,value');
+  if (e1) throw e1;
+  const map = {}; (cfg || []).forEach(r => map[r.key] = r.value);
+  const applyOrSeed = (key, current, apply) => {
+    if (map[key] !== undefined) apply(map[key]);
+    else cloudSetConfig(key, current);  // クラウドに無ければローカル値でseed
+  };
+  applyOrSeed('prices',       PRICE_OVR,    v => { PRICE_OVR = v;    localStorage.setItem(LS_PRICES, JSON.stringify(v)); });
+  applyOrSeed('memos',        MEMO_DATA,    v => { MEMO_DATA = v;    localStorage.setItem(LS_MEMOS,  JSON.stringify(v)); });
+  applyOrSeed('staff',        STAFF_LIST,   v => { STAFF_LIST = v;   localStorage.setItem(LS_STAFF,  JSON.stringify(v)); });
+  applyOrSeed('custom_items', CUSTOM_ITEMS, v => { CUSTOM_ITEMS = v; localStorage.setItem(LS_CUSTOM, JSON.stringify(v)); });
+
+  const { data: qs, error: e2 } = await sb.from('quotes').select('data,created_at').order('created_at', { ascending: false });
+  if (e2) throw e2;
+  if ((qs || []).length === 0) {
+    // クラウドに履歴が無い → ローカル履歴でseed
+    const localQuotes = JSON.parse(localStorage.getItem(LS_QUOTES) || '[]');
+    localQuotes.forEach(q => cloudUpsertQuote(q));
+  } else {
+    localStorage.setItem(LS_QUOTES, JSON.stringify(qs.map(r => r.data)));
+  }
+}
+
+// ============================================================
 // localStorage Keys & Price Overrides
 // ============================================================
 const LS_PRICES = 'yadokari_prices_v1';
@@ -992,17 +1063,17 @@ const LS_MEMOS  = 'yadokari_memos_v1';
 const LS_STAFF  = 'yadokari_staff_v1';
 const DEFAULT_STAFF = ['遠藤美智子','郷優里','小川晃輝','長尾航世'];
 function loadStaff() { try { return JSON.parse(localStorage.getItem(LS_STAFF) || 'null') || DEFAULT_STAFF.slice(); } catch(e) { return DEFAULT_STAFF.slice(); } }
-function saveStaff(arr) { localStorage.setItem(LS_STAFF, JSON.stringify(arr)); }
+function saveStaff(arr) { localStorage.setItem(LS_STAFF, JSON.stringify(arr)); cloudSetConfig('staff', arr); }
 let STAFF_LIST = loadStaff();
 
 function loadOverrides() {
   try { return JSON.parse(localStorage.getItem(LS_PRICES) || '{}'); } catch(e) { return {}; }
 }
-function saveOverrides(data) { localStorage.setItem(LS_PRICES, JSON.stringify(data)); }
+function saveOverrides(data) { localStorage.setItem(LS_PRICES, JSON.stringify(data)); cloudSetConfig('prices', data); }
 let PRICE_OVR = loadOverrides();
 
 function loadMemos() { try { return JSON.parse(localStorage.getItem(LS_MEMOS) || '{}'); } catch(e) { return {}; } }
-function saveMemos(data) { localStorage.setItem(LS_MEMOS, JSON.stringify(data)); }
+function saveMemos(data) { localStorage.setItem(LS_MEMOS, JSON.stringify(data)); cloudSetConfig('memos', data); }
 let MEMO_DATA = loadMemos();
 function getMemo(priceKey) { return MEMO_DATA[priceKey.replace(/:price$/, ':memo')] || ''; }
 
@@ -1042,7 +1113,7 @@ function omCost(o)    { return ovr(`otherMisc:${o.id}:cost`,  o.cost || 0); }
 const LS_CUSTOM = 'yadokari_custom_items_v1';
 function loadCustom() { try { return JSON.parse(localStorage.getItem(LS_CUSTOM) || '{}') || {}; } catch(e){ return {}; } }
 let CUSTOM_ITEMS = loadCustom();
-function saveCustom() { try { localStorage.setItem(LS_CUSTOM, JSON.stringify(CUSTOM_ITEMS)); } catch(e){} }
+function saveCustom() { try { localStorage.setItem(LS_CUSTOM, JSON.stringify(CUSTOM_ITEMS)); } catch(e){} cloudSetConfig('custom_items', CUSTOM_ITEMS); }
 let _customSeq = 1;
 
 // 各管理セクションの定義（kind: idx=配送/諸経費/ブラインド, model=ベースモデル, opt=オプション, size=サイズ連動）
@@ -2104,12 +2175,16 @@ function showCompletionFromData(q, saveToHistory) {
     _viewingQuoteId = null;  // 新規確定なので「履歴閲覧」ではない
     let quotes = loadQuotes();
     // 「修正」由来の場合は旧見積もりを置き換える（確定したこのタイミングで初めて削除）
+    const replacedId = _editingQuoteId;
     if (_editingQuoteId) {
       quotes = quotes.filter(x => x.id !== _editingQuoteId);
       _editingQuoteId = null;
     }
     quotes.unshift(q);
     saveQuotes(quotes);
+    // クラウド同期（個別操作で他メンバーの履歴を壊さない）
+    if (replacedId) cloudDeleteQuote(replacedId);
+    cloudUpsertQuote(q);
   }
 }
 
@@ -2971,6 +3046,7 @@ function deleteQuote(id) {
   if (!confirm('この見積もりを削除しますか？')) return;
   const quotes = loadQuotes().filter(q => q.id !== id);
   saveQuotes(quotes);
+  cloudDeleteQuote(id);
   renderHistory();
 }
 
@@ -3053,8 +3129,41 @@ function exportHistoryCSV() {
   document.body.appendChild(a); a.click(); document.body.removeChild(a);
 }
 
-applyCustomItems();
-update();
+// ============================================================
+// 起動（パスワードゲート → クラウド読込 → 描画）
+// ============================================================
+function bootApp() {
+  applyCustomItems();
+  update();
+}
+async function bootstrap() {
+  try { await cloudLoadAll(); }
+  catch (e) { console.warn('クラウド読込に失敗。ローカルのデータで起動します:', e && e.message); }
+  bootApp();
+}
+function initGate() {
+  const gate = document.getElementById('gate');
+  // 同一ブラウザのセッション中は再入力不要
+  if (sessionStorage.getItem('yadokari_gate_ok') === '1') { gate.style.display = 'none'; bootstrap(); return; }
+  gate.style.display = 'flex';
+  const inp = document.getElementById('gateInput');
+  const btn = document.getElementById('gateBtn');
+  const err = document.getElementById('gateErr');
+  setTimeout(() => inp.focus(), 50);
+  const submit = () => {
+    if (inp.value === TEAM_PASS) {
+      sessionStorage.setItem('yadokari_gate_ok', '1');
+      gate.style.display = 'none';
+      bootstrap();
+    } else {
+      err.style.display = 'block';
+      inp.value = ''; inp.focus();
+    }
+  };
+  btn.onclick = submit;
+  inp.addEventListener('keydown', e => { if (e.key === 'Enter') submit(); });
+}
+initGate();
 </script>
 </body>
 </html>
