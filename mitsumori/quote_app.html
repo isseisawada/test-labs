@@ -1010,7 +1010,7 @@ const seriesQty  = (s) => Object.values(s.modelQtys||{}).reduce((a,b) => a+b, 0)
 // ============================================================
 const SUPABASE_URL = 'https://bvwyyocqynbftjnkzsvw.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_9CZ74mKWN3kdwbXDzZT_dw_QwhkP4ZU';
-const TEAM_PASS = 'yadokari';  // ★チーム共通の合言葉（変更可）
+const TEAM_PASS = 'spu2026';  // ★チーム共通の合言葉（変更可）
 const sb = (window.supabase && SUPABASE_URL) ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
 
 function cloudSetConfig(key, value) {
@@ -1052,6 +1052,63 @@ async function cloudLoadAll() {
   } else {
     localStorage.setItem(LS_QUOTES, JSON.stringify(qs.map(r => r.data)));
   }
+}
+
+// ---- リアルタイム同期 ----
+// 入力中（フォーカスがinput/select）は再描画を避け、データのみ更新
+function _isTyping() {
+  const ae = document.activeElement;
+  return ae && /^(INPUT|SELECT|TEXTAREA)$/.test(ae.tagName);
+}
+function rerenderCurrentIfIdle() {
+  if (_isTyping()) return;
+  const m = state.mode;
+  if (m === 'admin') renderAdmin();
+  else if (m === 'history') renderHistory();
+  else update();
+}
+// CUSTOM_ITEMS の変更を配列へ再反映（既存カスタムを除去してから再push）
+function reapplyCustomItems() {
+  Object.values(ADMIN_SECTIONS).forEach(def => {
+    for (let i = def.arr.length - 1; i >= 0; i--) { if (def.arr[i] && def.arr[i]._custom) def.arr.splice(i, 1); }
+    if (def.kind === 'model' && def._customGroup) def._customGroup.models = [];
+  });
+  Object.keys(CUSTOM_ITEMS).forEach(secId => {
+    const def = ADMIN_SECTIONS[secId]; if (!def) return;
+    (CUSTOM_ITEMS[secId] || []).forEach(ci => buildAndPush(def, ci));
+  });
+}
+function applyConfigChange(key, value) {
+  if (value == null) return;
+  const same = (cur) => JSON.stringify(cur) === JSON.stringify(value);  // 自分の保存のechoは無視
+  if (key === 'prices')       { if (same(PRICE_OVR)) return; PRICE_OVR = value; localStorage.setItem(LS_PRICES, JSON.stringify(value)); }
+  else if (key === 'memos')   { if (same(MEMO_DATA)) return; MEMO_DATA = value; localStorage.setItem(LS_MEMOS, JSON.stringify(value)); }
+  else if (key === 'staff')   { if (same(STAFF_LIST)) return; STAFF_LIST = value; localStorage.setItem(LS_STAFF, JSON.stringify(value)); }
+  else if (key === 'custom_items') { if (same(CUSTOM_ITEMS)) return; CUSTOM_ITEMS = value; localStorage.setItem(LS_CUSTOM, JSON.stringify(value)); reapplyCustomItems(); }
+  else return;
+  rerenderCurrentIfIdle();
+}
+async function refreshQuotesFromCloud() {
+  if (!sb) return;
+  try {
+    const { data: qs } = await sb.from('quotes').select('data,created_at').order('created_at', { ascending: false });
+    if (qs) {
+      localStorage.setItem(LS_QUOTES, JSON.stringify(qs.map(r => r.data)));
+      if (state.mode === 'history' && !_isTyping()) renderHistory();
+    }
+  } catch (e) {}
+}
+function subscribeRealtime() {
+  if (!sb) return;
+  sb.channel('yadokari-sync')
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'shared_config' }, payload => {
+      const row = payload.new || payload.old; if (!row) return;
+      applyConfigChange(row.key, payload.new ? payload.new.value : null);
+    })
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'quotes' }, () => {
+      refreshQuotesFromCloud();
+    })
+    .subscribe();
 }
 
 // ============================================================
@@ -3140,6 +3197,7 @@ async function bootstrap() {
   try { await cloudLoadAll(); }
   catch (e) { console.warn('クラウド読込に失敗。ローカルのデータで起動します:', e && e.message); }
   bootApp();
+  subscribeRealtime();  // 以降、他メンバーの変更をリアルタイム反映
 }
 function initGate() {
   const gate = document.getElementById('gate');
