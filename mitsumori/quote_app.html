@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <meta name="robots" content="noindex, nofollow, noarchive">
   <meta name="googlebot" content="noindex, nofollow, noarchive">
   <title>YADOKARI トレーラーハウス 見積もり</title>
@@ -54,6 +54,7 @@
     .btn-pdf { padding: 7px 16px; background: var(--p); color: #fff; border: none; border-radius: 8px; font-size: 0.83rem; font-weight: 600; cursor: pointer; white-space: nowrap; transition: background .15s; }
     .btn-pdf:hover { background: var(--p-hover); }
     .hdr-modes { display: flex; gap: 6px; margin-left: auto; flex-shrink: 0; }
+    .mode-short { display: none; }
 
     /* LAYOUT */
     .app { display: flex; max-width: 1260px; margin: 0 auto; padding: 24px 16px; gap: 18px; align-items: flex-start; }
@@ -464,9 +465,15 @@
       .btn-label-full { display: none; }
       .btn-label-short { display: inline; }
       .bottom-nav-bar { padding: 8px 10px; gap: 6px; }
-      .bottom-nav-bar .mode-nb, .hdr-modes .mode-nb { padding: 5px 10px; font-size: 0.72rem; }
+      .bottom-nav-bar .mode-nb, .hdr-modes .mode-nb { padding: 5px 9px; font-size: 0.72rem; }
       .hdr-modes { gap: 4px; }
       .bottom-nav-bar .btn-save { padding: 8px 14px; font-size: 0.8rem; margin-left: 4px; }
+      /* モバイル: ロゴ縮小・モードボタン短縮ラベルでヘッダーの横はみ出しを防止 */
+      .logo img { width: 116px; }
+      .mode-full { display: none; }
+      .mode-short { display: inline; }
+      /* 横方向のはみ出しをクリップ（テーブルは .admin-scroll 内で個別にスクロール） */
+      .app, .admin-wrap, .hist-wrap { overflow-x: hidden; }
     }
     @media (max-width: 480px) {
       .m-grid { grid-template-columns: 1fr; }
@@ -515,7 +522,7 @@
   <div class="logo" style="cursor:pointer" onclick="switchMode('create')"><img src="mtmr_logo.png" alt="ちゃちゃっと！見積もりシミュレーター"></div>
   <div class="s-nav-wrap"><nav class="s-nav" id="sNav"></nav><span class="s-nav-hint" id="sNavHint">›</span></div>
   <div class="hdr-modes">
-    <button class="mode-nb active" data-mode-btn="create" onclick="switchMode('create')">見積もり作成</button>
+    <button class="mode-nb active" data-mode-btn="create" onclick="switchMode('create')"><span class="mode-full">見積もり作成</span><span class="mode-short">作成</span></button>
     <button class="mode-nb" data-mode-btn="history" onclick="switchMode('history')">履歴</button>
     <button class="mode-nb" data-mode-btn="admin" onclick="switchMode('admin')">管理</button>
   </div>
