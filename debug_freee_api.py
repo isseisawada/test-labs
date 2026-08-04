@@ -43,17 +43,16 @@ def main():
         print("FREEE_ACCESS_TOKEN が .env にありません。")
         sys.exit(1)
 
-    # 1. 承認経路 1469199 の詳細
-    get("/api/1/approval_flow_routes/1469199")
+    # 1. 明細テンプレート一覧を色々なURLで試す
+    for path in [
+        "/api/1/expense_application_line_templates",
+        "/api/1/expense_application_lines/templates",
+        "/api/1/expense_applications/templates",
+    ]:
+        get(path)
 
-    # 2. 経費申請テンプレート一覧（明細テンプレートIDを含む可能性）
-    get("/api/1/expense_application_templates")
-
-    # 3. 既存の経費申請（下書きまたは全て）から明細構造を確認
-    get("/api/1/expense_applications", limit=3)
-
-    # 4. 特に4月に登録した申請のID(17179696)の詳細を取得（もしあれば）
-    get("/api/1/expense_applications/17179696")
+    # 2. 承認経路一覧
+    get("/api/1/approval_flow_routes")
 
 
 if __name__ == "__main__":
