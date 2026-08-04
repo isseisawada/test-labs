@@ -100,8 +100,9 @@ def pick_template(entry: dict) -> tuple[int, str]:
         # ¥5,000 以下の会議費
         return T_MEETING_IN, "会議費(社内)"
 
-    # 上記に該当しない領収書は消耗品にフォールバック（Google Cloud, Apple, note, Soil work 等）
-    return T_SUPPLY, "備品消耗品(事務用品等)"
+    # 上記に該当しない領収書は消耗品にフォールバック（Google Cloud, Apple, note, Soil work / Staple 等）
+    # freee に「雑費」テンプレートが無いため、これらは登録後に freee UI で「経費科目→雑費」に手動変更する運用
+    return T_SUPPLY, "備品消耗品(要UI変更→雑費)"
 
 
 def entry_to_line(entry: dict, receipt_id: int | None = None) -> tuple[ExpenseLine, str]:
