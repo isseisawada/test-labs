@@ -60,6 +60,9 @@ YEAR = 2026
 TITLE = "経費精算申請1/3"
 DESCRIPTION = "打ち合わせ"
 ACCOUNT_NAME = "交通費（電車在来線・バス）"
+# コーポレートが API 用に発行した承認経路ID
+# https://secure.freee.co.jp/approval_flow_routes/1469199
+APPROVAL_FLOW_ROUTE_ID = 1469199
 
 
 def main():
@@ -103,6 +106,7 @@ def main():
         title=TITLE,
         lines=lines,
         description=f"2026年4月分 Suica 交通費 {len(lines)}件 合計¥{total:,}",
+        approval_flow_route_id=APPROVAL_FLOW_ROUTE_ID,
     )
     result = client.create_expense_application(application)
     print(f"\n完了！申請ID: {result['id']}")

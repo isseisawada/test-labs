@@ -36,6 +36,7 @@ class ExpenseApplication:
     title: str
     lines: list[ExpenseLine]
     description: str = ""
+    approval_flow_route_id: int | None = None
 
 
 class FreeeClient:
@@ -190,6 +191,11 @@ class FreeeClient:
             "description": application.description,
             "purchase_lines": lines,
         }
+
+        # 承認経路 ID（コーポレートが API 用に発行）
+        if application.approval_flow_route_id:
+            body["approval_flow_route_id"] = application.approval_flow_route_id
+            print(f"  承認経路 ID: {application.approval_flow_route_id}")
 
         # 部門(section)が必須の会社向けに自動付与
         try:
