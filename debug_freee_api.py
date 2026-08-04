@@ -31,10 +31,11 @@ def get(path, **params):
     print(f"\n=== GET {path} → {r.status_code} ===")
     try:
         data = r.json()
-        print(json.dumps(data, ensure_ascii=False, indent=2)[:4000])
+        # 全文出力
+        print(json.dumps(data, ensure_ascii=False, indent=2))
         return data
     except Exception:
-        print(r.text[:1500])
+        print(r.text)
         return None
 
 
@@ -43,16 +44,13 @@ def main():
         print("FREEE_ACCESS_TOKEN が .env にありません。")
         sys.exit(1)
 
-    # 1. 明細テンプレート一覧を色々なURLで試す
-    for path in [
-        "/api/1/expense_application_line_templates",
-        "/api/1/expense_application_lines/templates",
-        "/api/1/expense_applications/templates",
-    ]:
-        get(path)
-
-    # 2. 承認経路一覧
-    get("/api/1/approval_flow_routes")
+    # 明細テンプレート一覧を全件取得（id/name のみ抽出して簡潔に）
+    data = get("/api/1/expense_application_line_templates")
+    if data:
+        print("\n" + "=" * 60)
+        print("【テンプレート一覧サマリ】")
+        for t in data.get("expense_application_line_templates", []):
+            print(f"  id={t['id']:>6}  {t['name']}  [{t['account_item_name']}]")
 
 
 if __name__ == "__main__":
