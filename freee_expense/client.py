@@ -177,13 +177,17 @@ class FreeeClient:
         for line in application.lines:
             if line.line_template_id:
                 # 新形式: ネスト構造 + line_template_id
+                eal: dict = {
+                    "description": line.description,
+                    "amount": line.amount,
+                    "expense_application_line_template_id": line.line_template_id,
+                }
+                # テンプレート既定の勘定科目を上書きしたい場合
+                if line.account_item_id:
+                    eal["account_item_id"] = line.account_item_id
                 purchase_line: dict = {
                     "transaction_date": line.expense_date.isoformat(),
-                    "expense_application_lines": [{
-                        "description": line.description,
-                        "amount": line.amount,
-                        "expense_application_line_template_id": line.line_template_id,
-                    }],
+                    "expense_application_lines": [eal],
                 }
                 if line.receipt_ids:
                     purchase_line["receipt_id"] = line.receipt_ids[0]

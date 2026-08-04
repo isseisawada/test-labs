@@ -43,9 +43,12 @@ T_GAS          = 300524  # ガソリン代
 T_PARKING      = 300525  # 駐車場代
 T_MEETING_IN   = 300528  # 会議費（社内）
 T_MEETING_EXT  = 300529  # 会議費（社外）
-T_ENT_LOW      = 300530  # 接待交際費（一人5000円以下）
-T_ENT_HIGH     = 300531  # 接待交際費（一人5000円超）
-T_SUPPLY       = 300535  # 備品消耗品（事務用品等）→ サブスク等の雑費フォールバック
+T_ENT_LOW      = 300530  # 接待交際費（一人10000円以下）
+T_ENT_HIGH     = 300531  # 接待交際費（一人10000円超）
+T_SUPPLY       = 300535  # 備品消耗品（事務用品等）
+
+# 勘定科目 ID（テンプレート既定を上書きしたい場合に使う）
+A_MISC         = 134321784  # 雑費
 # ------------------------------------------------------------------------- #
 
 
@@ -57,8 +60,8 @@ def load_entries() -> list[dict]:
         return json.load(f)
 
 
-def pick_template(entry: dict) -> tuple[int, str]:
-    """エントリから明細テンプレート ID と表示名を決定"""
+def pick_template(entry: dict) -> tuple[int, str, int | None]:
+    """エントリから (明細テンプレート ID, 表示名, 勘定科目オーバーライドID or None) を決定"""
     kind = entry.get("kind", "suica")
     vendor = entry.get("vendor", "") or ""
     account = entry.get("account", "") or ""
@@ -67,47 +70,46 @@ def pick_template(entry: dict) -> tuple[int, str]:
 
     # Suica → 電車バス（バス含む）
     if kind == "suica":
-        return T_SUICA, "電車・バス"
+        return T_SUICA, "電車・バス", None
 
     # 種別が taxi
     if kind == "taxi":
-        return T_TAXI, "タクシー"
+        return T_TAXI, "タクシー", None
 
     # 領収書：ベンダー別に振り分け
     v = vendor
     if "GO株式会社" in v or v.startswith("GO"):
-        return T_TAXI, "タクシー"
+        return T_TAXI, "タクシー", None
     if "東日本旅客" in v or "JR" in v.upper() or "新幹線" in v:
-        return T_SHINKANSEN, "特急・新幹線"
+        return T_SHINKANSEN, "特急・新幹線", None
     if "石油" in v or "ガソリン" in v or "SS" in v:
-        return T_GAS, "ガソリン代"
+        return T_GAS, "ガソリン代", None
     if any(k in v for k in ["パーク", "駐車場", "パーキング", "アイペック", "ナビパーク"]):
-        return T_PARKING, "駐車場代"
+        return T_PARKING, "駐車場代", None
+
+    # STATION WORK は オフィスブース利用 なので会議費（社内）固定
+    if "STATION WORK" in v or "Station Work" in v:
+        return T_MEETING_IN, "会議費(社内)", None
 
     # 会議費/接待交際費 の金額判定ルール
     # 1. 飲食代 が ¥5,000 以下 → 会議費
     # 2. 飲食代 が ¥5,000 超 → 接待交際費（会議費にしない）
     #    - 一人¥10,000 で 300530/300531 を分ける
-    #    - 目安: 合計 ¥30,000+ を 10,000超 と推定（澤田含む3名想定）
-    # 3. STATION WORK は オフィスブース利用 なので会議費（社内）固定
-    if "STATION WORK" in v or "Station Work" in v:
-        return T_MEETING_IN, "会議費(社内)"
-
     if account in ("接待交際費", "会議費"):
-        # 明示的に接待交際費指定、または会議費で ¥5,000 超は 接待交際費 扱い
         if account == "接待交際費" or amount > 5000:
-            return (T_ENT_HIGH, "接待交際費(10000超)") if amount >= 30000 else (T_ENT_LOW, "接待交際費(10000以下)")
-        # ¥5,000 以下の会議費
-        return T_MEETING_IN, "会議費(社内)"
+            if amount >= 30000:
+                return T_ENT_HIGH, "接待交際費(10000超)", None
+            return T_ENT_LOW, "接待交際費(10000以下)", None
+        return T_MEETING_IN, "会議費(社内)", None
 
-    # 上記に該当しない領収書は消耗品にフォールバック（Google Cloud, Apple, note, Soil work / Staple 等）
-    # freee に「雑費」テンプレートが無いため、これらは登録後に freee UI で「経費科目→雑費」に手動変更する運用
-    return T_SUPPLY, "備品消耗品(要UI変更→雑費)"
+    # 上記に該当しない領収書は消耗品テンプレを使いつつ勘定科目を雑費に上書き
+    # （note, Google Cloud, Apple/NewsPicks, Soil work / Staple 等のサブスク・雑費系）
+    return T_SUPPLY, "雑費(=消耗品テンプレ+雑費上書き)", A_MISC
 
 
 def entry_to_line(entry: dict, receipt_id: int | None = None) -> tuple[ExpenseLine, str]:
     d = date.fromisoformat(entry["date"])
-    tid, label = pick_template(entry)
+    tid, label, account_override = pick_template(entry)
     kind = entry.get("kind", "suica")
 
     if kind == "suica":
@@ -123,6 +125,7 @@ def entry_to_line(entry: dict, receipt_id: int | None = None) -> tuple[ExpenseLi
         description=description,
         expense_date=d,
         line_template_id=tid,
+        account_item_id=account_override,
         receipt_ids=[receipt_id] if receipt_id else [],
     ), label)
 
