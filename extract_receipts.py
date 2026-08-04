@@ -90,7 +90,11 @@ def main():
         glob.glob(os.path.join(INPUT_DIR, "*.jpg")) +
         glob.glob(os.path.join(INPUT_DIR, "*.jpeg")) +
         glob.glob(os.path.join(INPUT_DIR, "*.png")) +
-        glob.glob(os.path.join(INPUT_DIR, "*.pdf"))
+        glob.glob(os.path.join(INPUT_DIR, "*.pdf")) +
+        glob.glob(os.path.join(INPUT_DIR, "*.JPG")) +
+        glob.glob(os.path.join(INPUT_DIR, "*.JPEG")) +
+        glob.glob(os.path.join(INPUT_DIR, "*.PNG")) +
+        glob.glob(os.path.join(INPUT_DIR, "*.PDF"))
     )
     if not files:
         print(f"{INPUT_DIR} に画像/PDF がありません。")
