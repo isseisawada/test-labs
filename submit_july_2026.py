@@ -95,7 +95,7 @@ def pick_template(entry: dict) -> tuple[int, str]:
     return T_SUPPLY, "備品消耗品(事務用品等)"
 
 
-def entry_to_line(entry: dict) -> tuple[ExpenseLine, str]:
+def entry_to_line(entry: dict, receipt_id: int | None = None) -> tuple[ExpenseLine, str]:
     d = date.fromisoformat(entry["date"])
     tid, label = pick_template(entry)
     kind = entry.get("kind", "suica")
@@ -113,7 +113,36 @@ def entry_to_line(entry: dict) -> tuple[ExpenseLine, str]:
         description=description,
         expense_date=d,
         line_template_id=tid,
+        receipt_ids=[receipt_id] if receipt_id else [],
     ), label)
+
+
+def upload_all_receipts(client: FreeeClient, entries: list[dict]) -> dict[str, int]:
+    """entries 内で参照される全領収書ファイルを一度だけアップロードし path→id を返す"""
+    here = os.path.dirname(os.path.abspath(__file__))
+    cache: dict[str, int] = {}
+    paths = []
+    for e in entries:
+        p = e.get("receipt_path")
+        if p and p not in cache and p not in paths:
+            paths.append(p)
+
+    if not paths:
+        return cache
+
+    print(f"領収書アップロード中（{len(paths)} 件）...")
+    for p in paths:
+        full = os.path.join(here, p)
+        if not os.path.exists(full):
+            print(f"  ⚠ ファイル未検出: {p}")
+            continue
+        try:
+            rid = client.upload_receipt(full)
+            cache[p] = rid
+        except Exception as e:
+            print(f"  ⚠ アップロード失敗 {p}: {e}")
+    print()
+    return cache
 
 
 def main():
@@ -128,12 +157,21 @@ def main():
 
     total = sum(int(e["amount"]) for e in entries)
     num_batches = ceil(len(entries) / BATCH_SIZE)
+    n_with_receipt = sum(1 for e in entries if e.get("receipt_path"))
     print(f"=== 2026年{MONTH}月分 経費精算 ===")
     print(f"総件数: {len(entries)} 件 / ¥{total:,}")
+    print(f"領収書あり: {n_with_receipt} 件")
     print(f"バッチ: {BATCH_SIZE} 件 × {num_batches} 申請")
     if args.dry_run:
-        print(f"モード: ドライラン（freee には送信しません）")
+        print("モード: ドライラン（freee には送信・アップロードしません）")
     print()
+
+    # 領収書アップロード（実行モードのみ）
+    client = None
+    receipt_id_by_path: dict[str, int] = {}
+    if not args.dry_run:
+        client = FreeeClient()
+        receipt_id_by_path = upload_all_receipts(client, entries)
 
     for batch_idx in range(num_batches):
         start = batch_idx * BATCH_SIZE
@@ -143,15 +181,19 @@ def main():
         batch_total = sum(int(e["amount"]) for e in batch)
 
         print(f"--- {title} ({len(batch)}件 / ¥{batch_total:,}) ---")
-        lines_and_labels = [entry_to_line(e) for e in batch]
+        lines_and_labels = []
+        for e in batch:
+            rid = receipt_id_by_path.get(e.get("receipt_path", ""))
+            lines_and_labels.append(entry_to_line(e, rid))
+
         for e, (ln, label) in zip(batch, lines_and_labels):
-            print(f"  {ln.expense_date}  [{label}]  {ln.description}  ¥{ln.amount:,}")
+            rcpt_mark = " 📎" if ln.receipt_ids else (" 📎(要UP)" if e.get("receipt_path") else "")
+            print(f"  {ln.expense_date}  [{label}]  {ln.description}  ¥{ln.amount:,}{rcpt_mark}")
         print()
 
         if args.dry_run:
             continue
 
-        client = FreeeClient()
         application = ExpenseApplication(
             title=title,
             lines=[ln for ln, _ in lines_and_labels],
