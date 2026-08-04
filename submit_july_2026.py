@@ -1,21 +1,17 @@
 """
-2026年7月分 経費精算 一括登録スクリプト
+2026年7月分 経費精算 一括登録スクリプト（新API形式・明細テンプレート対応）
 
 使い方:
-  1. inputs_202607/entries.json に明細データを書き込む（下記フォーマット）
-  2. python3 submit_july_2026.py
+  1. inputs_202607/entries.json に明細データを配置
+  2. python3 submit_july_2026.py --dry-run  # プレビュー
+  3. python3 submit_july_2026.py             # freee に登録
 
-entries.json フォーマット:
-  [
-    {"date": "2026-07-01", "kind": "suica", "from": "逗子", "to": "横浜", "amount": 347},
-    {"date": "2026-07-02", "kind": "receipt", "vendor": "スタバ", "amount": 500, "account": "会議費", "receipt_path": "inputs_202607/receipts/stbA.jpg"},
-    ...
-  ]
-
-出力: 30件ずつのバッチに分けて「経費精算申請1/N」「1/N」... のタイトルで freee に下書き保存。
+30 件ずつのバッチに分けて「経費精算申請 X/N」タイトルで freee に下書き保存。
+承認経路: 1469199（コーポレートが API 用に発行）
 """
 from __future__ import annotations
 
+import argparse
 import json
 import os
 import sys
@@ -29,117 +25,102 @@ load_dotenv(os.path.join(os.path.dirname(os.path.abspath(__file__)), ".env"), ov
 
 from freee_expense.client import FreeeClient, ExpenseLine, ExpenseApplication
 
-# 設定 --------------------------------------------------------------------- #
+# ------------------------------------------------------------------------- #
+# 設定
+# ------------------------------------------------------------------------- #
 YEAR                    = 2026
 MONTH                   = 7
 INPUT_FILE              = os.path.join(os.path.dirname(os.path.abspath(__file__)),
                                        "inputs_202607", "entries.json")
-DESCRIPTION_PREFIX      = "打ち合わせ"
 BATCH_SIZE              = 30
-APPROVAL_FLOW_ROUTE_ID  = 1469199  # コーポレートが API 用に発行した承認経路
-# 勘定科目名（部分一致で freee 側の候補から選択）
-ACCOUNT_TRANSPORT       = "交通費（電車在来線・バス）"
-ACCOUNT_TAXI            = "交通費（タクシー等）"
-ACCOUNT_MEETING         = "会議費"
-ACCOUNT_MISC            = "雑費"
+APPROVAL_FLOW_ROUTE_ID  = 1469199
+
+# 明細テンプレート ID（freee 側で定義されているもの）
+T_SUICA        = 289807  # 交通費（電車在来線・バス）
+T_SHINKANSEN   = 300519  # 交通費（特急・新幹線）
+T_TAXI         = 300520  # 交通費（タクシー）
+T_GAS          = 300524  # ガソリン代
+T_PARKING      = 300525  # 駐車場代
+T_MEETING_IN   = 300528  # 会議費（社内）
+T_MEETING_EXT  = 300529  # 会議費（社外）
+T_ENT_LOW      = 300530  # 接待交際費（一人5000円以下）
+T_ENT_HIGH     = 300531  # 接待交際費（一人5000円超）
+T_SUPPLY       = 300535  # 備品消耗品（事務用品等）→ サブスク等の雑費フォールバック
 # ------------------------------------------------------------------------- #
 
 
 def load_entries() -> list[dict]:
     if not os.path.exists(INPUT_FILE):
         print(f"エラー: {INPUT_FILE} がありません。")
-        print("先に inputs_202607/entries.json を作成してください。")
         sys.exit(1)
     with open(INPUT_FILE, encoding="utf-8") as f:
         return json.load(f)
 
 
-def collect_account_names(entries: list[dict]) -> set[str]:
-    """entries から必要な勘定科目名を収集"""
-    names: set[str] = set()
-    for e in entries:
-        kind = e.get("kind", "suica")
-        if kind == "suica":
-            names.add(ACCOUNT_TRANSPORT)
-        elif kind == "taxi":
-            names.add(ACCOUNT_TAXI)
-        elif kind == "receipt":
-            names.add(e.get("account", ACCOUNT_MISC))
-        else:
-            names.add(ACCOUNT_MISC)
-    names.add(ACCOUNT_MISC)  # フォールバック用
-    return names
-
-
-def resolve_account_ids(client: FreeeClient, needed: set[str]) -> dict[str, int | None]:
-    """必要な勘定科目名 → ID の辞書を返す（見つからなければ None）"""
-    result: dict[str, int | None] = {name: None for name in needed}
-    try:
-        items = client.get_account_items()
-        for name in needed:
-            # 完全一致優先、なければ双方向部分一致
-            best = None
-            for item in items:
-                if item["name"] == name:
-                    best = item
-                    break
-            if not best:
-                for item in items:
-                    if name in item["name"] or item["name"] in name:
-                        best = item
-                        break
-            if best:
-                result[name] = best["id"]
-                print(f"  勘定科目: {name} → ID={best['id']} ({best['name']})")
-            else:
-                print(f"  ⚠ 勘定科目未解決: {name}（雑費で代替）")
-    except Exception as e:
-        print(f"  勘定科目の取得スキップ: {e}")
-    return result
-
-
-def entry_to_line(entry: dict, account_ids: dict[str, int | None]) -> ExpenseLine:
+def pick_template(entry: dict) -> tuple[int, str]:
+    """エントリから明細テンプレート ID と表示名を決定"""
     kind = entry.get("kind", "suica")
+    vendor = entry.get("vendor", "") or ""
+    account = entry.get("account", "") or ""
+    amount = int(entry.get("amount", 0))
+    description = entry.get("description", "") or ""
+
+    # Suica → 電車バス（バス含む）
+    if kind == "suica":
+        return T_SUICA, "電車・バス"
+
+    # 種別が taxi
+    if kind == "taxi":
+        return T_TAXI, "タクシー"
+
+    # 領収書：ベンダー別に振り分け
+    v = vendor
+    if "GO株式会社" in v or v.startswith("GO"):
+        return T_TAXI, "タクシー"
+    if "東日本旅客" in v or "JR" in v.upper() or "新幹線" in v:
+        return T_SHINKANSEN, "特急・新幹線"
+    if "石油" in v or "ガソリン" in v or "SS" in v:
+        return T_GAS, "ガソリン代"
+    if any(k in v for k in ["パーク", "駐車場", "パーキング", "アイペック", "ナビパーク"]):
+        return T_PARKING, "駐車場代"
+
+    # 勘定科目名 or 金額でざっくり判定
+    if account == "接待交際費":
+        return (T_ENT_HIGH, "接待交際費(5000超)") if amount >= 15000 else (T_ENT_LOW, "接待交際費(5000以下)")
+
+    if account == "会議費" or "STATION WORK" in v or "Station Work" in v:
+        return T_MEETING_IN, "会議費(社内)"
+
+    # 上記に該当しない領収書は消耗品にフォールバック（Google Cloud, Apple, note, Soil work 等）
+    return T_SUPPLY, "備品消耗品(事務用品等)"
+
+
+def entry_to_line(entry: dict) -> tuple[ExpenseLine, str]:
     d = date.fromisoformat(entry["date"])
+    tid, label = pick_template(entry)
+    kind = entry.get("kind", "suica")
 
     if kind == "suica":
         from_st = entry.get("from", "")
         to_st   = entry.get("to", "")
         route   = f"{from_st} → {to_st}" if to_st else from_st
-        return ExpenseLine(
-            amount=int(entry["amount"]),
-            description=f"{DESCRIPTION_PREFIX}（{route}）",
-            expense_date=d,
-            account_item_id=account_ids.get(ACCOUNT_TRANSPORT),
-        )
+        description = f"打ち合わせ（{route}）"
+    else:
+        description = entry.get("description") or f"{entry.get('vendor','')}"
 
-    if kind == "taxi":
-        return ExpenseLine(
-            amount=int(entry["amount"]),
-            description=entry.get("description", "タクシー"),
-            expense_date=d,
-            account_item_id=account_ids.get(ACCOUNT_TAXI) or account_ids.get(ACCOUNT_TRANSPORT),
-        )
-
-    if kind == "receipt":
-        acct_name = entry.get("account", ACCOUNT_MISC)
-        return ExpenseLine(
-            amount=int(entry["amount"]),
-            description=entry.get("description", entry.get("vendor", "領収書")),
-            expense_date=d,
-            account_item_id=account_ids.get(acct_name) or account_ids.get(ACCOUNT_MISC),
-        )
-
-    # デフォルト
-    return ExpenseLine(
+    return (ExpenseLine(
         amount=int(entry["amount"]),
-        description=entry.get("description", ""),
+        description=description,
         expense_date=d,
-        account_item_id=account_ids.get(ACCOUNT_MISC),
-    )
+        line_template_id=tid,
+    ), label)
 
 
 def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--dry-run", action="store_true", help="freee に送信せずプレビューのみ")
+    args = parser.parse_args()
+
     entries = load_entries()
     if not entries:
         print("明細が空です。")
@@ -149,11 +130,10 @@ def main():
     num_batches = ceil(len(entries) / BATCH_SIZE)
     print(f"=== 2026年{MONTH}月分 経費精算 ===")
     print(f"総件数: {len(entries)} 件 / ¥{total:,}")
-    print(f"バッチ: {BATCH_SIZE} 件 × {num_batches} 申請\n")
-
-    client = FreeeClient()
-    needed = collect_account_names(entries)
-    account_ids = resolve_account_ids(client, needed)
+    print(f"バッチ: {BATCH_SIZE} 件 × {num_batches} 申請")
+    if args.dry_run:
+        print(f"モード: ドライラン（freee には送信しません）")
+    print()
 
     for batch_idx in range(num_batches):
         start = batch_idx * BATCH_SIZE
@@ -162,19 +142,24 @@ def main():
         title = f"経費精算申請{batch_idx + 1}/{num_batches}"
         batch_total = sum(int(e["amount"]) for e in batch)
 
-        print(f"\n--- {title} ({len(batch)}件 / ¥{batch_total:,}) ---")
-        lines = [entry_to_line(e, account_ids) for e in batch]
-        for e, ln in zip(batch, lines):
-            print(f"  {ln.expense_date}  {ln.description}  ¥{ln.amount:,}")
+        print(f"--- {title} ({len(batch)}件 / ¥{batch_total:,}) ---")
+        lines_and_labels = [entry_to_line(e) for e in batch]
+        for e, (ln, label) in zip(batch, lines_and_labels):
+            print(f"  {ln.expense_date}  [{label}]  {ln.description}  ¥{ln.amount:,}")
+        print()
 
+        if args.dry_run:
+            continue
+
+        client = FreeeClient()
         application = ExpenseApplication(
             title=title,
-            lines=lines,
-            description=f"2026年{MONTH}月分 経費精算 {len(lines)}件 合計¥{batch_total:,}",
+            lines=[ln for ln, _ in lines_and_labels],
+            description=f"2026年{MONTH}月分 経費精算 {len(batch)}件 合計¥{batch_total:,}",
             approval_flow_route_id=APPROVAL_FLOW_ROUTE_ID,
         )
         result = client.create_expense_application(application)
-        print(f"  → 申請ID: {result['id']}")
+        print(f"  → 申請ID: {result['id']}\n")
 
 
 if __name__ == "__main__":

@@ -26,7 +26,8 @@ class ExpenseLine:
     amount: int                          # 金額（円）
     description: str                     # 内容・目的
     expense_date: date                   # 経費発生日
-    account_item_id: int                 # 勘定科目 ID
+    account_item_id: int | None = None   # 勘定科目 ID（旧形式）
+    line_template_id: int | None = None  # 明細テンプレート ID（新API形式）
     receipt_ids: list[int] = field(default_factory=list)  # 添付領収書 ID
 
 
@@ -174,16 +175,31 @@ class FreeeClient:
 
         lines = []
         for line in application.lines:
-            entry: dict = {
-                "amount": line.amount,
-                "description": line.description,
-                "transaction_date": line.expense_date.isoformat(),
-            }
-            if line.account_item_id:
-                entry["account_item_id"] = line.account_item_id
-            if line.receipt_ids:
-                entry["receipt_ids"] = line.receipt_ids
-            lines.append(entry)
+            if line.line_template_id:
+                # 新形式: ネスト構造 + line_template_id
+                purchase_line: dict = {
+                    "transaction_date": line.expense_date.isoformat(),
+                    "expense_application_lines": [{
+                        "description": line.description,
+                        "amount": line.amount,
+                        "expense_application_line_template_id": line.line_template_id,
+                    }],
+                }
+                if line.receipt_ids:
+                    purchase_line["receipt_id"] = line.receipt_ids[0]
+                lines.append(purchase_line)
+            else:
+                # 旧形式（互換性用）
+                entry: dict = {
+                    "amount": line.amount,
+                    "description": line.description,
+                    "transaction_date": line.expense_date.isoformat(),
+                }
+                if line.account_item_id:
+                    entry["account_item_id"] = line.account_item_id
+                if line.receipt_ids:
+                    entry["receipt_ids"] = line.receipt_ids
+                lines.append(entry)
 
         body = {
             "company_id": company_id,
