@@ -44,13 +44,19 @@ def main():
         print("FREEE_ACCESS_TOKEN が .env にありません。")
         sys.exit(1)
 
-    # 明細テンプレート一覧を全件取得（id/name のみ抽出して簡潔に）
-    data = get("/api/1/expense_application_line_templates")
-    if data:
-        print("\n" + "=" * 60)
-        print("【テンプレート一覧サマリ】")
-        for t in data.get("expense_application_line_templates", []):
-            print(f"  id={t['id']:>6}  {t['name']}  [{t['account_item_name']}]")
+    # 交通経路検索エンドポイントの探索
+    for path in [
+        "/api/1/transit_routes",
+        "/api/1/transit_route_searches",
+        "/api/1/traffic_routes",
+        "/api/1/traffic_route_searches",
+        "/api/1/expense_application_lines/traffic_routes",
+        "/api/1/routes",
+    ]:
+        get(path, departure="逗子・葉山", arrival="横浜", date="2026-07-01")
+
+    # 既存の申請から明細を GET して traffic_route フィールドがあるか確認
+    get("/api/1/expense_applications/18406204")
 
 
 if __name__ == "__main__":
