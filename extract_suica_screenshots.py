@@ -50,25 +50,24 @@ PROMPT = f"""この画像はモバイル Suica の利用履歴です。以下の
 """
 
 
-def encode_image(path: str) -> tuple[str, str]:
+def encode_file(path: str) -> dict:
+    """画像 or PDF を Claude API 用の content ブロックに変換"""
     ext = os.path.splitext(path)[1].lower()
-    mime = {"jpg": "image/jpeg", "jpeg": "image/jpeg", "png": "image/png",
-            "webp": "image/webp", "gif": "image/gif"}.get(ext.lstrip("."), "image/png")
     with open(path, "rb") as f:
         b64 = base64.b64encode(f.read()).decode()
-    return mime, b64
+    if ext == ".pdf":
+        return {"type": "document",
+                "source": {"type": "base64", "media_type": "application/pdf", "data": b64}}
+    mime = {"jpg": "image/jpeg", "jpeg": "image/jpeg", "png": "image/png",
+            "webp": "image/webp", "gif": "image/gif"}.get(ext.lstrip("."), "image/png")
+    return {"type": "image",
+            "source": {"type": "base64", "media_type": mime, "data": b64}}
 
 
 def extract(files: list[str]) -> list[dict]:
     client = anthropic.Anthropic()
 
-    content: list[dict] = []
-    for path in files:
-        mime, b64 = encode_image(path)
-        content.append({
-            "type": "image",
-            "source": {"type": "base64", "media_type": mime, "data": b64},
-        })
+    content: list[dict] = [encode_file(p) for p in files]
     content.append({"type": "text", "text": PROMPT})
 
     print(f"Vision 実行中 ({len(files)} 画像)...")
@@ -103,10 +102,15 @@ def main():
     files = sorted(
         glob.glob(os.path.join(INPUT_DIR, "*.png")) +
         glob.glob(os.path.join(INPUT_DIR, "*.jpg")) +
-        glob.glob(os.path.join(INPUT_DIR, "*.jpeg"))
+        glob.glob(os.path.join(INPUT_DIR, "*.jpeg")) +
+        glob.glob(os.path.join(INPUT_DIR, "*.pdf")) +
+        glob.glob(os.path.join(INPUT_DIR, "*.PNG")) +
+        glob.glob(os.path.join(INPUT_DIR, "*.JPG")) +
+        glob.glob(os.path.join(INPUT_DIR, "*.JPEG")) +
+        glob.glob(os.path.join(INPUT_DIR, "*.PDF"))
     )
     if not files:
-        print(f"エラー: {INPUT_DIR} に画像がありません。")
+        print(f"エラー: {INPUT_DIR} に画像/PDF がありません。")
         sys.exit(1)
 
     print(f"入力画像: {len(files)} 枚")
