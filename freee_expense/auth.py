@@ -23,7 +23,9 @@ load_dotenv()
 
 FREEE_AUTH_URL = "https://accounts.secure.freee.co.jp/public_api/authorize"
 FREEE_TOKEN_URL = "https://accounts.secure.freee.co.jp/public_api/token"
-REDIRECT_URI = "http://localhost:8080/callback"
+REDIRECT_URI = "http://127.0.0.1:54321/callback"
+CALLBACK_HOST = "127.0.0.1"
+CALLBACK_PORT = 54321
 ENV_FILE = os.path.join(os.path.dirname(__file__), "..", ".env")
 
 _auth_code: str | None = None
@@ -51,7 +53,7 @@ class _CallbackHandler(BaseHTTPRequestHandler):
 
 
 def _run_callback_server() -> HTTPServer:
-    server = HTTPServer(("localhost", 8080), _CallbackHandler)
+    server = HTTPServer((CALLBACK_HOST, CALLBACK_PORT), _CallbackHandler)
     t = Thread(target=server.serve_forever, daemon=True)
     t.start()
     return server
