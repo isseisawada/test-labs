@@ -20,7 +20,7 @@ load_dotenv(os.path.join(os.path.dirname(os.path.abspath(__file__)), ".env"), ov
 import requests
 
 TOKEN = os.getenv("FREEE_ACCESS_TOKEN", "")
-COMPANY_ID = int(os.getenv("FREEE_COMPANY_ID", "845775"))
+COMPANY_ID = int(os.getenv("FREEE_COMPANY_ID") or "845775")
 BASE = "https://api.freee.co.jp"
 H = {"Authorization": f"Bearer {TOKEN}"}
 
