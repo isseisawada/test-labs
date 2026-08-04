@@ -61,10 +61,10 @@ def _run_callback_server() -> HTTPServer:
 
 def get_authorization_url(client_id: str) -> str:
     params = {
-        "response_type": "code",
         "client_id": client_id,
         "redirect_uri": REDIRECT_URI,
-        "scope": "read write",
+        "response_type": "code",
+        "prompt": "select_company",
     }
     return FREEE_AUTH_URL + "?" + urllib.parse.urlencode(params)
 
