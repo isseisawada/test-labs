@@ -85,8 +85,11 @@ def pick_template(entry: dict) -> tuple[int, str]:
         return T_PARKING, "駐車場代"
 
     # 勘定科目名 or 金額でざっくり判定
+    # 接待交際費: 一人¥10,000 で分ける（澤田＋参加者数の情報がないので合計金額の目安で判定）
+    # ¥30,000 以上 → 高額なので 10,000超 と推定、それ未満 → 10,000以下
+    # 実運用では freee UI で個別に人数見て確認する前提
     if account == "接待交際費":
-        return (T_ENT_HIGH, "接待交際費(5000超)") if amount >= 15000 else (T_ENT_LOW, "接待交際費(5000以下)")
+        return (T_ENT_HIGH, "接待交際費(10000超)") if amount >= 30000 else (T_ENT_LOW, "接待交際費(10000以下)")
 
     if account == "会議費" or "STATION WORK" in v or "Station Work" in v:
         return T_MEETING_IN, "会議費(社内)"
