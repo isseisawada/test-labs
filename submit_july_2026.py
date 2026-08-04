@@ -54,22 +54,45 @@ def load_entries() -> list[dict]:
         return json.load(f)
 
 
-def resolve_account_ids(client: FreeeClient) -> dict[str, int | None]:
-    """勘定科目名 → ID の辞書を返す（取れなければ None）"""
-    result: dict[str, int | None] = {
-        ACCOUNT_TRANSPORT: None,
-        ACCOUNT_TAXI:      None,
-        ACCOUNT_MEETING:   None,
-        ACCOUNT_MISC:      None,
-    }
+def collect_account_names(entries: list[dict]) -> set[str]:
+    """entries から必要な勘定科目名を収集"""
+    names: set[str] = set()
+    for e in entries:
+        kind = e.get("kind", "suica")
+        if kind == "suica":
+            names.add(ACCOUNT_TRANSPORT)
+        elif kind == "taxi":
+            names.add(ACCOUNT_TAXI)
+        elif kind == "receipt":
+            names.add(e.get("account", ACCOUNT_MISC))
+        else:
+            names.add(ACCOUNT_MISC)
+    names.add(ACCOUNT_MISC)  # フォールバック用
+    return names
+
+
+def resolve_account_ids(client: FreeeClient, needed: set[str]) -> dict[str, int | None]:
+    """必要な勘定科目名 → ID の辞書を返す（見つからなければ None）"""
+    result: dict[str, int | None] = {name: None for name in needed}
     try:
         items = client.get_account_items()
-        for name in list(result.keys()):
+        for name in needed:
+            # 完全一致優先、なければ双方向部分一致
+            best = None
             for item in items:
-                if name in item["name"] or item["name"] in name:
-                    result[name] = item["id"]
-                    print(f"  勘定科目: {name} → ID={item['id']} ({item['name']})")
+                if item["name"] == name:
+                    best = item
                     break
+            if not best:
+                for item in items:
+                    if name in item["name"] or item["name"] in name:
+                        best = item
+                        break
+            if best:
+                result[name] = best["id"]
+                print(f"  勘定科目: {name} → ID={best['id']} ({best['name']})")
+            else:
+                print(f"  ⚠ 勘定科目未解決: {name}（雑費で代替）")
     except Exception as e:
         print(f"  勘定科目の取得スキップ: {e}")
     return result
@@ -129,7 +152,8 @@ def main():
     print(f"バッチ: {BATCH_SIZE} 件 × {num_batches} 申請\n")
 
     client = FreeeClient()
-    account_ids = resolve_account_ids(client)
+    needed = collect_account_names(entries)
+    account_ids = resolve_account_ids(client, needed)
 
     for batch_idx in range(num_batches):
         start = batch_idx * BATCH_SIZE
