@@ -135,8 +135,17 @@ def run_auth_flow():
 
     server = _run_callback_server()
     url = get_authorization_url(client_id)
-    print(f"\nブラウザで認証ページを開きます...\n{url}\n")
-    webbrowser.open(url)
+    print("\n" + "=" * 70)
+    print("【手動で以下の URL をブラウザに貼り付けてアクセスしてください】")
+    print("(freee にログイン済みの Chrome/Safari のウィンドウを使ってください)")
+    print("=" * 70)
+    print(f"\n{url}\n")
+    print("=" * 70)
+    # 参考: 自動でもブラウザを開いてみる（開かなくても手動で OK）
+    try:
+        webbrowser.open(url)
+    except Exception:
+        pass
 
     print("認証完了を待機中...", end="", flush=True)
     for _ in range(120):
