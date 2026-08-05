@@ -409,6 +409,7 @@
     .hist-filter { padding: 10px 14px; border: 1px solid var(--border); border-radius: 10px; font-size: 0.82rem; background: white; cursor: pointer; font-family: inherit; color: var(--t1); }
     .hist-export { padding: 10px 18px; background: white; border: 1px solid var(--border); color: var(--t1); border-radius: 10px; font-size: 0.82rem; font-weight: 600; cursor: pointer; }
     .hist-export:hover { background: var(--bg); }
+    .hist-actions-hdr { display: flex; gap: 8px; flex-shrink: 0; }
     .hist-list { display: flex; flex-direction: column; gap: 8px; }
     .hist-card { background: white; border: 1px solid var(--border); border-radius: 12px; padding: 10px 14px; display: flex; flex-direction: column; gap: 4px; cursor: pointer; transition: background .15s, border-color .15s; }
     .hist-card:hover { background: rgba(0,0,0,0.006); }
@@ -621,7 +622,11 @@
       <h2>見積もり履歴</h2>
       <div class="hist-count" id="histCount">0 件</div>
     </div>
-    <button class="hist-export" onclick="exportHistoryCSV()">CSVエクスポート</button>
+    <div class="hist-actions-hdr">
+      <input type="file" id="histCsvInput" accept=".csv" style="display:none" onchange="importHistoryCSV(event)">
+      <button class="hist-export" onclick="document.getElementById('histCsvInput').click()">CSVインポート</button>
+      <button class="hist-export" onclick="exportHistoryCSV()">CSVエクスポート</button>
+    </div>
   </div>
   <div class="hist-search-row">
     <input type="text" class="hist-search" id="histSearch" placeholder="顧客名・担当者名・エリア・モデル名などで検索..." oninput="renderHistory()">
@@ -3400,19 +3405,20 @@ function editQuote(id) {
 function exportHistoryCSV() {
   const quotes = loadQuotes();
   if (!quotes.length) { alert('履歴がありません'); return; }
-  const rows = [['見積ID','作成日','顧客名','担当者名','エリア','区分','セクション','項目','金額']];
+  const rows = [['見積ID','作成日','顧客名','担当者名','エリア','区分','セクション','項目','金額','_データ']];
   quotes.forEach(qt => {
     const d = new Date(qt.createdAt);
     const dateStr = `${d.getFullYear()}/${String(d.getMonth()+1).padStart(2,'0')}/${String(d.getDate()).padStart(2,'0')}`;
     const base = [qt.id, dateStr, qt.customerName || '', qt.staffName || '', qt.area || ''];
+    // 各見積もりの先頭行にだけ完全データを持たせ、CSVインポートで元通り復元できるようにする
+    let raw = JSON.stringify(qt);
+    const push = (kind, sec, item, val) => { rows.push([...base, kind, sec, item, val, raw]); raw = ''; };
     (qt.sections || []).forEach(sec => {
-      (sec.lines || []).forEach(l => {
-        rows.push([...base, '明細', sec.title, l.name, l.val]);
-      });
+      (sec.lines || []).forEach(l => push('明細', sec.title, l.name, l.val));
     });
-    if (qt.discount > 0) rows.push([...base, '値引き', '', '値引き', -qt.discount]);
-    rows.push([...base, '合計', '', '合計（税前）', qt.totalPre]);
-    rows.push([...base, '合計', '', '合計（税込10%）', qt.totalTax]);
+    if (qt.discount > 0) push('値引き', '', '値引き', -qt.discount);
+    push('合計', '', '合計（税前）', qt.totalPre);
+    push('合計', '', '合計（税込10%）', qt.totalTax);
   });
   const csv = rows.map(r => r.map(v => `"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
   const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8' });
@@ -3420,6 +3426,117 @@ function exportHistoryCSV() {
   a.href = URL.createObjectURL(blob);
   a.download = `yadokari_mitsumori_detail_${new Date().toISOString().slice(0,10)}.csv`;
   document.body.appendChild(a); a.click(); document.body.removeChild(a);
+}
+
+// CSV文字列を二次元配列へ（引用符・カンマ・改行に対応）
+function parseCSVText(text) {
+  const rows = []; let row = [], cur = '', inQ = false;
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i];
+    if (inQ) {
+      if (c === '"') { if (text[i+1] === '"') { cur += '"'; i++; } else inQ = false; }
+      else cur += c;
+    } else if (c === '"') inQ = true;
+    else if (c === ',')  { row.push(cur); cur = ''; }
+    else if (c === '\n') { row.push(cur); rows.push(row); row = []; cur = ''; }
+    else if (c !== '\r') cur += c;
+  }
+  if (cur !== '' || row.length) { row.push(cur); rows.push(row); }
+  return rows.filter(r => r.some(c => String(c).trim() !== ''));
+}
+
+function importHistoryCSV(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    try {
+      const rows = parseCSVText(String(e.target.result).replace(/^﻿/, ''));
+      if (rows.length < 2) { alert('データが見つかりません。'); return; }
+      const head = rows[0].map(h => String(h).trim());
+      const col = (name) => head.indexOf(name);
+      const iId = col('見積ID');
+      if (iId < 0) { alert('「見積ID」の列が見つかりません。\nこのアプリでエクスポートしたCSVを選んでください。'); return; }
+      const iDate = col('作成日'), iCust = col('顧客名'), iStaff = col('担当者名'), iArea = col('エリア');
+      const iKind = col('区分'), iSec = col('セクション'), iItem = col('項目'), iVal = col('金額'), iRaw = col('_データ');
+      const num = (v) => parseFloat(String(v == null ? '' : v).replace(/[^0-9.\-]/g, '')) || 0;
+      const cell = (r, i) => (i >= 0 && r[i] != null) ? String(r[i]) : '';
+      const body = rows.slice(1);
+
+      // 1) 完全データ（_データ列）があるものを優先して復元
+      const restored = new Map();
+      if (iRaw >= 0) {
+        body.forEach(r => {
+          const raw = cell(r, iRaw).trim(); if (!raw) return;
+          try { const q = JSON.parse(raw); if (q && q.id) restored.set(String(q.id), q); } catch (_) {}
+        });
+      }
+      // 2) 完全データが無い見積もりは明細行から組み立て
+      const built = new Map();
+      body.forEach(r => {
+        const id = cell(r, iId).trim();
+        if (!id || restored.has(id)) return;
+        let q = built.get(id);
+        if (!q) {
+          const ds = cell(r, iDate).trim();
+          const dt = ds ? new Date(ds.replace(/-/g, '/')) : new Date();
+          q = { id, createdAt: (isNaN(dt) ? new Date() : dt).toISOString(),
+                customerName: cell(r, iCust), staffName: cell(r, iStaff), area: cell(r, iArea),
+                sections: [], seriesKeys: [], discount: 0, totalPre: 0, totalTax: 0,
+                totalCost: 0, totalGross: 0, marginPct: 0 };
+          built.set(id, q);
+        }
+        const kind = cell(r, iKind).trim();
+        const val  = num(cell(r, iVal));
+        if (kind === '明細') {
+          const title = cell(r, iSec).trim() || 'その他';
+          let sec = q.sections.find(s => s.title === title);
+          if (!sec) { sec = { title, lines: [] }; q.sections.push(sec); }
+          sec.lines.push({ name: cell(r, iItem), val, cost: 0 });
+        } else if (kind === '値引き') {
+          q.discount = Math.abs(val);
+        } else if (kind === '合計') {
+          if (cell(r, iItem).includes('税込')) q.totalTax = val; else q.totalPre = val;
+        }
+      });
+      // 組み立て分の合計・シリーズを補完
+      const titleToKey = { 'Tinys INSPIRATION':'tinys', 'ROADIE':'roadie', '中古仲介車両':'broker', 'シャーシ':'chassis', 'その他車両':'other' };
+      built.forEach(q => {
+        if (!q.totalPre) {
+          let g = 0; q.sections.forEach(s => s.lines.forEach(l => g += l.val));
+          q.totalPre = g - (q.discount || 0);
+        }
+        if (!q.totalTax) q.totalTax = Math.round(q.totalPre * 1.1);
+        q.seriesKeys = q.sections.map(s => titleToKey[s.title]).filter(Boolean);
+      });
+
+      const incoming = [...restored.values(), ...built.values()];
+      if (!incoming.length) { alert('取り込めるデータがありませんでした。'); return; }
+
+      const existing   = loadQuotes();
+      const existingId = new Set(existing.map(q => q.id));
+      const overwrite  = incoming.filter(q => existingId.has(q.id)).length;
+      const added      = incoming.length - overwrite;
+      const partial    = built.size;
+      let msg = `${incoming.length}件を取り込みます。\n・新規追加：${added}件\n・既存を上書き：${overwrite}件`;
+      if (partial) msg += `\n\n※うち${partial}件は明細のみのCSVのため、原価・編集用データは復元されません（金額の閲覧とPDFは可能）。`;
+      if (!confirm(msg + '\n\nよろしいですか？')) return;
+
+      const incomingIds = new Set(incoming.map(q => q.id));
+      const merged = [...incoming, ...existing.filter(q => !incomingIds.has(q.id))]
+        .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+      saveQuotes(merged);
+      incoming.forEach(q => cloudUpsertQuote(q));
+      renderHistory();
+      alert(`取り込みました（新規${added}件 / 上書き${overwrite}件）`);
+    } catch (err) {
+      console.error(err);
+      alert('CSVの読み込みに失敗しました：' + (err && err.message ? err.message : err));
+    } finally {
+      event.target.value = '';   // 同じファイルを再選択できるように
+    }
+  };
+  reader.readAsText(file);
 }
 
 // ============================================================
