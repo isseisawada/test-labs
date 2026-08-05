@@ -350,6 +350,7 @@
     .margin-bad  { color: var(--red); }
     .price-table input.cst-name-inp { width: 150px; padding: 5px 8px; border: 1px solid var(--border); border-radius: 6px; font-size: 0.82rem; color: var(--t1); font-family: inherit; text-align: left; }
     .price-table input.cst-name-inp:focus { outline: none; border-color: var(--p); }
+    .price-table input[type="number"][readonly] { background: var(--bg); color: var(--t3); cursor: not-allowed; }
     .cst-memo-cell { white-space: nowrap; }
     .cst-del-btn { margin-left: 6px; width: 24px; height: 24px; border: 1px solid #FECACA; background: #FEF2F2; color: var(--red); border-radius: 6px; font-size: 0.95rem; line-height: 1; cursor: pointer; vertical-align: middle; }
     .cst-del-btn:hover { background: #FEE2E2; }
@@ -1377,8 +1378,15 @@ function updateCustomField(secId, key, field, value) {
       item[field] = num;
     }
   }
-  saveCustom();
+  // 中古仲介車両は原価＝売価に自動追従（入力不要・利益率0%）
   const row = document.querySelector(`#adminContent tr[data-custom-key="${key}"]`);
+  if (secId === 'brokerVehicle' && field === 'price') {
+    if (ci) ci.cost = num;
+    if (item) item.cost = num;
+    const costInp = row && row.querySelector('.cst-cost-inp');
+    if (costInp) costInp.value = num;
+  }
+  saveCustom();
   if (row) {
     const p = parseFloat(row.querySelector('.cst-price-inp').value)||0;
     const c = parseFloat(row.querySelector('.cst-cost-inp').value)||0;
@@ -1392,6 +1400,8 @@ function customEffPrice(secId, item) {
 }
 function customEffCost(secId, item) {
   const def = ADMIN_SECTIONS[secId];
+  // 中古仲介車両は仕入れをそのまま通すため、原価は常に売価と同額（利益率0%）
+  if (secId === 'brokerVehicle') return customEffPrice(secId, item);
   if (def.kind === 'size') return (item.costs && item.costs[def.sizes[0]]) || 0;
   return item.cost || 0;
 }
@@ -1402,11 +1412,14 @@ function customPriceRow(secId, item) {
   const name = item[ADMIN_SECTIONS[secId].field] || '';
   const price = customEffPrice(secId, item);
   const cost  = customEffCost(secId, item);
+  const lockCost = (secId === 'brokerVehicle');   // 原価は売価と同額に固定
   return `<tr data-custom-key="${key}">
     <td class="item-name"><input type="text" class="cst-name-inp" value="${escapeAttr(name)}" placeholder="項目名" oninput="updateCustomName('${secId}','${key}',this.value)"></td>
     <td></td>
     <td><input type="number" step="10000" class="cst-price-inp" value="${price||0}" oninput="updateCustomField('${secId}','${key}','price',this.value)"></td>
-    <td><input type="number" step="10000" class="cst-cost-inp" value="${cost||0}" oninput="updateCustomField('${secId}','${key}','cost',this.value)"></td>
+    <td><input type="number" step="10000" class="cst-cost-inp" value="${cost||0}" ${lockCost
+        ? 'readonly title="売価と同額（仕入れ通しのため入力不要）"'
+        : `oninput="updateCustomField('${secId}','${key}','cost',this.value)"`}></td>
     <td class="margin-col">${marginCell(price, cost)}</td>
     <td class="cst-memo-cell"><input type="text" class="memo-inp" value="${escapeAttr(ci.memo||'')}" placeholder="メモ" oninput="updateCustomField('${secId}','${key}','memo',this.value)"><button class="cst-del-btn" title="削除" onclick="deleteCustomRow('${secId}','${key}')">×</button></td>
   </tr>`;
