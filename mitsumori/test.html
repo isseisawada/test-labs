@@ -364,12 +364,6 @@
     .hidden-restore:hover { background: var(--p-light); }
     /* 中古仲介車両 */
     .broker-empty { text-align: center; padding: 24px 16px; color: var(--t3); font-size: 0.83rem; line-height: 1.9; background: var(--bg); border-radius: 10px; }
-    .broker-fee-box { display: flex; flex-direction: column; gap: 2px; }
-    .broker-fee-row { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; padding: 7px 0; font-size: 0.85rem; border-bottom: 1px solid var(--border); }
-    .broker-fee-row:last-child { border-bottom: none; }
-    .broker-fee-row em { font-style: normal; font-size: 0.68rem; color: var(--t3); margin-left: 8px; background: var(--bg); padding: 2px 7px; border-radius: 10px; }
-    .broker-fee-row.muted { color: var(--t3); }
-    .broker-fee-row.total { font-weight: 800; color: #9A3412; padding-top: 10px; }
     .admin-add-row { padding: 12px 24px 4px; text-align: center; }
     .admin-add-btn { padding: 8px 16px; border: 1px dashed var(--p-mid); background: var(--p-light); color: var(--p); border-radius: 8px; font-size: 0.8rem; font-weight: 700; cursor: pointer; font-family: inherit; transition: all .15s; }
     .admin-add-btn:hover { background: #E0DDFB; }
@@ -1647,12 +1641,6 @@ function renderOther(el) {
 }
 
 // ---- 中古仲介車両 ----
-// 選択中の車両売価合計
-function brokerVehicleTotal() {
-  const s = state.broker;
-  return BROKER_MODELS.reduce((sum, m) => sum + (mPrice(m) || 0) * (s.modelQtys[m.id] || 0), 0);
-}
-
 function renderBroker(el) {
   const s = state.broker;
 
@@ -1667,20 +1655,6 @@ function renderBroker(el) {
     cEmpty.appendChild(note);
     el.appendChild(cEmpty);
   }
-
-  // 仲介手数料（自動計算）
-  const total = brokerVehicleTotal();
-  const buyerFee  = Math.round(total * brokerRate('buyer')  / 100);
-  const sellerFee = Math.round(total * brokerRate('seller') / 100);
-  const cFee = sectionCard('仲介手数料（自動計算）', '車両売価から自動で算出されます');
-  const feeBox = div('broker-fee-box');
-  feeBox.innerHTML =
-    `<div class="broker-fee-row"><span>車両売価 合計</span><span>${fmt(total)}</span></div>`
-    + `<div class="broker-fee-row"><span>仲介手数料（買主）　売価×${brokerRate('buyer')}%<em>お客様へご請求</em></span><span>${fmt(buyerFee)}</span></div>`
-    + `<div class="broker-fee-row muted"><span>仲介手数料（売主）　売価×${brokerRate('seller')}%<em>社内シミュレーションのみ</em></span><span>${fmt(sellerFee)}</span></div>`
-    + `<div class="broker-fee-row total"><span>粗利（両手合計）</span><span>${fmt(buyerFee + sellerFee)}</span></div>`;
-  cFee.appendChild(feeBox);
-  el.appendChild(cFee);
 
   const tq = seriesQty(s);
 
@@ -2106,7 +2080,8 @@ function collectLines() {
     // 仲介手数料（両手）: 買主分は顧客へ請求、売主分は社内シミュレーションのみ
     const buyerFee  = Math.round(vehicleTotal * brokerRate('buyer')  / 100);
     const sellerFee = Math.round(vehicleTotal * brokerRate('seller') / 100);
-    if (buyerFee  > 0) lines.push({ name:`仲介手数料（買主）`, val:buyerFee,  cost:0 });
+    // 顧客向けには「仲介手数料」とだけ表示し、売主／買主の内訳は社内シミュレーションのみで見せる
+    if (buyerFee  > 0) lines.push({ name:`仲介手数料`, internalName:`仲介手数料（買主）`, val:buyerFee,  cost:0 });
     if (sellerFee > 0) lines.push({ name:`仲介手数料（売主）`, val:sellerFee, cost:0, internalOnly:true });
     BROKER_OPTS.forEach(o => { if (s.opts[o.id]) lines.push({ name:o.name+ql(tq), val:boPrice(o)*tq, cost:boCost(o)*tq }); });
     BROKER_MISC_OPTS.forEach(o => { if (s.miscOpts[o.id]) lines.push({ name:o.name+ql(tq), val:bmPrice(o)*tq, cost:bmCost(o)*tq }); });
@@ -2571,7 +2546,7 @@ function renderInternalSimulation() {
         ? `<input type="number" class="int-cost-input" data-si="${si}" data-li="${li}" value="${c || ''}" placeholder="0" min="0" step="1000">`
         : fmt(c);
       html += `<tr class="${l.cls||''}">`+
-        `<td>${escapeHtml(l.name)}</td>`+
+        `<td>${escapeHtml(l.internalName || l.name)}</td>`+
         `<td>${fmt(l.val)}</td>`+
         `<td>${costCell}</td>`+
         `<td id="int-gross-${si}-${li}">${fmt(gross)}</td>`+
