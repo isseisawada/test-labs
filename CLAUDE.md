@@ -89,5 +89,126 @@ freee には「雑費」テンプレートは存在しないが、`account_item_
 
 - Suica スクリーンショット・PDF → `extract_suica_screenshots.py`（Claude Vision）
 - 領収書写真・PDF → `extract_receipts.py`（Claude Vision）
-- 統合 → `merge_entries.py`（GO日付補正、2014→2026補正、Google Cloud→雑費、STATION WORK→会議費）
-- 登録 → `submit_july_2026.py`（バッチ分割、テンプレートID決定、領収書アップロード、freee API 登録）
+- 統合 → `merge_entries.py`（GO日付補正、2014→2026補正、勘定科目補正）
+- 登録 → `submit_YYYY_MM.py`（バッチ分割、テンプレートID決定、領収書アップロード、freee API 登録）
+
+## 月次ワークフロー（8月分以降、毎月使えるテンプレ）
+
+### 事前に用意するもの
+
+**画像・書類系（Mac に保存）**
+- Suica 利用履歴のスクリーンショット or PDF（1〜31日全部映るように）
+- 現金領収書の写真・PDF（レシート・スタバなど紙ベース）
+- Web サービス領収書:
+  - GO タクシー領収書（アプリ or メールから DL）
+  - STATION WORK 領収書（サイトからDL）
+  - note 領収書（アカウント > 領収書からDL）
+  - Newspicks (Apple サブスク) 領収書（メールに来る Apple 領収書）
+  - Google Cloud 請求書 (メール or GCP コンソール)
+  - Soil work / Staple の請求書
+  - その他 定期購読・出張系
+
+**環境変数（`.env` に既に入っているはず、無ければ）**
+```
+FREEE_CLIENT_ID=732296596197183          # 経理用（mcp）
+FREEE_CLIENT_SECRET=xxxxxxxx             # freee 開発者ページで確認
+FREEE_ACCESS_TOKEN=xxxxxxxx              # 期限切れなら python3 -m freee_expense.auth
+FREEE_REFRESH_TOKEN=xxxxxxxx
+ANTHROPIC_API_KEY=sk-ant-xxxxxx          # Vision OCR 用
+FREEE_LOGIN_EMAIL=sawada@yadokari.net
+```
+
+### 実行手順（コピペ用）
+
+**Step 1: 8月分ディレクトリ作成 & 画像配置**
+```bash
+cd /Users/issei/Applications/Claude/test-labs-git
+mkdir -p inputs_202608/{suica,receipts,web_receipts}
+
+# Suica 履歴のスクショ/PDF を inputs_202608/suica/ に入れる
+# 現金領収書・Webサービス領収書 を inputs_202608/receipts/ に入れる
+```
+
+**Step 2: 新規登録スクリプトを作成（7月版をコピー）**
+```bash
+cp submit_july_2026.py submit_august_2026.py
+# submit_august_2026.py 内の以下を書き換え:
+#   MONTH = 8
+#   INPUT_FILE = ... "inputs_202608"
+# 同じ要領で extract_suica_screenshots.py と extract_receipts.py の
+# INPUT_DIR / OUTPUT 変数も 202608 に変更（sed でも可）
+sed -i '' 's|inputs_202607|inputs_202608|g' extract_suica_screenshots.py extract_receipts.py merge_entries.py submit_august_2026.py
+sed -i '' 's|MONTH *= *7|MONTH = 8|' submit_august_2026.py
+```
+
+**Step 3: OCR で抽出**
+```bash
+python3 extract_suica_screenshots.py    # → inputs_202608/entries_suica.json
+python3 extract_receipts.py             # → inputs_202608/entries_receipts.json
+```
+
+**Step 4: マージして entries.json 生成**
+```bash
+python3 merge_entries.py                # → inputs_202608/entries.json
+```
+- 統合結果と件数を確認
+- 誤読があれば `inputs_202608/entries.json` を直接エディタで修正
+
+**Step 5: ドライラン（送信前確認）**
+```bash
+python3 submit_august_2026.py --dry-run
+```
+- 各行のラベル `[電車・バス]`, `[タクシー]`, `[会議費(社内)]`, `[接待交際費(10000以下)]`, `[雑費(=消耗品テンプレ+雑費上書き)]` を確認
+- 参加者フルネームが descriptionに入っているか確認（会議費・接待交際費）
+- 誤りがあれば entries.json を直して再ドライラン
+
+**Step 6: 申請分けルールに従い、Suica と 領収書系を分離**
+- 8月以降ルール: **Suica は独立申請、領収書系は別申請**
+- entries.json を Suica系（kind="suica"）と 領収書系（kind!="suica"）で 2 ファイルに分割するか、
+  現行スクリプトのバッチ分けを月次でカスタムする
+
+**Step 7: 本番実行（freee 登録）**
+```bash
+python3 submit_august_2026.py
+```
+- 領収書アップロード（`/api/1/receipts`）
+- 申請作成（`/api/1/expense_applications` with approval_flow_route_id=1469199）
+- 申請ID が出力される
+
+**Step 8: freee UI で内容確認**
+- 各申請URL:
+  ```
+  https://secure.freee.co.jp/expense_applications_v2/{申請ID}
+  ```
+- 確認ポイント:
+  - 経費科目が正しいか（雑費、会議費、接待交際費）
+  - 参加者名が入っているか
+  - 領収書が明細に紐付いているか（📎 マーク）
+  - 備考欄: Suica 一覧の補足資料を添付、`電車交通費は申請Xにsuicaの乗車一覧を添付しています。` と記載
+
+**Step 9: 申請ボタン押下**
+- 内容 OK なら freee UI で「申請」ボタンを押して承認フローに送出
+
+### トラブル時の対処
+
+| 症状 | 原因 | 対処 |
+|---|---|---|
+| ページが見つかりません | OAuth Client ID 誤り | `.env` の FREEE_CLIENT_ID を経理用(mcp) = `732296596197183` に |
+| 403 Forbidden (receipts) | 権限 or トークン古い | `python3 -m freee_expense.auth` で再認可 |
+| 400 明細行を入力してください | 明細形式が旧式 | client.py で line_template_id を使うネスト形式か確認 |
+| 「アプリが存在しない」 | ログイン中のアカウント違い | Chrome の freee ログインを 澤田さん のアカウントに切替 |
+| トークン期限切れ | 6時間で自動リフレッシュ | 期限切れなら `python3 -m freee_expense.auth` |
+
+### 事後（申請確定後）
+
+- Client Secret 保管確認（1Password 等）
+- 次月分の予定管理: 8月なら 9月頭に本ワークフロー実施
+- 新しいルール/勘定科目マッピング変更があれば CLAUDE.md に追記
+
+### 効率化のコツ
+
+- Suica は月末に一気にスクショ or CSV DL しておく
+- 現金領収書は撮り溜め（会食後すぐ）→ 月末フォルダに集約
+- Web サービスの領収書メールは Gmail ラベル「経費」等でフィルタリング
+- 8月の領収書は 8/31 までにフォルダに揃えておく → 9/1 に一気実行
+- Vision OCR は API 費用が少しかかる（数百円/月）ので、精度悪ければ entries.json を手動修正した方が早い
