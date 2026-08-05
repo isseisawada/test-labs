@@ -274,6 +274,8 @@
     .int-table th:first-child, .int-table td:first-child { text-align: left; min-width: 150px; }
     .int-table tr.base td { font-weight: 700; }
     .int-table tr.section-hdr td { background: #F9FAFB; color: var(--t3); font-size: 0.7rem; text-transform: uppercase; letter-spacing: .09em; font-weight: 700; padding-top: 14px; }
+    .int-table tr.int-pass td { color: var(--t3); }
+    .int-pass-tag { display: inline-block; margin-left: 8px; padding: 1px 7px; background: var(--bg); color: var(--t3); border-radius: 10px; font-size: 0.66rem; font-weight: 600; white-space: nowrap; }
     .int-m-good { color: #065F46; font-weight: 700; }
     .int-m-warn { color: #9A3412; font-weight: 700; }
     .int-summary { margin-top: 20px; padding: 16px 18px; background: #FFF7ED; border: 1px solid #FED7AA; border-radius: 12px; }
@@ -348,6 +350,7 @@
     .margin-bad  { color: var(--red); }
     .price-table input.cst-name-inp { width: 150px; padding: 5px 8px; border: 1px solid var(--border); border-radius: 6px; font-size: 0.82rem; color: var(--t1); font-family: inherit; text-align: left; }
     .price-table input.cst-name-inp:focus { outline: none; border-color: var(--p); }
+    .price-table input[type="number"][readonly] { background: var(--bg); color: var(--t3); cursor: not-allowed; }
     .cst-memo-cell { white-space: nowrap; }
     .cst-del-btn { margin-left: 6px; width: 24px; height: 24px; border: 1px solid #FECACA; background: #FEF2F2; color: var(--red); border-radius: 6px; font-size: 0.95rem; line-height: 1; cursor: pointer; vertical-align: middle; }
     .cst-del-btn:hover { background: #FEE2E2; }
@@ -1375,8 +1378,15 @@ function updateCustomField(secId, key, field, value) {
       item[field] = num;
     }
   }
-  saveCustom();
+  // 中古仲介車両は原価＝売価に自動追従（入力不要・利益率0%）
   const row = document.querySelector(`#adminContent tr[data-custom-key="${key}"]`);
+  if (secId === 'brokerVehicle' && field === 'price') {
+    if (ci) ci.cost = num;
+    if (item) item.cost = num;
+    const costInp = row && row.querySelector('.cst-cost-inp');
+    if (costInp) costInp.value = num;
+  }
+  saveCustom();
   if (row) {
     const p = parseFloat(row.querySelector('.cst-price-inp').value)||0;
     const c = parseFloat(row.querySelector('.cst-cost-inp').value)||0;
@@ -1390,6 +1400,8 @@ function customEffPrice(secId, item) {
 }
 function customEffCost(secId, item) {
   const def = ADMIN_SECTIONS[secId];
+  // 中古仲介車両は仕入れをそのまま通すため、原価は常に売価と同額（利益率0%）
+  if (secId === 'brokerVehicle') return customEffPrice(secId, item);
   if (def.kind === 'size') return (item.costs && item.costs[def.sizes[0]]) || 0;
   return item.cost || 0;
 }
@@ -1400,11 +1412,14 @@ function customPriceRow(secId, item) {
   const name = item[ADMIN_SECTIONS[secId].field] || '';
   const price = customEffPrice(secId, item);
   const cost  = customEffCost(secId, item);
+  const lockCost = (secId === 'brokerVehicle');   // 原価は売価と同額に固定
   return `<tr data-custom-key="${key}">
     <td class="item-name"><input type="text" class="cst-name-inp" value="${escapeAttr(name)}" placeholder="項目名" oninput="updateCustomName('${secId}','${key}',this.value)"></td>
     <td></td>
     <td><input type="number" step="10000" class="cst-price-inp" value="${price||0}" oninput="updateCustomField('${secId}','${key}','price',this.value)"></td>
-    <td><input type="number" step="10000" class="cst-cost-inp" value="${cost||0}" oninput="updateCustomField('${secId}','${key}','cost',this.value)"></td>
+    <td><input type="number" step="10000" class="cst-cost-inp" value="${cost||0}" ${lockCost
+        ? 'readonly title="売価と同額（仕入れ通しのため入力不要）"'
+        : `oninput="updateCustomField('${secId}','${key}','cost',this.value)"`}></td>
     <td class="margin-col">${marginCell(price, cost)}</td>
     <td class="cst-memo-cell"><input type="text" class="memo-inp" value="${escapeAttr(ci.memo||'')}" placeholder="メモ" oninput="updateCustomField('${secId}','${key}','memo',this.value)"><button class="cst-del-btn" title="削除" onclick="deleteCustomRow('${secId}','${key}')">×</button></td>
   </tr>`;
@@ -2080,7 +2095,8 @@ function collectLines() {
       const qty = s.modelQtys[m.id]||0; if (!qty) return;
       const p = mPrice(m) * qty;
       vehicleTotal += p;
-      lines.push({ name:`【車両】${m.label}${ql(qty)}`, val:p, cost:p, cls:'base' });
+      // 車両本体は仕入れをそのまま通すだけなので、社内の売上・原価の集計からは除外する
+      lines.push({ name:`【車両】${m.label}${ql(qty)}`, val:p, cost:p, cls:'base', passThrough:true });
     });
     // 仲介手数料（両手）: 買主分は顧客へ請求、売主分は社内シミュレーションのみ
     const buyerFee  = Math.round(vehicleTotal * brokerRate('buyer')  / 100);
@@ -2304,7 +2320,7 @@ function applyCostOverridesToQuote(q) {
   if (changed) {
     q.costOverrides = { ...(q.costOverrides || {}), ...ov };
     let cost = 0;
-    q.sections.forEach(s => s.lines.forEach(l => cost += (l.cost || 0)));
+    q.sections.forEach(s => s.lines.forEach(l => { if (!l.passThrough) cost += (l.cost || 0); }));
     const revenue = (q.internalRevenue != null) ? q.internalRevenue : q.totalPre;
     q.totalCost = cost;
     q.totalGross = revenue - cost;
@@ -2315,16 +2331,19 @@ function applyCostOverridesToQuote(q) {
 // 集約データを作成（保存と表示の両方で使う）
 function buildQuoteData(sections) {
   // internalOnly の行（仲介手数料・売主分など）は顧客請求に含めず、社内の粗利にのみ計上する
-  let grand = 0, grandCost = 0, internalExtra = 0;
+  // passThrough の行（中古仲介車両の本体）は仕入れを通すだけなので社内の売上・原価から除外する
+  let grand = 0, grandCost = 0, internalExtra = 0, passVal = 0, passCost = 0;
   sections.forEach(s => s.lines.forEach(l => {
     if (l.internalOnly) internalExtra += l.val; else grand += l.val;
     grandCost += (l.cost || 0);
+    if (l.passThrough) { passVal += l.val; passCost += (l.cost || 0); }
   }));
   const disc = state.discount || 0;
-  const pre = grand - disc;                       // 顧客請求（税前）
+  const pre = grand - disc;                                  // 顧客請求（税前）
   const tax = Math.round(pre * 1.1);
-  const internalRevenue = pre + internalExtra;    // 社内売上（売主手数料を含む）
-  const gross = internalRevenue - grandCost;
+  const internalRevenue = pre + internalExtra - passVal;     // 社内売上（車両本体を除く）
+  const internalCost    = grandCost - passCost;              // 原価合計（車両本体を除く）
+  const gross = internalRevenue - internalCost;
   const marginPct = internalRevenue > 0 ? gross / internalRevenue * 100 : 0;
   // 編集再現用に現在の入力状態をスナップショット
   const clone = (o) => JSON.parse(JSON.stringify(o));
@@ -2362,10 +2381,12 @@ function buildQuoteData(sections) {
     discount: disc,
     totalPre: pre,
     totalTax: tax,
-    totalCost: grandCost,
+    totalCost: internalCost,
     totalGross: gross,
     internalExtra,
     internalRevenue,
+    passVal,
+    passCost,
     marginPct,
     formState,
   };
@@ -2509,7 +2530,7 @@ function showInternalSimulation() {
   });
   // 合計を再計算
   let cost = 0;
-  _internalQuote.sections.forEach(s => s.lines.forEach(l => cost += (l.cost || 0)));
+  _internalQuote.sections.forEach(s => s.lines.forEach(l => { if (!l.passThrough) cost += (l.cost || 0); }));
   const _rev = (_internalQuote.internalRevenue != null) ? _internalQuote.internalRevenue : _internalQuote.totalPre;
   _internalQuote.totalCost = cost;
   _internalQuote.totalGross = _rev - cost;
@@ -2550,8 +2571,8 @@ function renderInternalSimulation() {
       const costCell = editable
         ? `<input type="number" class="int-cost-input" data-si="${si}" data-li="${li}" value="${c || ''}" placeholder="0" min="0" step="1000">`
         : fmt(c);
-      html += `<tr class="${l.cls||''}">`+
-        `<td>${escapeHtml(l.internalName || l.name)}</td>`+
+      html += `<tr class="${l.cls||''}${l.passThrough ? ' int-pass' : ''}">`+
+        `<td>${escapeHtml(l.internalName || l.name)}${l.passThrough ? '<span class="int-pass-tag">集計から除外</span>' : ''}</td>`+
         `<td>${fmt(l.val)}</td>`+
         `<td>${costCell}</td>`+
         `<td id="int-gross-${si}-${li}">${fmt(gross)}</td>`+
@@ -2596,19 +2617,19 @@ function buildInternalSummaryHTML(q) {
   const preDisc = q.totalPre + q.discount;
   const costSum = q.totalCost;
   const extra   = q.internalExtra || 0;                 // 顧客請求外の収益（仲介手数料・売主分など）
+  const passV   = q.passVal || 0;                       // 中古仲介車両の本体（仕入れ通し）
   const revenue = (q.internalRevenue != null) ? q.internalRevenue : q.totalPre;
   html += `<div class="int-sum-row"><span>売価合計（値引き前）</span><span>${fmt(preDisc)}</span></div>`;
   if (q.discount > 0) html += `<div class="int-sum-row" style="color:#9A3412"><span>値引き</span><span>−${fmt(q.discount)}</span></div>`;
   html += `<div class="int-sum-row"><span>顧客請求（値引き後・税前）</span><span>${fmt(q.totalPre)}</span></div>`;
-  if (extra > 0) {
-    html += `<div class="int-sum-row" style="color:#9A3412"><span>＋ 社内計上（仲介手数料・売主分）</span><span>${fmt(extra)}</span></div>`;
-    html += `<div class="int-sum-row"><span>社内売上 合計</span><span>${fmt(revenue)}</span></div>`;
-  }
+  if (extra > 0) html += `<div class="int-sum-row" style="color:#9A3412"><span>＋ 社内計上（仲介手数料・売主分）</span><span>${fmt(extra)}</span></div>`;
+  if (passV > 0) html += `<div class="int-sum-row" style="color:#9A3412"><span>− 中古仲介車両 本体（仕入れ通しのため除外）</span><span>−${fmt(passV)}</span></div>`;
+  if (extra > 0 || passV > 0) html += `<div class="int-sum-row"><span>社内売上 合計</span><span>${fmt(revenue)}</span></div>`;
   html += `<div class="int-sum-row"><span>原価合計</span><span>${fmt(costSum)}</span></div>`;
   html += `<div class="int-sum-row"><span>粗利</span><span>${fmt(q.totalGross)}</span></div>`;
   html += `<div class="int-sum-row big"><span>総利益率</span><span class="${intMarginCls(revenue, costSum)}">${intMarginTxt(revenue, costSum)}</span></div>`;
   if (q.discount > 0) {
-    const base = preDisc + extra;
+    const base = preDisc + extra - passV;
     const preMargin = base > 0 ? (base - costSum) / base * 100 : 0;
     html += `<div class="int-sum-row" style="color:var(--t3);font-size:0.78rem;margin-top:6px"><span>値引き前利益率</span><span>${preMargin.toFixed(1)}%</span></div>`;
   }
@@ -2618,7 +2639,7 @@ function buildInternalSummaryHTML(q) {
 function recalcInternalSummary() {
   const q = _internalQuote;
   let cost = 0;
-  q.sections.forEach(s => s.lines.forEach(l => cost += (l.cost || 0)));
+  q.sections.forEach(s => s.lines.forEach(l => { if (!l.passThrough) cost += (l.cost || 0); }));
   const revenue = (q.internalRevenue != null) ? q.internalRevenue : q.totalPre;
   q.totalCost = cost;
   q.totalGross = revenue - cost;
