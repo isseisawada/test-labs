@@ -2102,8 +2102,9 @@ function collectLines() {
     const buyerFee  = Math.round(vehicleTotal * brokerRate('buyer')  / 100);
     const sellerFee = Math.round(vehicleTotal * brokerRate('seller') / 100);
     // 顧客向けには「仲介手数料」とだけ表示し、売主／買主の内訳は社内シミュレーションのみで見せる
-    if (buyerFee  > 0) lines.push({ name:`仲介手数料`, internalName:`仲介手数料（買主）`, val:buyerFee,  cost:0 });
-    if (sellerFee > 0) lines.push({ name:`仲介手数料（売主）`, val:sellerFee, cost:0, internalOnly:true });
+    // 仲介手数料は原価が発生しないため、原価0のまま固定（入力不可・利益率100%）
+    if (buyerFee  > 0) lines.push({ name:`仲介手数料`, internalName:`仲介手数料（買主）`, val:buyerFee,  cost:0, fixedCost:true });
+    if (sellerFee > 0) lines.push({ name:`仲介手数料（売主）`, val:sellerFee, cost:0, internalOnly:true, fixedCost:true });
     BROKER_OPTS.forEach(o => { if (s.opts[o.id]) lines.push({ name:o.name+ql(tq), val:boPrice(o)*tq, cost:boCost(o)*tq }); });
     BROKER_MISC_OPTS.forEach(o => { if (s.miscOpts[o.id]) lines.push({ name:o.name+ql(tq), val:bmPrice(o)*tq, cost:bmCost(o)*tq }); });
     (s.customOpts||[]).forEach(o => { if (o.name || o.price > 0) { const nm = (o.name || '（未記入）') + (o.qty > 1 ? `×${o.qty}` : ''); lines.push({ name:nm, val:(o.price||0) * (o.qty||1), cost: 0 }); } });
@@ -2308,7 +2309,7 @@ function applyCostOverridesToQuote(q) {
   const ov = {};
   let changed = false;
   q.sections.forEach(sec => sec.lines.forEach(l => {
-    if ((l.cost || 0) === 0) {
+    if ((l.cost || 0) === 0 && !l.fixedCost) {
       const k = intCostKey(sec.title, l.name);
       if (_internalCostOverrides[k] != null) {
         l.cost = _internalCostOverrides[k];
@@ -2520,7 +2521,7 @@ function showInternalSimulation() {
   _internalQuote.sections.forEach(sec => {
     sec.lines.forEach(l => {
       l._origCost = l.cost || 0;
-      if (l._origCost === 0) {
+      if (l._origCost === 0 && !l.fixedCost) {
         const k = intCostKey(sec.title, l.name);
         if (_internalCostOverrides[k] != null) {
           l.cost = _internalCostOverrides[k];
@@ -2566,7 +2567,7 @@ function renderInternalSimulation() {
     html += `<tr class="section-hdr"><td colspan="5">${escapeHtml(sec.title)}</td></tr>`;
     sec.lines.forEach((l, li) => {
       const c = l.cost || 0;
-      const editable = (l._origCost || 0) === 0;
+      const editable = (l._origCost || 0) === 0 && !l.fixedCost;
       const gross = l.val - c;
       const costCell = editable
         ? `<input type="number" class="int-cost-input" data-si="${si}" data-li="${li}" value="${c || ''}" placeholder="0" min="0" step="1000">`
