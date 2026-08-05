@@ -351,6 +351,19 @@
     .cst-memo-cell { white-space: nowrap; }
     .cst-del-btn { margin-left: 6px; width: 24px; height: 24px; border: 1px solid #FECACA; background: #FEF2F2; color: var(--red); border-radius: 6px; font-size: 0.95rem; line-height: 1; cursor: pointer; vertical-align: middle; }
     .cst-del-btn:hover { background: #FEE2E2; }
+    /* 仲介手数料の料率 */
+    .rate-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; max-width: 420px; }
+    .rate-field label { display: block; font-size: 0.78rem; font-weight: 600; color: var(--t2); margin-bottom: 6px; }
+    .rate-field input { width: 100%; padding: 9px 11px; border: 1px solid var(--border); border-radius: 8px; font-size: 0.9rem; font-family: inherit; text-align: right; color: var(--t1); }
+    .rate-field input:focus { outline: none; border-color: var(--p); }
+    .rate-note { font-size: 0.75rem; color: var(--t3); margin-top: 10px; line-height: 1.7; }
+    /* 非表示項目の復元 */
+    .hidden-list { display: flex; flex-direction: column; gap: 6px; }
+    .hidden-item { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 8px 12px; background: var(--bg); border-radius: 8px; font-size: 0.82rem; color: var(--t2); }
+    .hidden-restore { padding: 5px 12px; border: 1px solid var(--p-mid); background: white; color: var(--p); border-radius: 6px; font-size: 0.75rem; font-weight: 700; cursor: pointer; font-family: inherit; flex-shrink: 0; }
+    .hidden-restore:hover { background: var(--p-light); }
+    /* 中古仲介車両 */
+    .broker-empty { text-align: center; padding: 24px 16px; color: var(--t3); font-size: 0.83rem; line-height: 1.9; background: var(--bg); border-radius: 10px; }
     .admin-add-row { padding: 12px 24px 4px; text-align: center; }
     .admin-add-btn { padding: 8px 16px; border: 1px dashed var(--p-mid); background: var(--p-light); color: var(--p); border-radius: 8px; font-size: 0.8rem; font-weight: 700; cursor: pointer; font-family: inherit; transition: all .15s; }
     .admin-add-btn:hover { background: #E0DDFB; }
@@ -396,6 +409,7 @@
     .hist-filter { padding: 10px 14px; border: 1px solid var(--border); border-radius: 10px; font-size: 0.82rem; background: white; cursor: pointer; font-family: inherit; color: var(--t1); }
     .hist-export { padding: 10px 18px; background: white; border: 1px solid var(--border); color: var(--t1); border-radius: 10px; font-size: 0.82rem; font-weight: 600; cursor: pointer; }
     .hist-export:hover { background: var(--bg); }
+    .hist-actions-hdr { display: flex; gap: 8px; flex-shrink: 0; }
     .hist-list { display: flex; flex-direction: column; gap: 8px; }
     .hist-card { background: white; border: 1px solid var(--border); border-radius: 12px; padding: 10px 14px; display: flex; flex-direction: column; gap: 4px; cursor: pointer; transition: background .15s, border-color .15s; }
     .hist-card:hover { background: rgba(0,0,0,0.006); }
@@ -608,7 +622,11 @@
       <h2>見積もり履歴</h2>
       <div class="hist-count" id="histCount">0 件</div>
     </div>
-    <button class="hist-export" onclick="exportHistoryCSV()">CSVエクスポート</button>
+    <div class="hist-actions-hdr">
+      <input type="file" id="histCsvInput" accept=".csv" style="display:none" onchange="importHistoryCSV(event)">
+      <button class="hist-export" onclick="document.getElementById('histCsvInput').click()">CSVインポート</button>
+      <button class="hist-export" onclick="exportHistoryCSV()">CSVエクスポート</button>
+    </div>
   </div>
   <div class="hist-search-row">
     <input type="text" class="hist-search" id="histSearch" placeholder="顧客名・担当者名・エリア・モデル名などで検索..." oninput="renderHistory()">
@@ -617,6 +635,7 @@
       <option value="tinys">Tinys INSPIRATION</option>
       <option value="roadie">ROADIE</option>
       <option value="chassis">シャーシ</option>
+      <option value="broker">中古仲介車両</option>
       <option value="other">その他車両</option>
     </select>
   </div>
@@ -678,6 +697,7 @@
 const SERIES = [
   { id:'tinys', label:'Tinys INSPIRATION' },
   { id:'roadie', label:'ROADIE' },
+  { id:'broker', label:'中古仲介車両' },
   { id:'chassis', label:'シャーシ' },
   { id:'other', label:'その他車両' },
 ];
@@ -799,6 +819,19 @@ const OTHER_MISC_OPTS = [
   { id:'om2', name:'予備車検',     ico:'🔍', price:80000,  cost:50000 },
   { id:'om3', name:'設置費用',     ico:'🏗️', price:50000,  cost:30000 },
 ];
+
+// ---- 中古仲介車両 ----
+// 車両は案件ごとに手入力するが、一度登録したものはマスタとして残る（管理画面/入力画面から追加）
+const BROKER_MODELS = [];
+const BROKER_GROUPS = [];   // 登録車両は customGroupLabel のグループにまとまる
+const BROKER_OPTS = [];   // 共通オプション（管理画面で追加）
+const BROKER_MISC_OPTS = [
+  { id:'bm1', name:'車両申請書類', ico:'📋', price:100000, cost:50000 },
+  { id:'bm2', name:'予備車検',     ico:'🔍', price:80000,  cost:50000 },
+  { id:'bm3', name:'設置費用',     ico:'🏗️', price:50000,  cost:30000 },
+];
+// 仲介手数料率（％）— 売主・買主から各10%（両手）。管理画面で変更可
+function brokerRate(side) { return ovr(`brokerRate:${side}`, 10); }
 // 難易度係数 Lv1(×0.1) 〜 Lv7(×1.3)
 const DESIGN_LEVELS = [
   { lv:1, coef:0.1 }, { lv:2, coef:0.3 }, { lv:3, coef:0.5 },
@@ -1016,7 +1049,8 @@ let state = {
   tinys:   { modelQtys:{}, sizeOpts:{}, commonOpts:{}, blindIdx:0, blindCount:1, miscOpts:{}, designLv:0, customOpts:[], transportIdx:0, transportCustom:0, transportCustomLabel:'' },
   roadie:  { modelQtys:{}, sizeOpts:{}, commonOpts:{}, miscOpts:{}, designLv:0, customOpts:[], transportIdx:0, transportCustom:0, transportCustomLabel:'' },
   chassis: { modelQtys:{}, opts:{} },
-  other:   { modelQtys:{}, opts:{}, miscOpts:{}, transportIdx:0, transportCustom:0, transportCustomLabel:'' },
+  other:   { modelQtys:{}, opts:{}, miscOpts:{}, customOpts:[], transportIdx:0, transportCustom:0, transportCustomLabel:'' },
+  broker:  { modelQtys:{}, opts:{}, miscOpts:{}, customOpts:[], transportIdx:0, transportCustom:0, transportCustomLabel:'' },
 };
 const hasModel   = (s) => Object.values(s.modelQtys||{}).some(q => q > 0);
 const seriesQty  = (s) => Object.values(s.modelQtys||{}).reduce((a,b) => a+b, 0);
@@ -1069,6 +1103,7 @@ async function cloudLoadAll() {
   applyOrSeed('memos',        MEMO_DATA,    v => { MEMO_DATA = v;    localStorage.setItem(LS_MEMOS,  JSON.stringify(v)); });
   applyOrSeed('staff',        STAFF_LIST,   v => { STAFF_LIST = v;   localStorage.setItem(LS_STAFF,  JSON.stringify(v)); });
   applyOrSeed('custom_items', CUSTOM_ITEMS, v => { CUSTOM_ITEMS = v; localStorage.setItem(LS_CUSTOM, JSON.stringify(v)); });
+  applyOrSeed('hidden_items', HIDDEN_ITEMS, v => { HIDDEN_ITEMS = v; localStorage.setItem(LS_HIDDEN, JSON.stringify(v)); });
 
   const { data: qs, error: e2 } = await sb.from('quotes').select('data,created_at').eq('ns', NS).order('created_at', { ascending: false });
   if (e2) throw e2;
@@ -1114,6 +1149,7 @@ function applyConfigChange(key, value) {
   else if (key === 'memos')   { if (same(MEMO_DATA)) return; MEMO_DATA = value; localStorage.setItem(LS_MEMOS, JSON.stringify(value)); }
   else if (key === 'staff')   { if (same(STAFF_LIST)) return; STAFF_LIST = value; localStorage.setItem(LS_STAFF, JSON.stringify(value)); }
   else if (key === 'custom_items') { if (same(CUSTOM_ITEMS)) return; CUSTOM_ITEMS = value; localStorage.setItem(LS_CUSTOM, JSON.stringify(value)); reapplyCustomItems(); }
+  else if (key === 'hidden_items') { if (same(HIDDEN_ITEMS)) return; HIDDEN_ITEMS = value; localStorage.setItem(LS_HIDDEN, JSON.stringify(value)); }
   else return;
   rerenderCurrentIfIdle();
 }
@@ -1198,6 +1234,10 @@ function otoPrice(o)  { return ovr(`otherOpt:${o.id}:price`, o.price); }
 function otoCost(o)   { return ovr(`otherOpt:${o.id}:cost`,  o.cost || 0); }
 function omPrice(o)   { return ovr(`otherMisc:${o.id}:price`, o.price); }
 function omCost(o)    { return ovr(`otherMisc:${o.id}:cost`,  o.cost || 0); }
+function boPrice(o)   { return ovr(`brokerOpt:${o.id}:price`, o.price); }
+function boCost(o)    { return ovr(`brokerOpt:${o.id}:cost`,  o.cost || 0); }
+function bmPrice(o)   { return ovr(`brokerMisc:${o.id}:price`, o.price); }
+function bmCost(o)    { return ovr(`brokerMisc:${o.id}:cost`,  o.cost || 0); }
 
 // ============================================================
 // 管理画面のカスタム追加行（各セクションに行を追加）
@@ -1207,6 +1247,31 @@ function loadCustom() { try { return JSON.parse(localStorage.getItem(LS_CUSTOM) 
 let CUSTOM_ITEMS = loadCustom();
 function saveCustom() { try { localStorage.setItem(LS_CUSTOM, JSON.stringify(CUSTOM_ITEMS)); } catch(e){} cloudSetConfig('custom_items', CUSTOM_ITEMS); }
 let _customSeq = 1;
+
+// ---- 項目の非表示（削除）機能 ----
+// 元から定義された項目も「非表示」にでき、管理画面からいつでも復元できる。
+// キー例: 'model:t1' / 'commonOpt:tc1' / 'transport:3' / 'blind:2'
+const LS_HIDDEN = nsLS('yadokari_hidden_items_v1');
+function loadHidden() { try { return JSON.parse(localStorage.getItem(LS_HIDDEN) || '{}') || {}; } catch(e){ return {}; } }
+let HIDDEN_ITEMS = loadHidden();
+function saveHidden() {
+  try { localStorage.setItem(LS_HIDDEN, JSON.stringify(HIDDEN_ITEMS)); } catch(e){}
+  cloudSetConfig('hidden_items', HIDDEN_ITEMS);
+}
+function isHidden(key) { return !!HIDDEN_ITEMS[key]; }
+function hideItem(key, label) {
+  HIDDEN_ITEMS[key] = label || key;
+  saveHidden();
+  renderAdmin();
+}
+function unhideItem(key) {
+  delete HIDDEN_ITEMS[key];
+  saveHidden();
+  renderAdmin();
+}
+// 配列から非表示項目を除く（キーの作り方はセクションごとに異なる）
+const notHiddenById  = (prefix) => (o) => !isHidden(`${prefix}:${o.id}`);
+const notHiddenByIdx = (prefix) => (o) => !isHidden(`${prefix}:${o.idx}`);
 
 // 各管理セクションの定義（kind: idx=配送/諸経費/ブラインド, model=ベースモデル, opt=オプション, size=サイズ連動）
 const ADMIN_SECTIONS = {
@@ -1228,6 +1293,9 @@ const ADMIN_SECTIONS = {
   otherModel:   { kind:'model',arr:OTHER_MODELS,   groups:OTHER_GROUPS,   prefix:'model', field:'label' },
   otherCommon:  { kind:'opt',  arr:OTHER_OPTS,             prefix:'otherOpt',  field:'name' },
   otherMisc:    { kind:'opt',  arr:OTHER_MISC_OPTS,        prefix:'otherMisc', field:'name' },
+  brokerVehicle:{ kind:'model',arr:BROKER_MODELS, groups:BROKER_GROUPS, prefix:'model', field:'label', customGroupLabel:'登録済み車両' },
+  brokerCommon: { kind:'opt',  arr:BROKER_OPTS,            prefix:'brokerOpt',  field:'name' },
+  brokerMisc:   { kind:'opt',  arr:BROKER_MISC_OPTS,       prefix:'brokerMisc', field:'name' },
 };
 const customItemKey = (item) => item.id != null ? item.id : item.idx;
 function nextCustomId()  { return 'cst_' + Date.now().toString(36) + '_' + (_customSeq++); }
@@ -1237,7 +1305,7 @@ function nextCustomIdx(arr) { let mx = 1000; arr.forEach(o => { if (typeof o.idx
 function applyCustomItems() {
   Object.values(ADMIN_SECTIONS).forEach(def => {
     if (def.kind === 'model' && def.groups && !def._customGroup) {
-      def._customGroup = { size:'追加モデル', models:[] };
+      def._customGroup = { size: def.customGroupLabel || '追加モデル', models:[] };
       def.groups.push(def._customGroup);
     }
   });
@@ -1400,7 +1468,7 @@ function buildHeader() {
     btn.onclick = () => { state.active = s.id; update(); };
     nav.appendChild(btn);
   });
-  const titles = { tinys:'Tinys INSPIRATION', roadie:'ROADIE', chassis:'シャーシ', other:'その他車両' };
+  const titles = { tinys:'Tinys INSPIRATION', roadie:'ROADIE', broker:'中古仲介車両', chassis:'シャーシ', other:'その他車両' };
   document.getElementById('sbTitle').textContent = titles[state.active];
   setupSNavHint();
 }
@@ -1431,6 +1499,7 @@ function renderForm() {
   el.appendChild(renderCustomerCard());
   if (state.active === 'tinys')   renderTinys(el);
   if (state.active === 'roadie')  renderRoadie(el);
+  if (state.active === 'broker')  renderBroker(el);
   if (state.active === 'chassis') renderChassis(el);
   if (state.active === 'other')   renderOther(el);
   renderShared(el);
@@ -1507,7 +1576,7 @@ function renderTinys(el) {
   const firstM = TINYS_MODELS.find(m => (s.modelQtys[m.id]||0) > 0);
   const size = firstM?.size || null;
   const rows2 = div('opt-rows');
-  TINYS_SIZE_OPTS.forEach(opt => {
+  TINYS_SIZE_OPTS.filter(o => !isHidden(`sizeOpt:${o.id}:${size}`)).forEach(opt => {
     const p = size ? soPrice(opt, size) : null;
     rows2.appendChild(toggleRow(opt, p, !!s.sizeOpts[opt.id], !size || p == null, v => { s.sizeOpts[opt.id] = v; update(); }));
   });
@@ -1516,7 +1585,7 @@ function renderTinys(el) {
 
   const c3 = sectionCard('共通オプション', '');
   const rows3 = div('opt-rows');
-  TINYS_COMMON_OPTS.forEach(opt => rows3.appendChild(toggleRow(opt, coPrice(opt), !!s.commonOpts[opt.id], false, v => { s.commonOpts[opt.id] = v; update(); })));
+  TINYS_COMMON_OPTS.filter(notHiddenById('commonOpt')).forEach(opt => rows3.appendChild(toggleRow(opt, coPrice(opt), !!s.commonOpts[opt.id], false, v => { s.commonOpts[opt.id] = v; update(); })));
   rows3.appendChild(buildBlindRow(s));
   c3.appendChild(rows3);
   el.appendChild(c3);
@@ -1535,7 +1604,7 @@ function renderRoadie(el) {
   const firstM = ROADIE_MODELS.find(m => (s.modelQtys[m.id]||0) > 0);
   const size = firstM?.size || null;
   const rows2 = div('opt-rows');
-  ROADIE_SIZE_OPTS.forEach(opt => {
+  ROADIE_SIZE_OPTS.filter(o => !isHidden(`sizeOpt:${o.id}:${size}`)).forEach(opt => {
     const p = size ? soPrice(opt, size) : null;
     rows2.appendChild(toggleRow(opt, p, !!s.sizeOpts[opt.id], !size || p == null, v => { s.sizeOpts[opt.id] = v; update(); }));
   });
@@ -1544,7 +1613,7 @@ function renderRoadie(el) {
 
   const c3 = sectionCard('共通オプション', '');
   const rows3 = div('opt-rows');
-  ROADIE_COMMON_OPTS.forEach(opt => rows3.appendChild(toggleRow(opt, coPrice(opt), !!s.commonOpts[opt.id], false, v => { s.commonOpts[opt.id] = v; update(); })));
+  ROADIE_COMMON_OPTS.filter(notHiddenById('commonOpt')).forEach(opt => rows3.appendChild(toggleRow(opt, coPrice(opt), !!s.commonOpts[opt.id], false, v => { s.commonOpts[opt.id] = v; update(); })));
   c3.appendChild(rows3);
   el.appendChild(c3);
 
@@ -1562,16 +1631,59 @@ function renderOther(el) {
   // 共通オプション（水平ジャッキ）
   const c1 = sectionCard('共通オプション', '');
   const rows1 = div('opt-rows');
-  OTHER_OPTS.forEach(opt => rows1.appendChild(toggleRow(opt, otoPrice(opt), !!s.opts[opt.id], false, v => { s.opts[opt.id] = v; update(); })));
+  OTHER_OPTS.filter(notHiddenById('otherOpt')).forEach(opt => rows1.appendChild(toggleRow(opt, otoPrice(opt), !!s.opts[opt.id], false, v => { s.opts[opt.id] = v; update(); })));
   c1.appendChild(rows1);
   el.appendChild(c1);
 
   // 設計・手続き関連
   const c2 = sectionCard('設計・手続き関連', '');
   const rows2 = div('opt-rows');
-  OTHER_MISC_OPTS.forEach(opt => rows2.appendChild(toggleRow(opt, omPrice(opt), !!s.miscOpts[opt.id], false, v => { s.miscOpts[opt.id] = v; update(); })));
+  OTHER_MISC_OPTS.filter(notHiddenById('otherMisc')).forEach(opt => rows2.appendChild(toggleRow(opt, omPrice(opt), !!s.miscOpts[opt.id], false, v => { s.miscOpts[opt.id] = v; update(); })));
   c2.appendChild(rows2);
   el.appendChild(c2);
+
+  renderCustomOptsCard(s, el);
+}
+
+// ---- 中古仲介車両 ----
+function renderBroker(el) {
+  const s = state.broker;
+
+  // 登録済み車両から選択（車両の登録は管理画面から行う）
+  const hasVehicles = BROKER_MODELS.some(m => !isHidden(`model:${m.id}`));
+  if (hasVehicles) {
+    el.appendChild(modelListGrouped('車両を選択', '登録済みの中古仲介車両から選択', BROKER_GROUPS, BROKER_MODELS, s));
+  } else {
+    const cEmpty = sectionCard('車両を選択', '');
+    const note = div('broker-empty');
+    note.innerHTML = `車両が登録されていません。<br>「管理 › 中古仲介車両 › 登録済み車両」から車両を追加してください。`;
+    cEmpty.appendChild(note);
+    el.appendChild(cEmpty);
+  }
+
+  const tq = seriesQty(s);
+
+  // 共通オプション（管理画面で追加した項目）
+  const visibleOpts = BROKER_OPTS.filter(notHiddenById('brokerOpt'));
+  if (visibleOpts.length) {
+    const c1 = sectionCard('共通オプション', '');
+    const rows1 = div('opt-rows');
+    visibleOpts.forEach(opt => rows1.appendChild(toggleRow(opt, boPrice(opt), !!s.opts[opt.id], false, v => { s.opts[opt.id] = v; update(); })));
+    c1.appendChild(rows1);
+    el.appendChild(c1);
+  }
+
+  // 設計・手続き関連
+  const visibleMisc = BROKER_MISC_OPTS.filter(notHiddenById('brokerMisc'));
+  if (visibleMisc.length) {
+    const c2 = sectionCard('設計・手続き関連', '');
+    const rows2 = div('opt-rows');
+    visibleMisc.forEach(opt => rows2.appendChild(toggleRow(opt, bmPrice(opt), !!s.miscOpts[opt.id], false, v => { s.miscOpts[opt.id] = v; update(); })));
+    c2.appendChild(rows2);
+    el.appendChild(c2);
+  }
+
+  renderCustomOptsCard(s, el);
 }
 
 // ---- Chassis ----
@@ -1582,7 +1694,7 @@ function renderChassis(el) {
   const c2 = sectionCard('オプション', '');
   c2.id = 'sec-opt';
   const rows = div('opt-rows');
-  CHASSIS_OPTS.forEach(opt => rows.appendChild(toggleRow(opt, chPrice(opt), !!s.opts[opt.id], false, v => { s.opts[opt.id] = v; update(); })));
+  CHASSIS_OPTS.filter(notHiddenById('chopt')).forEach(opt => rows.appendChild(toggleRow(opt, chPrice(opt), !!s.opts[opt.id], false, v => { s.opts[opt.id] = v; update(); })));
   c2.appendChild(rows);
   el.appendChild(c2);
 }
@@ -1684,7 +1796,7 @@ function renderDesignLevelCard(s, modelsArr, el) {
   if (miscOpts.length > 0) {
     const rows = div('opt-rows');
     rows.style.marginTop = '12px';
-    miscOpts.forEach(opt => rows.appendChild(toggleRow(opt, mxPrice(opt), !!s.miscOpts[opt.id], false, v => { s.miscOpts[opt.id] = v; update(); })));
+    miscOpts.filter(notHiddenById('misc')).forEach(opt => rows.appendChild(toggleRow(opt, mxPrice(opt), !!s.miscOpts[opt.id], false, v => { s.miscOpts[opt.id] = v; update(); })));
     wrap.appendChild(rows);
   }
 
@@ -1725,7 +1837,7 @@ function renderShared(el) {
     // YLW600 配送（エリア別）
     if (hasYLW) {
       const g1 = div('sel-group');
-      const opts = YLW_TRANSPORT_OPTS.map(o => {
+      const opts = YLW_TRANSPORT_OPTS.filter(o => o.idx === 0 || !isHidden(`ylwTransport:${o.idx}`)).map(o => {
         const prefix = o.region ? `【${o.region}】` : '';
         const p      = ylwPrice(o);
         const price  = p ? '　' + fmt(p) : '';
@@ -1738,7 +1850,7 @@ function renderShared(el) {
     // YCL/YNR 配送（都道府県別）
     if (hasYclYnr) {
       const g1 = div('sel-group');
-      const opts = CHASSIS_TRANSPORT_OPTS.map(o => {
+      const opts = CHASSIS_TRANSPORT_OPTS.filter(o => o.idx === 0 || !isHidden(`chTransport:${o.idx}`)).map(o => {
         const prefix = o.region ? `【${o.region}】` : '';
         const p      = chtrPrice(o);
         const price  = o.quote ? '　別途見積' : (p ? '　' + fmt(p) : '');
@@ -1752,7 +1864,7 @@ function renderShared(el) {
     // Tinys / ROADIE / その他車両 — そのシリーズ専用の距離別配送
     const s = state[active];
     const g1 = div('sel-group');
-    const opts = TRANSPORT_OPTS.map(o => `<option value="${o.idx}" ${s.transportIdx===o.idx?'selected':''}>${o.label}${trPrice(o)?'　'+fmt(trPrice(o)):''}</option>`).join('') + customOpt(s, 'transportIdx');
+    const opts = TRANSPORT_OPTS.filter(o => o.idx === 0 || !isHidden(`transport:${o.idx}`)).map(o => `<option value="${o.idx}" ${s.transportIdx===o.idx?'selected':''}>${o.label}${trPrice(o)?'　'+fmt(trPrice(o)):''}</option>`).join('') + customOpt(s, 'transportIdx');
     g1.innerHTML = `<label>配送費用（距離別）</label><select>${opts}</select>${customInput(s,'transportIdx','transportCustom','transportCustomLabel')}`;
     bindCustom(g1, s, 'transportIdx', 'transportCustom', 'transportCustomLabel');
     g.appendChild(g1);
@@ -1760,7 +1872,7 @@ function renderShared(el) {
 
   // 諸経費（全体共通）
   const g2 = div('sel-group');
-  g2.innerHTML = `<label>諸経費（エリア別）</label><select id="regionSelect">${REGION_OPTS.map(o => `<option value="${o.idx}" ${state.miscCostIdx===o.idx?'selected':''}>${o.label}${rgPrice(o)?'　'+fmt(rgPrice(o)):''}</option>`).join('')}</select>`;
+  g2.innerHTML = `<label>諸経費（エリア別）</label><select id="regionSelect">${REGION_OPTS.filter(o => o.idx === 0 || !isHidden(`region:${o.idx}`)).map(o => `<option value="${o.idx}" ${state.miscCostIdx===o.idx?'selected':''}>${o.label}${rgPrice(o)?'　'+fmt(rgPrice(o)):''}</option>`).join('')}</select>`;
   g2.querySelector('select').addEventListener('change', e => { state.miscCostIdx = +e.target.value; updateSummary(); });
   g.appendChild(g2);
 
@@ -1783,12 +1895,12 @@ function modelListGrouped(title, sub, groups, modelsArr, s) {
   c.id = 'sec-model';
   const modelMap = Object.fromEntries(modelsArr.map(m => [m.id, m]));
   groups.forEach(grp => {
-    if (!grp.models.some(mid => modelMap[mid])) return; // 空グループ（カスタム未登録の「追加モデル」等）は表示しない
+    if (!grp.models.some(mid => modelMap[mid] && !isHidden(`model:${mid}`))) return; // 空グループは表示しない
     const grpDiv = div('mg-group');
     const hdr = div('mg-hdr'); hdr.textContent = grp.size;
     grpDiv.appendChild(hdr);
     grp.models.forEach(mid => {
-      const m = modelMap[mid]; if (!m) return;
+      const m = modelMap[mid]; if (!m || isHidden(`model:${mid}`)) return;
       const qty = s.modelQtys[mid] || 0;
       const row = div('mg-row' + (qty > 0 ? ' on' : ''));
       const ico = div('mg-ico'); ico.textContent = m.ico;
@@ -1847,7 +1959,7 @@ function buildBlindRow(s) {
   row.appendChild(top);
   const sels = div('blind-selects');
   const sizeSel = document.createElement('select');
-  TINYS_BLIND_OPTS.forEach(b => {
+  TINYS_BLIND_OPTS.filter(b => b.idx === 0 || !isHidden(`blind:${b.idx}`)).forEach(b => {
     const o = document.createElement('option');
     const ep = blPrice(b);
     o.value = b.idx; o.textContent = b.label + (ep ? '　' + fmt(ep) : '');
@@ -1954,7 +2066,32 @@ function collectLines() {
     });
     OTHER_OPTS.forEach(o => { if (s.opts[o.id]) lines.push({ name:o.name+ql(tq), val:otoPrice(o)*tq, cost:otoCost(o)*tq }); });
     OTHER_MISC_OPTS.forEach(o => { if (s.miscOpts[o.id]) lines.push({ name:o.name+ql(tq), val:omPrice(o)*tq, cost:omCost(o)*tq }); });
+    (s.customOpts||[]).forEach(o => { if (o.name || o.price > 0) { const nm = (o.name || '（未記入）') + (o.qty > 1 ? `×${o.qty}` : ''); lines.push({ name:nm, val:(o.price||0) * (o.qty||1), cost: 0 }); } });
     sections.push({ title:'その他車両', key:'other', lines });
+  }
+
+  if (hasModel(state.broker)) {
+    const s = state.broker;
+    const tq = seriesQty(s);
+    const lines = [];
+    // 車両本体は仕入れをそのまま通す（粗利0）。会社の利益は仲介手数料2本で計上する。
+    let vehicleTotal = 0;
+    BROKER_MODELS.forEach(m => {
+      const qty = s.modelQtys[m.id]||0; if (!qty) return;
+      const p = mPrice(m) * qty;
+      vehicleTotal += p;
+      lines.push({ name:`【車両】${m.label}${ql(qty)}`, val:p, cost:p, cls:'base' });
+    });
+    // 仲介手数料（両手）: 買主分は顧客へ請求、売主分は社内シミュレーションのみ
+    const buyerFee  = Math.round(vehicleTotal * brokerRate('buyer')  / 100);
+    const sellerFee = Math.round(vehicleTotal * brokerRate('seller') / 100);
+    // 顧客向けには「仲介手数料」とだけ表示し、売主／買主の内訳は社内シミュレーションのみで見せる
+    if (buyerFee  > 0) lines.push({ name:`仲介手数料`, internalName:`仲介手数料（買主）`, val:buyerFee,  cost:0 });
+    if (sellerFee > 0) lines.push({ name:`仲介手数料（売主）`, val:sellerFee, cost:0, internalOnly:true });
+    BROKER_OPTS.forEach(o => { if (s.opts[o.id]) lines.push({ name:o.name+ql(tq), val:boPrice(o)*tq, cost:boCost(o)*tq }); });
+    BROKER_MISC_OPTS.forEach(o => { if (s.miscOpts[o.id]) lines.push({ name:o.name+ql(tq), val:bmPrice(o)*tq, cost:bmCost(o)*tq }); });
+    (s.customOpts||[]).forEach(o => { if (o.name || o.price > 0) { const nm = (o.name || '（未記入）') + (o.qty > 1 ? `×${o.qty}` : ''); lines.push({ name:nm, val:(o.price||0) * (o.qty||1), cost: 0 }); } });
+    sections.push({ title:'中古仲介車両', key:'broker', lines });
   }
 
   const ylwQty   = state.chassis.modelQtys['ch6'] || 0;
@@ -1969,6 +2106,7 @@ function collectLines() {
     { key:'tinys',  label:'Tinys INSPIRATION', qty: seriesQty(state.tinys), has: hasModel(state.tinys) },
     { key:'roadie', label:'ROADIE',            qty: seriesQty(state.roadie), has: hasModel(state.roadie) },
     { key:'other',  label:'その他車両',        qty: seriesQty(state.other),  has: hasModel(state.other) },
+    { key:'broker', label:'中古仲介車両',      qty: seriesQty(state.broker), has: hasModel(state.broker) },
   ].filter(s => s.has);
   const chassisSeries = [
     { label:'シャーシ', qty: seriesQty(state.chassis), has: hasModel(state.chassis) },
@@ -2027,7 +2165,7 @@ function updateSummary() {
   const sections = collectLines();
   const hasAny = sections.length > 0;
   let grand = 0;
-  sections.forEach(s => s.lines.forEach(l => grand += l.val));
+  sections.forEach(s => s.lines.forEach(l => { if (!l.internalOnly) grand += l.val; }));
   const disc = state.discount || 0;
   const pre = grand - disc;
   const tax = Math.round(pre * 1.1);
@@ -2041,7 +2179,7 @@ function updateSummary() {
     let html = '';
     sections.forEach(sec => {
       html += `<div class="sl series-hdr"><span>${sec.title}</span></div>`;
-      sec.lines.forEach(l => { html += `<div class="sl ${l.cls||''}"><span class="sl-n">${l.name}</span><span class="sl-v">${fmt(l.val)}</span></div>`; });
+      sec.lines.filter(l => !l.internalOnly).forEach(l => { html += `<div class="sl ${l.cls||''}"><span class="sl-n">${l.name}</span><span class="sl-v">${fmt(l.val)}</span></div>`; });
     });
     if (disc > 0) html += `<div class="sl disc"><span class="sl-n">値引き</span><span class="sl-v">−${fmt(disc)}</span></div>`;
     linesEl.innerHTML = html;
@@ -2057,16 +2195,17 @@ function updateSummary() {
   }
 
   // Progress
-  const anyModel = hasModel(state.tinys) || hasModel(state.roadie) || hasModel(state.chassis) || hasModel(state.other);
+  const anyModel = hasModel(state.tinys) || hasModel(state.roadie) || hasModel(state.chassis) || hasModel(state.other) || hasModel(state.broker);
   const anyOpt = !!(
     Object.values(state.tinys.sizeOpts).some(Boolean) || Object.values(state.tinys.commonOpts).some(Boolean) || state.tinys.blindIdx > 0 || Object.values(state.tinys.miscOpts).some(Boolean) || state.tinys.designLv > 0 ||
     Object.values(state.roadie.sizeOpts).some(Boolean) || Object.values(state.roadie.commonOpts).some(Boolean) || Object.values(state.roadie.miscOpts).some(Boolean) || state.roadie.designLv > 0 ||
     Object.values(state.chassis.opts||{}).some(Boolean) ||
-    Object.values(state.other.opts||{}).some(Boolean) || Object.values(state.other.miscOpts||{}).some(Boolean)
+    Object.values(state.other.opts||{}).some(Boolean) || Object.values(state.other.miscOpts||{}).some(Boolean) ||
+    Object.values(state.broker.opts||{}).some(Boolean) || Object.values(state.broker.miscOpts||{}).some(Boolean)
   );
   const seriesHasTransport = (s) => s.transportIdx > 0 || (s.transportIdx === -1 && (s.transportCustom||0) > 0);
   const hasTransport =
-    seriesHasTransport(state.tinys) || seriesHasTransport(state.roadie) || seriesHasTransport(state.other)
+    seriesHasTransport(state.tinys) || seriesHasTransport(state.roadie) || seriesHasTransport(state.other) || seriesHasTransport(state.broker)
     || state.ylwTransportIdx > 0 || state.chTransportIdx > 0
     || (state.ylwTransportIdx === -1 && (state.ylwTransportCustom||0) > 0)
     || (state.chTransportIdx === -1 && (state.chTransportCustom||0) > 0);
@@ -2089,7 +2228,7 @@ function copyEstimate() {
   const sections = collectLines();
   if (!sections.length) return;
   let grand = 0;
-  sections.forEach(s => s.lines.forEach(l => grand += l.val));
+  sections.forEach(s => s.lines.forEach(l => { if (!l.internalOnly) grand += l.val; }));
   const disc = state.discount || 0;
   const pre = grand - disc;
   const tax = Math.round(pre * 1.1);
@@ -2097,7 +2236,7 @@ function copyEstimate() {
   let text = '━━━━━━━━━━━━━━━━━━━━━━━━\nトレーラーハウス 概算見積もり\n━━━━━━━━━━━━━━━━━━━━━━━━\n\n';
   sections.forEach(sec => {
     text += `【${sec.title}】\n`;
-    sec.lines.forEach(l => { text += `${pad(l.name,24)}  ${fmt(l.val)}\n`; });
+    sec.lines.filter(l => !l.internalOnly).forEach(l => { text += `${pad(l.name,24)}  ${fmt(l.val)}\n`; });
     text += '\n';
   });
   if (disc > 0) text += `${pad('値引き',24)}  −${fmt(disc)}\n\n`;
@@ -2127,7 +2266,8 @@ function resetAll() {
   state.tinys   = { modelQtys:{}, sizeOpts:{}, commonOpts:{}, blindIdx:0, blindCount:1, miscOpts:{}, designLv:0, customOpts:[], transportIdx:0, transportCustom:0, transportCustomLabel:'' };
   state.roadie  = { modelQtys:{}, sizeOpts:{}, commonOpts:{}, miscOpts:{}, designLv:0, customOpts:[], transportIdx:0, transportCustom:0, transportCustomLabel:'' };
   state.chassis = { modelQtys:{}, opts:{} };
-  state.other   = { modelQtys:{}, opts:{}, miscOpts:{}, transportIdx:0, transportCustom:0, transportCustomLabel:'' };
+  state.other   = { modelQtys:{}, opts:{}, miscOpts:{}, customOpts:[], transportIdx:0, transportCustom:0, transportCustomLabel:'' };
+  state.broker  = { modelQtys:{}, opts:{}, miscOpts:{}, customOpts:[], transportIdx:0, transportCustom:0, transportCustomLabel:'' };
   // 修正中フラグを解除（リセット後は新規見積もり扱い。元の履歴は保持される）
   _editingQuoteId = null;
   // 社内シミュレーションの手入力原価もリセット
@@ -2165,21 +2305,27 @@ function applyCostOverridesToQuote(q) {
     q.costOverrides = { ...(q.costOverrides || {}), ...ov };
     let cost = 0;
     q.sections.forEach(s => s.lines.forEach(l => cost += (l.cost || 0)));
+    const revenue = (q.internalRevenue != null) ? q.internalRevenue : q.totalPre;
     q.totalCost = cost;
-    q.totalGross = q.totalPre - cost;
-    q.marginPct = q.totalPre > 0 ? q.totalGross / q.totalPre * 100 : 0;
+    q.totalGross = revenue - cost;
+    q.marginPct = revenue > 0 ? q.totalGross / revenue * 100 : 0;
   }
 }
 
 // 集約データを作成（保存と表示の両方で使う）
 function buildQuoteData(sections) {
-  let grand = 0, grandCost = 0;
-  sections.forEach(s => s.lines.forEach(l => { grand += l.val; grandCost += (l.cost || 0); }));
+  // internalOnly の行（仲介手数料・売主分など）は顧客請求に含めず、社内の粗利にのみ計上する
+  let grand = 0, grandCost = 0, internalExtra = 0;
+  sections.forEach(s => s.lines.forEach(l => {
+    if (l.internalOnly) internalExtra += l.val; else grand += l.val;
+    grandCost += (l.cost || 0);
+  }));
   const disc = state.discount || 0;
-  const pre = grand - disc;
+  const pre = grand - disc;                       // 顧客請求（税前）
   const tax = Math.round(pre * 1.1);
-  const gross = pre - grandCost;
-  const marginPct = pre > 0 ? gross / pre * 100 : 0;
+  const internalRevenue = pre + internalExtra;    // 社内売上（売主手数料を含む）
+  const gross = internalRevenue - grandCost;
+  const marginPct = internalRevenue > 0 ? gross / internalRevenue * 100 : 0;
   // 編集再現用に現在の入力状態をスナップショット
   const clone = (o) => JSON.parse(JSON.stringify(o));
   const formState = {
@@ -2188,6 +2334,7 @@ function buildQuoteData(sections) {
     roadie: clone(state.roadie),
     chassis: clone(state.chassis),
     other: clone(state.other || { modelQtys:{}, opts:{}, miscOpts:{} }),
+    broker: clone(state.broker || { modelQtys:{}, opts:{}, miscOpts:{}, customOpts:[] }),
     ylwTransportIdx: state.ylwTransportIdx || 0,
     chTransportIdx: state.chTransportIdx || 0,
     ylwTransportCustom: state.ylwTransportCustom || 0,
@@ -2217,6 +2364,8 @@ function buildQuoteData(sections) {
     totalTax: tax,
     totalCost: grandCost,
     totalGross: gross,
+    internalExtra,
+    internalRevenue,
     marginPct,
     formState,
   };
@@ -2244,7 +2393,7 @@ function showCompletionFromData(q, saveToHistory) {
 
   q.sections.forEach(sec => {
     html += `<div class="comp-sec-hdr">${sec.title}</div>`;
-    sec.lines.forEach(l => {
+    sec.lines.filter(l => !l.internalOnly).forEach(l => {
       html += `<div class="comp-line ${l.cls||''}"><span class="comp-ln">${escapeHtml(l.name)}</span><span class="comp-lv">${fmt(l.val)}</span></div>`;
     });
   });
@@ -2361,9 +2510,10 @@ function showInternalSimulation() {
   // 合計を再計算
   let cost = 0;
   _internalQuote.sections.forEach(s => s.lines.forEach(l => cost += (l.cost || 0)));
+  const _rev = (_internalQuote.internalRevenue != null) ? _internalQuote.internalRevenue : _internalQuote.totalPre;
   _internalQuote.totalCost = cost;
-  _internalQuote.totalGross = _internalQuote.totalPre - cost;
-  _internalQuote.marginPct = _internalQuote.totalPre > 0 ? _internalQuote.totalGross / _internalQuote.totalPre * 100 : 0;
+  _internalQuote.totalGross = _rev - cost;
+  _internalQuote.marginPct = _rev > 0 ? _internalQuote.totalGross / _rev * 100 : 0;
 
   const d = new Date(_internalQuote.createdAt);
   document.getElementById('intDate').textContent = '発行日：' +
@@ -2401,7 +2551,7 @@ function renderInternalSimulation() {
         ? `<input type="number" class="int-cost-input" data-si="${si}" data-li="${li}" value="${c || ''}" placeholder="0" min="0" step="1000">`
         : fmt(c);
       html += `<tr class="${l.cls||''}">`+
-        `<td>${escapeHtml(l.name)}</td>`+
+        `<td>${escapeHtml(l.internalName || l.name)}</td>`+
         `<td>${fmt(l.val)}</td>`+
         `<td>${costCell}</td>`+
         `<td id="int-gross-${si}-${li}">${fmt(gross)}</td>`+
@@ -2445,14 +2595,21 @@ function buildInternalSummaryHTML(q) {
   let html = '';
   const preDisc = q.totalPre + q.discount;
   const costSum = q.totalCost;
+  const extra   = q.internalExtra || 0;                 // 顧客請求外の収益（仲介手数料・売主分など）
+  const revenue = (q.internalRevenue != null) ? q.internalRevenue : q.totalPre;
   html += `<div class="int-sum-row"><span>売価合計（値引き前）</span><span>${fmt(preDisc)}</span></div>`;
   if (q.discount > 0) html += `<div class="int-sum-row" style="color:#9A3412"><span>値引き</span><span>−${fmt(q.discount)}</span></div>`;
-  html += `<div class="int-sum-row"><span>売価合計（値引き後・税前）</span><span>${fmt(q.totalPre)}</span></div>`;
+  html += `<div class="int-sum-row"><span>顧客請求（値引き後・税前）</span><span>${fmt(q.totalPre)}</span></div>`;
+  if (extra > 0) {
+    html += `<div class="int-sum-row" style="color:#9A3412"><span>＋ 社内計上（仲介手数料・売主分）</span><span>${fmt(extra)}</span></div>`;
+    html += `<div class="int-sum-row"><span>社内売上 合計</span><span>${fmt(revenue)}</span></div>`;
+  }
   html += `<div class="int-sum-row"><span>原価合計</span><span>${fmt(costSum)}</span></div>`;
   html += `<div class="int-sum-row"><span>粗利</span><span>${fmt(q.totalGross)}</span></div>`;
-  html += `<div class="int-sum-row big"><span>総利益率</span><span class="${intMarginCls(q.totalPre, costSum)}">${intMarginTxt(q.totalPre, costSum)}</span></div>`;
+  html += `<div class="int-sum-row big"><span>総利益率</span><span class="${intMarginCls(revenue, costSum)}">${intMarginTxt(revenue, costSum)}</span></div>`;
   if (q.discount > 0) {
-    const preMargin = preDisc > 0 ? (preDisc - costSum) / preDisc * 100 : 0;
+    const base = preDisc + extra;
+    const preMargin = base > 0 ? (base - costSum) / base * 100 : 0;
     html += `<div class="int-sum-row" style="color:var(--t3);font-size:0.78rem;margin-top:6px"><span>値引き前利益率</span><span>${preMargin.toFixed(1)}%</span></div>`;
   }
   return html;
@@ -2462,9 +2619,10 @@ function recalcInternalSummary() {
   const q = _internalQuote;
   let cost = 0;
   q.sections.forEach(s => s.lines.forEach(l => cost += (l.cost || 0)));
+  const revenue = (q.internalRevenue != null) ? q.internalRevenue : q.totalPre;
   q.totalCost = cost;
-  q.totalGross = q.totalPre - cost;
-  q.marginPct = q.totalPre > 0 ? q.totalGross / q.totalPre * 100 : 0;
+  q.totalGross = revenue - cost;
+  q.marginPct = revenue > 0 ? q.totalGross / revenue * 100 : 0;
   document.getElementById('intSummary').innerHTML = buildInternalSummaryHTML(q);
 }
 
@@ -2527,15 +2685,18 @@ function marginCell(price, cost) {
 }
 
 function priceRow(label, size, priceKey, costKey, price, cost) {
+  const hideKey = priceKey.replace(/:price$/, '');
+  if (isHidden(hideKey)) return '';   // 非表示にした項目は一覧に出さない（下部から復元できる）
   const memoKey = priceKey.replace(/:price$/, ':memo');
   const memoVal = escapeAttr(getMemo(priceKey));
+  const fullLabel = label + (size ? `（${size}）` : '');
   return `<tr>
     <td class="item-name">${escapeHtml(label)}</td>
     <td>${size ? `<span class="item-size">${size}</span>` : ''}</td>
     <td><input type="number" step="10000" data-key="${priceKey}" value="${price||0}"></td>
     <td><input type="number" step="10000" data-key="${costKey}" value="${cost||0}"></td>
     <td class="margin-col">${marginCell(price, cost)}</td>
-    <td><input type="text" class="memo-inp" data-memo-key="${memoKey}" placeholder="メモ" value="${memoVal}"></td>
+    <td class="cst-memo-cell"><input type="text" class="memo-inp" data-memo-key="${memoKey}" placeholder="メモ" value="${memoVal}"><button class="cst-del-btn" title="非表示にする" data-lbl="${escapeAttr(fullLabel)}" onclick="hideItem('${hideKey}', this.dataset.lbl)">×</button></td>
   </tr>`;
 }
 
@@ -2603,6 +2764,7 @@ const ADMIN_TABS = [
   { id:'common',  label:'共通オプション' },
   { id:'tinys',   label:'Tinys INSPIRATION' },
   { id:'roadie',  label:'ROADIE' },
+  { id:'broker',  label:'中古仲介車両' },
   { id:'chassis', label:'シャーシ' },
   { id:'other',   label:'その他車両' },
 ];
@@ -2759,6 +2921,45 @@ function renderAdmin() {
       html += priceRow(opt.name, '', `otherMisc:${opt.id}:price`, `otherMisc:${opt.id}:cost`, omPrice(opt), omCost(opt));
     });
     html += tableEndAdd('otherMisc');
+  }
+
+  if (tab === 'broker') {
+    // 仲介手数料率（両手）
+    html += `<div class="admin-section">
+      <h3><span>仲介手数料の料率</span></h3>
+      <div class="rate-grid">
+        <div class="rate-field"><label>売主から（％）</label><input type="number" step="1" min="0" data-key="brokerRate:seller" value="${brokerRate('seller')}"></div>
+        <div class="rate-field"><label>買主から（％）</label><input type="number" step="1" min="0" data-key="brokerRate:buyer" value="${brokerRate('buyer')}"></div>
+      </div>
+      <div class="rate-note">車両売価に対する料率です。買主分は顧客へのご請求に加算され、売主分は社内シミュレーションにのみ計上されます。</div>
+    </div>`;
+
+    html += tableStart('中古仲介車両｜登録済み車両', false);
+    html += `<tr><td colspan="6" style="color:var(--t3);font-size:0.78rem">「＋ 行を追加」で車両名と売価を登録すると、見積もり作成画面で選べるようになります。原価は売価と同額（粗利0）として扱われ、利益は仲介手数料で計上されます。</td></tr>`;
+    html += tableEndAdd('brokerVehicle');
+
+    html += tableStart('中古仲介車両｜共通オプション', false);
+    BROKER_OPTS.filter(o => !o._custom).forEach(opt => {
+      html += priceRow(opt.name, '', `brokerOpt:${opt.id}:price`, `brokerOpt:${opt.id}:cost`, boPrice(opt), boCost(opt));
+    });
+    html += tableEndAdd('brokerCommon');
+
+    html += tableStart('中古仲介車両｜設計・手続き関連', false);
+    BROKER_MISC_OPTS.filter(o => !o._custom).forEach(opt => {
+      html += priceRow(opt.name, '', `brokerMisc:${opt.id}:price`, `brokerMisc:${opt.id}:cost`, bmPrice(opt), bmCost(opt));
+    });
+    html += tableEndAdd('brokerMisc');
+  }
+
+  // 非表示にした項目の復元
+  const hiddenKeys = Object.keys(HIDDEN_ITEMS);
+  if (hiddenKeys.length) {
+    html += `<div class="admin-section">
+      <h3><span>非表示にした項目（${hiddenKeys.length}）</span></h3>
+      <div class="hidden-list">${
+        hiddenKeys.map(k => `<div class="hidden-item"><span>${escapeHtml(HIDDEN_ITEMS[k] || k)}</span><button class="hidden-restore" onclick="unhideItem('${k}')">戻す</button></div>`).join('')
+      }</div>
+    </div>`;
   }
 
   const root = document.getElementById('adminContent');
@@ -3095,7 +3296,7 @@ function renderHistory() {
     return;
   }
 
-  const seriesLabel = { tinys:'Tinys INSPIRATION', roadie:'ROADIE', chassis:'シャーシ', other:'その他車両' };
+  const seriesLabel = { tinys:'Tinys INSPIRATION', roadie:'ROADIE', broker:'中古仲介車両', chassis:'シャーシ', other:'その他車両' };
 
   list.innerHTML = filtered.map(qt => {
     const d = new Date(qt.createdAt);
@@ -3158,7 +3359,10 @@ function editQuote(id) {
   state.tinys   = withTransport(fs.tinys,  { modelQtys:{}, sizeOpts:{}, commonOpts:{}, blindIdx:0, blindCount:1, miscOpts:{}, designLv:0, customOpts:[] });
   state.roadie  = withTransport(fs.roadie, { modelQtys:{}, sizeOpts:{}, commonOpts:{}, miscOpts:{}, designLv:0, customOpts:[] });
   state.chassis = clone(fs.chassis);
-  state.other   = withTransport(fs.other,  { modelQtys:{}, opts:{}, miscOpts:{} });
+  state.other   = withTransport(fs.other,  { modelQtys:{}, opts:{}, miscOpts:{}, customOpts:[] });
+  state.broker  = withTransport(fs.broker, { modelQtys:{}, opts:{}, miscOpts:{}, customOpts:[] });
+  if (!state.other.customOpts)  state.other.customOpts  = [];
+  if (!state.broker.customOpts) state.broker.customOpts = [];
   // 旧バージョン（共通の距離別配送）の見積もりは Tinys に引き継ぐ
   if (fs.transportIdx != null && state.tinys.transportIdx === 0 && fs.transportIdx !== 0) {
     state.tinys.transportIdx       = fs.transportIdx || 0;
@@ -3201,19 +3405,20 @@ function editQuote(id) {
 function exportHistoryCSV() {
   const quotes = loadQuotes();
   if (!quotes.length) { alert('履歴がありません'); return; }
-  const rows = [['見積ID','作成日','顧客名','担当者名','エリア','区分','セクション','項目','金額']];
+  const rows = [['見積ID','作成日','顧客名','担当者名','エリア','区分','セクション','項目','金額','_データ']];
   quotes.forEach(qt => {
     const d = new Date(qt.createdAt);
     const dateStr = `${d.getFullYear()}/${String(d.getMonth()+1).padStart(2,'0')}/${String(d.getDate()).padStart(2,'0')}`;
     const base = [qt.id, dateStr, qt.customerName || '', qt.staffName || '', qt.area || ''];
+    // 各見積もりの先頭行にだけ完全データを持たせ、CSVインポートで元通り復元できるようにする
+    let raw = JSON.stringify(qt);
+    const push = (kind, sec, item, val) => { rows.push([...base, kind, sec, item, val, raw]); raw = ''; };
     (qt.sections || []).forEach(sec => {
-      (sec.lines || []).forEach(l => {
-        rows.push([...base, '明細', sec.title, l.name, l.val]);
-      });
+      (sec.lines || []).forEach(l => push('明細', sec.title, l.name, l.val));
     });
-    if (qt.discount > 0) rows.push([...base, '値引き', '', '値引き', -qt.discount]);
-    rows.push([...base, '合計', '', '合計（税前）', qt.totalPre]);
-    rows.push([...base, '合計', '', '合計（税込10%）', qt.totalTax]);
+    if (qt.discount > 0) push('値引き', '', '値引き', -qt.discount);
+    push('合計', '', '合計（税前）', qt.totalPre);
+    push('合計', '', '合計（税込10%）', qt.totalTax);
   });
   const csv = rows.map(r => r.map(v => `"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
   const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8' });
@@ -3221,6 +3426,117 @@ function exportHistoryCSV() {
   a.href = URL.createObjectURL(blob);
   a.download = `yadokari_mitsumori_detail_${new Date().toISOString().slice(0,10)}.csv`;
   document.body.appendChild(a); a.click(); document.body.removeChild(a);
+}
+
+// CSV文字列を二次元配列へ（引用符・カンマ・改行に対応）
+function parseCSVText(text) {
+  const rows = []; let row = [], cur = '', inQ = false;
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i];
+    if (inQ) {
+      if (c === '"') { if (text[i+1] === '"') { cur += '"'; i++; } else inQ = false; }
+      else cur += c;
+    } else if (c === '"') inQ = true;
+    else if (c === ',')  { row.push(cur); cur = ''; }
+    else if (c === '\n') { row.push(cur); rows.push(row); row = []; cur = ''; }
+    else if (c !== '\r') cur += c;
+  }
+  if (cur !== '' || row.length) { row.push(cur); rows.push(row); }
+  return rows.filter(r => r.some(c => String(c).trim() !== ''));
+}
+
+function importHistoryCSV(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    try {
+      const rows = parseCSVText(String(e.target.result).replace(/^﻿/, ''));
+      if (rows.length < 2) { alert('データが見つかりません。'); return; }
+      const head = rows[0].map(h => String(h).trim());
+      const col = (name) => head.indexOf(name);
+      const iId = col('見積ID');
+      if (iId < 0) { alert('「見積ID」の列が見つかりません。\nこのアプリでエクスポートしたCSVを選んでください。'); return; }
+      const iDate = col('作成日'), iCust = col('顧客名'), iStaff = col('担当者名'), iArea = col('エリア');
+      const iKind = col('区分'), iSec = col('セクション'), iItem = col('項目'), iVal = col('金額'), iRaw = col('_データ');
+      const num = (v) => parseFloat(String(v == null ? '' : v).replace(/[^0-9.\-]/g, '')) || 0;
+      const cell = (r, i) => (i >= 0 && r[i] != null) ? String(r[i]) : '';
+      const body = rows.slice(1);
+
+      // 1) 完全データ（_データ列）があるものを優先して復元
+      const restored = new Map();
+      if (iRaw >= 0) {
+        body.forEach(r => {
+          const raw = cell(r, iRaw).trim(); if (!raw) return;
+          try { const q = JSON.parse(raw); if (q && q.id) restored.set(String(q.id), q); } catch (_) {}
+        });
+      }
+      // 2) 完全データが無い見積もりは明細行から組み立て
+      const built = new Map();
+      body.forEach(r => {
+        const id = cell(r, iId).trim();
+        if (!id || restored.has(id)) return;
+        let q = built.get(id);
+        if (!q) {
+          const ds = cell(r, iDate).trim();
+          const dt = ds ? new Date(ds.replace(/-/g, '/')) : new Date();
+          q = { id, createdAt: (isNaN(dt) ? new Date() : dt).toISOString(),
+                customerName: cell(r, iCust), staffName: cell(r, iStaff), area: cell(r, iArea),
+                sections: [], seriesKeys: [], discount: 0, totalPre: 0, totalTax: 0,
+                totalCost: 0, totalGross: 0, marginPct: 0 };
+          built.set(id, q);
+        }
+        const kind = cell(r, iKind).trim();
+        const val  = num(cell(r, iVal));
+        if (kind === '明細') {
+          const title = cell(r, iSec).trim() || 'その他';
+          let sec = q.sections.find(s => s.title === title);
+          if (!sec) { sec = { title, lines: [] }; q.sections.push(sec); }
+          sec.lines.push({ name: cell(r, iItem), val, cost: 0 });
+        } else if (kind === '値引き') {
+          q.discount = Math.abs(val);
+        } else if (kind === '合計') {
+          if (cell(r, iItem).includes('税込')) q.totalTax = val; else q.totalPre = val;
+        }
+      });
+      // 組み立て分の合計・シリーズを補完
+      const titleToKey = { 'Tinys INSPIRATION':'tinys', 'ROADIE':'roadie', '中古仲介車両':'broker', 'シャーシ':'chassis', 'その他車両':'other' };
+      built.forEach(q => {
+        if (!q.totalPre) {
+          let g = 0; q.sections.forEach(s => s.lines.forEach(l => g += l.val));
+          q.totalPre = g - (q.discount || 0);
+        }
+        if (!q.totalTax) q.totalTax = Math.round(q.totalPre * 1.1);
+        q.seriesKeys = q.sections.map(s => titleToKey[s.title]).filter(Boolean);
+      });
+
+      const incoming = [...restored.values(), ...built.values()];
+      if (!incoming.length) { alert('取り込めるデータがありませんでした。'); return; }
+
+      const existing   = loadQuotes();
+      const existingId = new Set(existing.map(q => q.id));
+      const overwrite  = incoming.filter(q => existingId.has(q.id)).length;
+      const added      = incoming.length - overwrite;
+      const partial    = built.size;
+      let msg = `${incoming.length}件を取り込みます。\n・新規追加：${added}件\n・既存を上書き：${overwrite}件`;
+      if (partial) msg += `\n\n※うち${partial}件は明細のみのCSVのため、原価・編集用データは復元されません（金額の閲覧とPDFは可能）。`;
+      if (!confirm(msg + '\n\nよろしいですか？')) return;
+
+      const incomingIds = new Set(incoming.map(q => q.id));
+      const merged = [...incoming, ...existing.filter(q => !incomingIds.has(q.id))]
+        .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+      saveQuotes(merged);
+      incoming.forEach(q => cloudUpsertQuote(q));
+      renderHistory();
+      alert(`取り込みました（新規${added}件 / 上書き${overwrite}件）`);
+    } catch (err) {
+      console.error(err);
+      alert('CSVの読み込みに失敗しました：' + (err && err.message ? err.message : err));
+    } finally {
+      event.target.value = '';   // 同じファイルを再選択できるように
+    }
+  };
+  reader.readAsText(file);
 }
 
 // ============================================================
