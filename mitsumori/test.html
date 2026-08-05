@@ -363,13 +363,7 @@
     .hidden-restore { padding: 5px 12px; border: 1px solid var(--p-mid); background: white; color: var(--p); border-radius: 6px; font-size: 0.75rem; font-weight: 700; cursor: pointer; font-family: inherit; flex-shrink: 0; }
     .hidden-restore:hover { background: var(--p-light); }
     /* 中古仲介車両 */
-    .broker-add-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
-    .broker-add-row .broker-name { flex: 1; min-width: 180px; padding: 9px 11px; border: 1px solid var(--border); border-radius: 8px; font-size: 0.85rem; font-family: inherit; color: var(--t1); }
-    .broker-add-row .cst-price-field { width: 160px; }
-    .broker-add-row .broker-price { width: 100%; padding: 9px 11px 9px 24px; border: 1px solid var(--border); border-radius: 8px; font-size: 0.85rem; font-family: inherit; text-align: right; color: var(--t1); }
-    .broker-add-row input:focus { outline: none; border-color: var(--p); }
-    .broker-add-btn { padding: 9px 18px; background: var(--p); color: #fff; border: none; border-radius: 8px; font-size: 0.83rem; font-weight: 700; cursor: pointer; font-family: inherit; white-space: nowrap; }
-    .broker-add-btn:hover { background: var(--p-hover); }
+    .broker-empty { text-align: center; padding: 24px 16px; color: var(--t3); font-size: 0.83rem; line-height: 1.9; background: var(--bg); border-radius: 10px; }
     .broker-fee-box { display: flex; flex-direction: column; gap: 2px; }
     .broker-fee-row { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; padding: 7px 0; font-size: 0.85rem; border-bottom: 1px solid var(--border); }
     .broker-fee-row:last-child { border-bottom: none; }
@@ -1653,15 +1647,6 @@ function renderOther(el) {
 }
 
 // ---- 中古仲介車両 ----
-// 車両マスタに1台追加（案件ごとに手入力するが、登録済みは次回以降も選択できる）
-function addBrokerVehicle(name, price) {
-  const def = ADMIN_SECTIONS.brokerVehicle;
-  const ci = { id: nextCustomId(), name: name, price: price, cost: price };  // 車両は粗利0（原価=売価）
-  (CUSTOM_ITEMS.brokerVehicle = CUSTOM_ITEMS.brokerVehicle || []).push(ci);
-  buildAndPush(def, ci);
-  saveCustom();
-  update();
-}
 // 選択中の車両売価合計
 function brokerVehicleTotal() {
   const s = state.broker;
@@ -1671,27 +1656,17 @@ function brokerVehicleTotal() {
 function renderBroker(el) {
   const s = state.broker;
 
-  // 車両を新規登録
-  const c0 = sectionCard('車両を登録', '案件ごとの車両を登録します。登録した車両は次回以降も選択できます。');
-  const addRow = div('broker-add-row');
-  addRow.innerHTML = `<input type="text" class="broker-name" placeholder="車両名（例：ROADIE 7.2m 2020年式）">`
-    + `<div class="cst-price-field"><span class="cst-yen">¥</span><input type="number" class="broker-price" placeholder="売価" min="0" step="10000"></div>`
-    + `<button class="broker-add-btn">＋ 登録</button>`;
-  const nameInp  = addRow.querySelector('.broker-name');
-  const priceInp = addRow.querySelector('.broker-price');
-  const doAdd = () => {
-    const nm = nameInp.value.trim();
-    const pr = parseFloat(priceInp.value) || 0;
-    if (!nm && !pr) { alert('車両名と売価を入力してください'); return; }
-    addBrokerVehicle(nm || '（名称未設定）', pr);
-  };
-  addRow.querySelector('.broker-add-btn').onclick = doAdd;
-  [nameInp, priceInp].forEach(i => i.addEventListener('keydown', e => { if (e.key === 'Enter') doAdd(); }));
-  c0.appendChild(addRow);
-  el.appendChild(c0);
-
-  // 登録済み車両から選択
-  el.appendChild(modelListGrouped('車両を選択', '登録済みの中古仲介車両から選択', BROKER_GROUPS, BROKER_MODELS, s));
+  // 登録済み車両から選択（車両の登録は管理画面から行う）
+  const hasVehicles = BROKER_MODELS.some(m => !isHidden(`model:${m.id}`));
+  if (hasVehicles) {
+    el.appendChild(modelListGrouped('車両を選択', '登録済みの中古仲介車両から選択', BROKER_GROUPS, BROKER_MODELS, s));
+  } else {
+    const cEmpty = sectionCard('車両を選択', '');
+    const note = div('broker-empty');
+    note.innerHTML = `車両が登録されていません。<br>「管理 › 中古仲介車両 › 登録済み車両」から車両を追加してください。`;
+    cEmpty.appendChild(note);
+    el.appendChild(cEmpty);
+  }
 
   // 仲介手数料（自動計算）
   const total = brokerVehicleTotal();
@@ -2980,7 +2955,7 @@ function renderAdmin() {
     </div>`;
 
     html += tableStart('中古仲介車両｜登録済み車両', false);
-    html += `<tr><td colspan="6" style="color:var(--t3);font-size:0.78rem">車両は「見積もり作成 › 中古仲介車両」からも登録できます。原価は売価と同額（粗利0）として扱われます。</td></tr>`;
+    html += `<tr><td colspan="6" style="color:var(--t3);font-size:0.78rem">「＋ 行を追加」で車両名と売価を登録すると、見積もり作成画面で選べるようになります。原価は売価と同額（粗利0）として扱われ、利益は仲介手数料で計上されます。</td></tr>`;
     html += tableEndAdd('brokerVehicle');
 
     html += tableStart('中古仲介車両｜共通オプション', false);
