@@ -2689,10 +2689,13 @@ async function exportInternalXLSX() {
   const p2  = n => String(n).padStart(2, '0');
   const ymd = `${d.getFullYear()}${p2(d.getMonth()+1)}${p2(d.getDate())}`;
 
+  const COL  = { NAME: 0, VAL: 1, COST: 2, GROSS: 3, MARGIN: 4 };
+  const A    = (r, c) => XLSX.utils.encode_cell({ r, c });   // 0起点の座標 → "B9"
   const rows = [];
-  const moneyCells = [];
-  const pctCells   = [];
-  const mark = (list, c) => list.push({ r: rows.length - 1, c });
+  const fx   = [];   // 後からセルへ書き込む数式（キャッシュ値付き）
+  const money = [], pct = [];
+  const setF  = (r, c, f, v, z) => fx.push({ r, c, f, v, z: z || '#,##0' });
+  const MARGIN_F = (vRef, cRef) => `IF(${vRef}=0,"",(${vRef}-${cRef})/${vRef})`;
 
   rows.push(['社内シミュレーション']);
   rows.push(['発行日', `${d.getFullYear()}/${p2(d.getMonth()+1)}/${p2(d.getDate())}`]);
@@ -2703,51 +2706,105 @@ async function exportInternalXLSX() {
   rows.push([]);
   rows.push(['項目', '売価', '原価', '粗利', '利益率']);
 
+  // ---- 明細（セクションごとに小計行を持たせ、集計はその小計を参照する）----
+  const subVal = [], subCost = [], ioCells = [], pvCells = [], pcCells = [];
+  let allVal = 0, allCost = 0, ioVal = 0, pvVal = 0, pcCost = 0;
+
   q.sections.forEach(sec => {
     rows.push([`【${sec.title}】`]);
+    const first = rows.length;
+    let sv = 0, sc = 0;
     sec.lines.forEach(l => {
-      const cost   = l.cost || 0;
-      const name   = (l.internalName || l.name) + (l.passThrough ? '（集計から除外）' : '');
-      const margin = l.val > 0 ? Math.round((l.val - cost) / l.val * 1000) / 10 : null;
-      rows.push([name, l.val, cost, l.val - cost, margin]);
-      mark(moneyCells, 1); mark(moneyCells, 2); mark(moneyCells, 3);
-      if (margin !== null) mark(pctCells, 4);
+      const cost = l.cost || 0;
+      const name = (l.internalName || l.name) + (l.passThrough ? '（集計から除外）' : '');
+      rows.push([name, l.val, cost, null, null]);
+      const r = rows.length - 1;
+      money.push({ r, c: COL.VAL }, { r, c: COL.COST });
+      setF(r, COL.GROSS, `${A(r,COL.VAL)}-${A(r,COL.COST)}`, l.val - cost);
+      if (l.val !== 0) setF(r, COL.MARGIN, MARGIN_F(A(r,COL.VAL), A(r,COL.COST)), (l.val - cost) / l.val, '0.0%');
+      sv += l.val; sc += cost;
+      if (l.internalOnly) { ioCells.push(A(r, COL.VAL)); ioVal += l.val; }
+      if (l.passThrough)  { pvCells.push(A(r, COL.VAL)); pcCells.push(A(r, COL.COST)); pvVal += l.val; pcCost += cost; }
     });
+    const last = rows.length - 1;
+    if (last < first) return;   // 明細が無いセクションは小計を作らない
+
+    rows.push(['　小計', null, null, null, null]);
+    const rs = rows.length - 1;
+    setF(rs, COL.VAL,   `SUM(${A(first,COL.VAL)}:${A(last,COL.VAL)})`,   sv);
+    setF(rs, COL.COST,  `SUM(${A(first,COL.COST)}:${A(last,COL.COST)})`, sc);
+    setF(rs, COL.GROSS, `${A(rs,COL.VAL)}-${A(rs,COL.COST)}`, sv - sc);
+    if (sv !== 0) setF(rs, COL.MARGIN, MARGIN_F(A(rs,COL.VAL), A(rs,COL.COST)), (sv - sc) / sv, '0.0%');
+    subVal.push(A(rs, COL.VAL)); subCost.push(A(rs, COL.COST));
+    allVal += sv; allCost += sc;
   });
 
-  const preDisc = q.totalPre + q.discount;
-  const costSum = q.totalCost;
-  const extra   = q.internalExtra || 0;
-  const passV   = q.passVal || 0;
-  const revenue = (q.internalRevenue != null) ? q.internalRevenue : q.totalPre;
-  const sumRow  = (label, val, isPct) => { rows.push([label, val]); mark(isPct ? pctCells : moneyCells, 1); };
+  // ---- 集計（すべて明細への参照。数字を書き換えれば自動で追従する）----
+  const sumRow = (label, cached, f, z) => {
+    rows.push([label, cached]);
+    const r = rows.length - 1;
+    if (z === '0.0%') pct.push({ r, c: COL.VAL }); else money.push({ r, c: COL.VAL });
+    if (f) setF(r, COL.VAL, f, cached, z);
+    return r;
+  };
+
+  const SUBV  = subVal.length  ? `SUM(${subVal.join(',')})`  : '0';
+  const SUBC  = subCost.length ? `SUM(${subCost.join(',')})` : '0';
+  const IOSUM = ioCells.length ? `SUM(${ioCells.join(',')})` : null;
+  const PVSUM = pvCells.length ? `SUM(${pvCells.join(',')})` : null;
+  const PCSUM = pcCells.length ? `SUM(${pcCells.join(',')})` : null;
+
+  const disc       = q.discount || 0;
+  const grossSales = allVal - ioVal;                     // 顧客請求ベースの売価合計（値引き前）
+  const billed     = grossSales - disc;
+  const revenue    = billed + ioVal - pvVal;             // 社内売上
+  const costTotal  = allCost - pcCost;                   // 原価合計（仕入れ通し分を除く）
 
   rows.push([]);
   rows.push(['集計']);
-  sumRow('売価合計（値引き前）', preDisc);
-  if (q.discount > 0) sumRow('値引き', -q.discount);
-  sumRow('顧客請求（値引き後・税前）', q.totalPre);
-  if (extra > 0) sumRow('＋ 社内計上（仲介手数料・売主分）', extra);
-  if (passV > 0) sumRow('− 中古仲介車両 本体（仕入れ通しのため除外）', -passV);
-  if (extra > 0 || passV > 0) sumRow('社内売上 合計', revenue);
-  sumRow('原価合計', costSum);
-  sumRow('粗利', q.totalGross);
-  sumRow('総利益率', revenue > 0 ? Math.round(q.totalGross / revenue * 1000) / 10 : 0, true);
-  if (q.discount > 0) {
-    const base = preDisc + extra - passV;
-    sumRow('値引き前利益率', base > 0 ? Math.round((base - costSum) / base * 1000) / 10 : 0, true);
+  const rG = sumRow('売価合計（値引き前）', grossSales, IOSUM ? `${SUBV}-${IOSUM}` : SUBV);
+  const rD = sumRow('値引き（マイナスで入力）', -disc, null);
+  const rB = sumRow('顧客請求（値引き後・税前）', billed, `${A(rG,COL.VAL)}+${A(rD,COL.VAL)}`);
+  const rIO = IOSUM ? sumRow('＋ 社内計上（仲介手数料・売主分）', ioVal, IOSUM) : null;
+  const rPV = PVSUM ? sumRow('− 中古仲介車両 本体（仕入れ通しのため除外）', -pvVal, `-${PVSUM}`) : null;
+
+  let revF = A(rB, COL.VAL);
+  if (rIO !== null) revF += `+${A(rIO, COL.VAL)}`;
+  if (rPV !== null) revF += `+${A(rPV, COL.VAL)}`;
+  const rR = sumRow('社内売上 合計', revenue, revF);
+  const rC = sumRow('原価合計', costTotal, PCSUM ? `${SUBC}-${PCSUM}` : SUBC);
+  const rP = sumRow('粗利', revenue - costTotal, `${A(rR,COL.VAL)}-${A(rC,COL.VAL)}`);
+  sumRow('総利益率', revenue > 0 ? (revenue - costTotal) / revenue : 0,
+         `IF(${A(rR,COL.VAL)}=0,"",${A(rP,COL.VAL)}/${A(rR,COL.VAL)})`, '0.0%');
+
+  if (disc > 0) {
+    const parts = [A(rG, COL.VAL)];
+    if (rIO !== null) parts.push(A(rIO, COL.VAL));
+    if (rPV !== null) parts.push(A(rPV, COL.VAL));
+    const B    = '(' + parts.join('+') + ')';
+    const base = grossSales + ioVal - pvVal;
+    sumRow('値引き前利益率', base > 0 ? (base - costTotal) / base : 0,
+           `IF(${B}=0,"",(${B}-${A(rC,COL.VAL)})/${B})`, '0.0%');
   }
 
+  rows.push([]);
+  rows.push(['※ 売価・原価・値引きのセルを書き換えると、粗利・利益率・小計・合計は自動で再計算されます。']);
+
+  // ---- シート化 ----
   const ws = XLSX.utils.aoa_to_sheet(rows);
-  ws['!cols'] = [{ wch: 46 }, { wch: 15 }, { wch: 15 }, { wch: 15 }, { wch: 10 }];
+  fx.forEach(({ r, c, f, v, z }) => { ws[A(r, c)] = { t: 'n', f, v, z }; });
   const setFmt = (list, z) => list.forEach(({ r, c }) => {
-    const cell = ws[XLSX.utils.encode_cell({ r, c })];
-    if (cell && typeof cell.v === 'number') cell.z = z;
+    const cell = ws[A(r, c)];
+    if (cell && typeof cell.v === 'number' && !cell.z) cell.z = z;
   });
-  setFmt(moneyCells, '#,##0');
-  setFmt(pctCells, '0.0"%"');
+  setFmt(money, '#,##0');
+  setFmt(pct, '0.0%');
+  ws['!ref']  = `A1:${A(rows.length - 1, COL.MARGIN)}`;
+  ws['!cols'] = [{ wch: 46 }, { wch: 15 }, { wch: 15 }, { wch: 15 }, { wch: 10 }];
 
   const wb = XLSX.utils.book_new();
+  // 開いた時に再計算させる（キャッシュ値が古くても正しい数字になる）
+  wb.Workbook = { CalcPr: { fullCalcOnLoad: true } };
   XLSX.utils.book_append_sheet(wb, ws, '社内シミュレーション');
   const safe = s => String(s || '').replace(/[\\\/:*?"<>|\s]/g, '_').slice(0, 40);
   const cn = q.customerName ? '_' + safe(q.customerName) : '';
