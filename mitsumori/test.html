@@ -258,6 +258,9 @@
     .comp-btn-back:hover { background: var(--bg); }
     .comp-btn-print { padding: 10px 22px; background: var(--p); color: white; border: none; border-radius: 8px; font-size: 0.85rem; font-weight: 700; cursor: pointer; }
     .comp-btn-print:hover { background: var(--p-hover); }
+    .comp-btn-excel { padding: 10px 22px; background: #107C41; color: white; border: none; border-radius: 8px; font-size: 0.85rem; font-weight: 700; cursor: pointer; }
+    .comp-btn-excel:hover { background: #0B5C31; }
+    .comp-btn-excel:disabled { opacity: .6; cursor: default; }
     .comp-btn-new { padding: 10px 22px; background: white; color: var(--p); border: 1px solid var(--p-mid); border-radius: 8px; font-size: 0.85rem; font-weight: 700; cursor: pointer; }
     .comp-btn-new:hover { background: var(--p-light); }
     .no-sel { text-align: center; color: var(--t3); font-size: 0.83rem; padding: 16px 0; }
@@ -474,7 +477,7 @@
       .comp-body { padding: 20px 18px; }
       .comp-notes-sec { padding: 16px 18px 20px; }
       .comp-actions { padding: 14px 18px; flex-wrap: wrap; }
-      .comp-btn-back, .comp-btn-print, .comp-btn-new { flex: 1; text-align: center; }
+      .comp-btn-back, .comp-btn-print, .comp-btn-new, .comp-btn-excel { flex: 1; text-align: center; }
       /* admin tables: allow horizontal scroll */
       .admin-section { padding: 14px 16px; }
       .admin-hdr-sub, .hist-count { display: none; }
@@ -688,6 +691,7 @@
     <div class="comp-body" id="intBody"></div>
     <div class="comp-actions int-actions">
       <button class="comp-btn-back" onclick="closeInternalSimulation()">← 戻って修正</button>
+      <button class="comp-btn-excel" id="intXlsxBtn" onclick="exportInternalXLSX()">Excelに出力</button>
       <button class="comp-btn-print" onclick="applyInternalSimulationToFinal()">最終見積もりに反映</button>
     </div>
   </div>
@@ -2646,6 +2650,108 @@ function recalcInternalSummary() {
   q.totalGross = revenue - cost;
   q.marginPct = revenue > 0 ? q.totalGross / revenue * 100 : 0;
   document.getElementById('intSummary').innerHTML = buildInternalSummaryHTML(q);
+}
+
+// ============================================================
+// 社内シミュレーション → Excel (.xlsx) 出力
+// ============================================================
+// SheetJS は約400KBあるため、ボタンが押された時に初めて読み込む
+const XLSX_CDN = 'https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js';
+let _xlsxLoading = null;
+function loadXLSX() {
+  if (window.XLSX) return Promise.resolve(window.XLSX);
+  if (_xlsxLoading) return _xlsxLoading;
+  _xlsxLoading = new Promise((resolve, reject) => {
+    const s = document.createElement('script');
+    s.src = XLSX_CDN;
+    s.onload  = () => window.XLSX ? resolve(window.XLSX) : reject(new Error('Excelライブラリを初期化できませんでした'));
+    s.onerror = () => { _xlsxLoading = null; reject(new Error('Excelライブラリの読み込みに失敗しました。ネットワーク接続を確認してください')); };
+    document.head.appendChild(s);
+  });
+  return _xlsxLoading;
+}
+
+async function exportInternalXLSX() {
+  const q = _internalQuote;
+  if (!q) { alert('シミュレーションのデータがありません'); return; }
+  const btn = document.getElementById('intXlsxBtn');
+  let XLSX;
+  try {
+    if (btn) { btn.disabled = true; btn.textContent = '生成中...'; }
+    XLSX = await loadXLSX();
+  } catch (e) {
+    alert(e.message); return;
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = 'Excelに出力'; }
+  }
+
+  const d   = new Date(q.createdAt);
+  const p2  = n => String(n).padStart(2, '0');
+  const ymd = `${d.getFullYear()}${p2(d.getMonth()+1)}${p2(d.getDate())}`;
+
+  const rows = [];
+  const moneyCells = [];
+  const pctCells   = [];
+  const mark = (list, c) => list.push({ r: rows.length - 1, c });
+
+  rows.push(['社内シミュレーション']);
+  rows.push(['発行日', `${d.getFullYear()}/${p2(d.getMonth()+1)}/${p2(d.getDate())}`]);
+  rows.push([]);
+  if (q.customerName) rows.push(['顧客名', q.customerName + ' 様']);
+  if (q.staffName)    rows.push(['担当者', q.staffName]);
+  if (q.area)         rows.push(['エリア', q.area]);
+  rows.push([]);
+  rows.push(['項目', '売価', '原価', '粗利', '利益率']);
+
+  q.sections.forEach(sec => {
+    rows.push([`【${sec.title}】`]);
+    sec.lines.forEach(l => {
+      const cost   = l.cost || 0;
+      const name   = (l.internalName || l.name) + (l.passThrough ? '（集計から除外）' : '');
+      const margin = l.val > 0 ? Math.round((l.val - cost) / l.val * 1000) / 10 : null;
+      rows.push([name, l.val, cost, l.val - cost, margin]);
+      mark(moneyCells, 1); mark(moneyCells, 2); mark(moneyCells, 3);
+      if (margin !== null) mark(pctCells, 4);
+    });
+  });
+
+  const preDisc = q.totalPre + q.discount;
+  const costSum = q.totalCost;
+  const extra   = q.internalExtra || 0;
+  const passV   = q.passVal || 0;
+  const revenue = (q.internalRevenue != null) ? q.internalRevenue : q.totalPre;
+  const sumRow  = (label, val, isPct) => { rows.push([label, val]); mark(isPct ? pctCells : moneyCells, 1); };
+
+  rows.push([]);
+  rows.push(['集計']);
+  sumRow('売価合計（値引き前）', preDisc);
+  if (q.discount > 0) sumRow('値引き', -q.discount);
+  sumRow('顧客請求（値引き後・税前）', q.totalPre);
+  if (extra > 0) sumRow('＋ 社内計上（仲介手数料・売主分）', extra);
+  if (passV > 0) sumRow('− 中古仲介車両 本体（仕入れ通しのため除外）', -passV);
+  if (extra > 0 || passV > 0) sumRow('社内売上 合計', revenue);
+  sumRow('原価合計', costSum);
+  sumRow('粗利', q.totalGross);
+  sumRow('総利益率', revenue > 0 ? Math.round(q.totalGross / revenue * 1000) / 10 : 0, true);
+  if (q.discount > 0) {
+    const base = preDisc + extra - passV;
+    sumRow('値引き前利益率', base > 0 ? Math.round((base - costSum) / base * 1000) / 10 : 0, true);
+  }
+
+  const ws = XLSX.utils.aoa_to_sheet(rows);
+  ws['!cols'] = [{ wch: 46 }, { wch: 15 }, { wch: 15 }, { wch: 15 }, { wch: 10 }];
+  const setFmt = (list, z) => list.forEach(({ r, c }) => {
+    const cell = ws[XLSX.utils.encode_cell({ r, c })];
+    if (cell && typeof cell.v === 'number') cell.z = z;
+  });
+  setFmt(moneyCells, '#,##0');
+  setFmt(pctCells, '0.0"%"');
+
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, '社内シミュレーション');
+  const safe = s => String(s || '').replace(/[\\\/:*?"<>|\s]/g, '_').slice(0, 40);
+  const cn = q.customerName ? '_' + safe(q.customerName) : '';
+  XLSX.writeFile(wb, `社内シミュレーション${cn}_${ymd}.xlsx`);
 }
 
 function closeInternalSimulation() {
