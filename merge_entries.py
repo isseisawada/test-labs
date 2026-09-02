@@ -151,6 +151,20 @@ def main():
                 desc += "  参加者:" + "・".join(e["participants"])
         print(f"  {i:02d}. {e['date']}  {desc}  ¥{int(e['amount']):,}")
 
+    # 対象月外の日付を目立たせる（領収書の発行日をそのまま拾ってしまったケースの検出）
+    prefix = f"{args.year}-{args.month:02d}-"
+    outside = [e for e in merged if not str(e.get("date", "")).startswith(prefix)]
+    if outside:
+        print(f"\n{'=' * 60}")
+        print(f"⚠ 対象月（{args.year}年{args.month}月）以外の日付が {len(outside)} 件あります")
+        print("  領収書の発行日/DL日を拾っている可能性が高いので、利用日に直してください。")
+        print(f"  直し方: inputs_{args.year}{args.month:02d}/overrides.json に")
+        print('        {"match": {"vendor": "店名"}, "set": {"date": "%s01"}} を追記' % prefix)
+        for e in outside:
+            fname = os.path.basename(e.get("receipt_path", "") or "")
+            print(f"    {e['date']}  {e.get('vendor', '')}  ¥{int(e['amount']):,}  {fname}")
+        print("=" * 60)
+
     with open(output, "w", encoding="utf-8") as f:
         json.dump(merged, f, ensure_ascii=False, indent=2)
     print(f"\n保存: {output}")

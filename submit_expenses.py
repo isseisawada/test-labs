@@ -338,6 +338,9 @@ def main():
         d = decisions[id(e)]
         if d.warn:
             warnings.append(f"{e['date']}  {e.get('vendor','')}  ¥{int(e['amount']):,}  → {d.warn}")
+    for e in outside:
+        warnings.append(f"{e['date']}  {e.get('vendor','')}  ¥{int(e['amount']):,}  "
+                        f"→ 対象月外の日付（{args.year}年{args.month}月以外）。利用日に直すか overrides.json で上書きを")
 
     # 名前指定の勘定科目（新聞図書費など）を解決
     client: FreeeClient | None = None
