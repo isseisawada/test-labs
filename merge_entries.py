@@ -1,93 +1,123 @@
 """
-inputs_202607/entries_suica.json と entries_receipts.json を統合して
-inputs_202607/entries.json を生成する。
+inputs_2026MM/entries_suica.json と entries_receipts.json を統合して
+inputs_2026MM/entries.json を生成する。
+
+使い方:
+  python3 merge_entries.py --month 8
 
 同時に以下の補正を適用:
 - GO タクシー領収書: 日付をファイル名(YYYYMMDD)から抽出
-- 2014-* の日付は 2026-* に補正（Vision 誤読）
-- Google Cloud: 通信費 → 雑費
-- STATION WORK: 雑費 → 会議費
-- Apple / Newspicks / note / Soil work / Staple: 雑費 で確定
+- 年が 20xx 以外に誤読された日付を対象年に補正（Vision 誤読）
+- 勘定科目補正（Google Cloud / Apple / note / Staple → 雑費、STATION WORK → 会議費 など）
+- 既存の entries.json があれば participants / description / account / date の手修正を引き継ぐ
+  （受領書パス receipt_path をキーにマージ）
 """
 from __future__ import annotations
 
+import argparse
 import json
 import os
 import re
 import sys
-from datetime import date
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-SUICA_JSON    = os.path.join(HERE, "inputs_202607", "entries_suica.json")
-RECEIPTS_JSON = os.path.join(HERE, "inputs_202607", "entries_receipts.json")
-OUTPUT        = os.path.join(HERE, "inputs_202607", "entries.json")
 
 
-def fix_receipt_date(entry: dict) -> dict:
+def fix_receipt(entry: dict, year: int) -> dict:
     """領収書エントリの日付・勘定科目を補正"""
     path = entry.get("receipt_path", "")
     fname = os.path.basename(path)
-    vendor = entry.get("vendor", "")
+    vendor = entry.get("vendor", "") or ""
 
     # 1. GO タクシー: ファイル名から日付を抽出（GO領収書_YYYYMMDD_HHMM.pdf）
     m = re.search(r"GO領収書_(\d{4})(\d{2})(\d{2})", fname)
     if m:
         entry["date"] = f"{m.group(1)}-{m.group(2)}-{m.group(3)}"
 
-    # 2. 誤読された 2014 年 → 2026 年
-    if entry["date"].startswith("2014-"):
-        entry["date"] = "2026-" + entry["date"][5:]
+    # 2. 年の誤読補正（対象年 ±1 以外なら対象年に置換）
+    d = str(entry.get("date", ""))
+    m = re.match(r"(\d{4})-(\d{2}-\d{2})$", d)
+    if m and abs(int(m.group(1)) - year) > 1:
+        entry["date"] = f"{year}-{m.group(2)}"
 
     # 3. 勘定科目補正
-    if "Google Cloud" in vendor:
+    vl = vendor.lower()
+    if "google cloud" in vl or "apple" in vl or "note" in vl or "staple" in vl or "soil" in fname.lower():
         entry["account"] = "雑費"
-    if "STATION WORK" in vendor or "Station Work" in vendor:
+    if "station work" in vl:
         entry["account"] = "会議費"
-    if "Apple" in vendor:
-        entry["account"] = "雑費"
-    if "note" in vendor.lower():
-        entry["account"] = "雑費"
-    if "Staple" in vendor or "Soil" in fname:
-        entry["account"] = "雑費"
+        if not entry.get("description"):
+            entry["description"] = "オフィスブース利用（STATION WORK）"
 
+    entry.setdefault("participants", [])
     return entry
 
 
 def main():
-    if not os.path.exists(SUICA_JSON):
-        print(f"エラー: {SUICA_JSON} がありません。")
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--month", type=int, required=True)
+    ap.add_argument("--year", type=int, default=2026)
+    args = ap.parse_args()
+
+    base = os.path.join(HERE, f"inputs_{args.year}{args.month:02d}")
+    suica_json    = os.path.join(base, "entries_suica.json")
+    receipts_json = os.path.join(base, "entries_receipts.json")
+    output        = os.path.join(base, "entries.json")
+
+    suica: list[dict] = []
+    receipts: list[dict] = []
+    if os.path.exists(suica_json):
+        with open(suica_json, encoding="utf-8") as f:
+            suica = json.load(f)
+    else:
+        print(f"⚠ {suica_json} なし（Suica 無しとして続行）")
+    if os.path.exists(receipts_json):
+        with open(receipts_json, encoding="utf-8") as f:
+            receipts = json.load(f)
+    else:
+        print(f"⚠ {receipts_json} なし（領収書無しとして続行）")
+    if not suica and not receipts:
+        print("エラー: 入力が両方ありません。")
         sys.exit(1)
-    if not os.path.exists(RECEIPTS_JSON):
-        print(f"エラー: {RECEIPTS_JSON} がありません。")
-        sys.exit(1)
 
-    with open(SUICA_JSON, encoding="utf-8") as f:
-        suica = json.load(f)
-    with open(RECEIPTS_JSON, encoding="utf-8") as f:
-        receipts = json.load(f)
+    receipts = [fix_receipt(e, args.year) for e in receipts]
 
-    # 領収書に補正を適用
-    receipts = [fix_receipt_date(e) for e in receipts]
+    # 既存 entries.json の手修正を引き継ぐ（receipt_path キー）
+    if os.path.exists(output):
+        with open(output, encoding="utf-8") as f:
+            prev = {e.get("receipt_path"): e for e in json.load(f) if e.get("receipt_path")}
+        carried = 0
+        for e in receipts:
+            p = prev.get(e.get("receipt_path"))
+            if not p:
+                continue
+            for k in ("participants", "people", "external", "shareholder", "description", "account", "date", "amount"):
+                if k in p and p[k] not in (None, "", []):
+                    e[k] = p[k]
+            carried += 1
+        if carried:
+            print(f"既存 entries.json から {carried} 件の手修正を引き継ぎました。")
 
-    # 統合（日付順）
     merged = suica + receipts
-    merged.sort(key=lambda e: (e["date"], e.get("kind", "")))
+    merged.sort(key=lambda e: (e["date"], 0 if e.get("kind") == "suica" else 1))
 
     total = sum(int(e["amount"]) for e in merged)
-    print(f"=== 統合結果: {len(merged)} 件 / ¥{total:,} ===\n")
+    print(f"=== 統合結果: {len(merged)} 件 / ¥{total:,}  (Suica {len(suica)} / 領収書 {len(receipts)}) ===\n")
     for i, e in enumerate(merged, 1):
-        kind = e.get("kind", "?")
-        if kind == "suica":
-            route = f"{e.get('from','')} → {e.get('to','')}" if e.get('to') else e.get('from','')
+        if e.get("kind") == "suica":
+            route = f"{e.get('from','')} → {e.get('to','')}" if e.get("to") else e.get("from", "")
             desc = f"[Suica] {route}"
         else:
             desc = f"[{e.get('account','?')}] {e.get('vendor','')}"
+            if e.get("participants"):
+                desc += "  参加者:" + "・".join(e["participants"])
         print(f"  {i:02d}. {e['date']}  {desc}  ¥{int(e['amount']):,}")
 
-    with open(OUTPUT, "w", encoding="utf-8") as f:
+    with open(output, "w", encoding="utf-8") as f:
         json.dump(merged, f, ensure_ascii=False, indent=2)
-    print(f"\n保存: {OUTPUT}")
-    print("→ 内容を確認したら python3 submit_july_2026.py を実行してください。")
+    print(f"\n保存: {output}")
+    print("→ 会議費・接待交際費の行は entries.json の participants に参加者名（ひらがなフルネーム）を入れてください。")
+    print(f"→ 次: python3 submit_expenses.py --month {args.month} --dry-run")
 
 
 if __name__ == "__main__":

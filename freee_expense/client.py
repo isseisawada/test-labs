@@ -26,9 +26,10 @@ class ExpenseLine:
     amount: int                          # 金額（円）
     description: str                     # 内容・目的
     expense_date: date                   # 経費発生日
-    account_item_id: int | None = None   # 勘定科目 ID（旧形式）
+    account_item_id: int | None = None   # 勘定科目 ID（新形式ではテンプレート既定の上書き）
     line_template_id: int | None = None  # 明細テンプレート ID（新API形式）
-    receipt_ids: list[int] = field(default_factory=list)  # 添付領収書 ID
+    receipt_ids: list[int] = field(default_factory=list)      # 添付領収書 ID（先頭のみ使用）
+    sub_receipt_ids: list[int] = field(default_factory=list)  # 補足資料 ID（Suica一覧など）
 
 
 @dataclass
@@ -191,6 +192,8 @@ class FreeeClient:
                 }
                 if line.receipt_ids:
                     purchase_line["receipt_id"] = line.receipt_ids[0]
+                if line.sub_receipt_ids:
+                    purchase_line["sub_receipt_ids"] = list(line.sub_receipt_ids)
                 lines.append(purchase_line)
             else:
                 # 旧形式（互換性用）

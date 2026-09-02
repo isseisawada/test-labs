@@ -1,0 +1,334 @@
+"""
+月次 経費精算 一括登録スクリプト（freee API / 明細テンプレート形式）
+
+使い方:
+  python3 submit_expenses.py --month 8 --dry-run   # プレビュー（送信・アップロードなし）
+  python3 submit_expenses.py --month 8             # freee に下書き登録
+
+入力: inputs_2026MM/entries.json（merge_entries.py が生成）
+
+申請の分け方（2026年8月分以降のルール）:
+  - Suica（kind="suica"）は独立した申請にまとめる（30件ずつ）
+  - 領収書系（それ以外）は別の申請にまとめる（30件ずつ）
+  - タイトルは通しで「経費精算申請X/N」
+  - Suica 一覧（inputs_2026MM/suica/ のファイル）は Suica 申請の1行目に補足資料として添付
+  - 領収書申請の備考に「電車交通費は申請Xにまとめています。」を記載
+
+entries.json の領収書エントリで使えるフィールド:
+  participants: ["きたもと", "えんどう"]   参加者（澤田を除く）。内容欄の末尾に「・」区切りで付与
+  people:       3                         参加人数（澤田含む）。省略時 len(participants)+1
+  external:     true                      社外含む（¥5,000以下の会議費を「会議費（社外）」にする）
+  shareholder:  "たにじりまこと"           株主同席時。内容欄末尾に「　株主XX親睦のため」を付与
+  description:  任意                      省略時は「打ち合わせ（店名）」
+"""
+from __future__ import annotations
+
+import argparse
+import glob
+import json
+import os
+import sys
+from datetime import date
+from math import ceil
+
+HERE = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, HERE)
+
+from dotenv import load_dotenv
+load_dotenv(os.path.join(HERE, ".env"), override=True)
+
+from freee_expense.client import FreeeClient, ExpenseLine, ExpenseApplication
+
+# ------------------------------------------------------------------------- #
+# 設定
+# ------------------------------------------------------------------------- #
+APPROVAL_FLOW_ROUTE_ID = 1469199   # 経費精算_API用（さわだ指定）
+DEFAULT_BATCH_SIZE     = 30
+
+# 明細テンプレート ID（freee 側で定義されているもの）
+T_SUICA        = 289807  # 交通費（電車在来線・バス）
+T_SHINKANSEN   = 300519  # 交通費（特急・新幹線）
+T_TAXI         = 300520  # 交通費（タクシー）
+T_GAS          = 300524  # ガソリン代
+T_PARKING      = 300525  # 駐車場代
+T_MEETING_IN   = 300528  # 会議費（社内）
+T_MEETING_EXT  = 300529  # 会議費（社外）
+T_ENT_LOW      = 300530  # 接待交際費（一人税込10,000円以下）
+T_ENT_HIGH     = 300531  # 接待交際費（一人税込10,000円超）
+T_SUPPLY       = 300535  # 備品消耗品（事務用品等）
+
+# 勘定科目 ID（テンプレート既定を上書きしたい場合に使う）
+A_MISC         = 134321784  # 雑費
+
+MEETING_LIMIT      = 5000    # 飲食代がこれ以下なら会議費、超えたら接待交際費
+PER_PERSON_LIMIT   = 10000   # 接待交際費の一人あたり閾値
+# ------------------------------------------------------------------------- #
+
+
+class Decision:
+    """1エントリの判定結果"""
+    def __init__(self, tid: int, label: str, account_override: int | None = None, warn: str | None = None):
+        self.tid = tid
+        self.label = label
+        self.account_override = account_override
+        self.warn = warn
+
+
+def decide(entry: dict) -> Decision:
+    kind    = entry.get("kind", "suica")
+    vendor  = (entry.get("vendor") or "")
+    vl      = vendor.lower()
+    account = entry.get("account") or ""
+    amount  = int(entry.get("amount", 0))
+    fname   = os.path.basename(entry.get("receipt_path") or "").lower()
+
+    if kind == "suica":
+        return Decision(T_SUICA, "電車・バス")
+    if kind == "taxi":
+        return Decision(T_TAXI, "タクシー")
+
+    # --- 交通系（ベンダー名で判定） ---
+    if "go株式会社" in vl or vl.startswith("go") or "タクシー" in account:
+        return Decision(T_TAXI, "タクシー")
+    if "東日本旅客" in vendor or "jr" in vl or "新幹線" in vendor or "特急" in account or "新幹線" in account:
+        return Decision(T_SHINKANSEN, "特急・新幹線")
+    if "石油" in vendor or "ガソリン" in vendor or "ガソリン" in account or vl.endswith("ss"):
+        return Decision(T_GAS, "ガソリン代")
+    if any(k in vendor for k in ["パーク", "駐車場", "パーキング", "アイペック", "ナビパーク"]) or "駐車" in account:
+        return Decision(T_PARKING, "駐車場代")
+    if "電車" in account or "バス" in account:
+        return Decision(T_SUICA, "電車・バス")
+
+    # --- STATION WORK は オフィスブース利用 → 会議費（社内）固定 ---
+    if "station work" in vl:
+        return Decision(T_MEETING_IN, "会議費(社内)")
+
+    # --- 会議費 / 接待交際費（飲食）---
+    if account in ("会議費", "接待交際費"):
+        participants = entry.get("participants") or []
+        people = entry.get("people") or (len(participants) + 1 if participants else None)
+        external = bool(entry.get("external"))
+
+        if amount <= MEETING_LIMIT:
+            tid = T_MEETING_EXT if external else T_MEETING_IN
+            label = "会議費(社外)" if external else "会議費(社内)"
+            warn = None if participants else "参加者未記入"
+            return Decision(tid, label, None, warn)
+
+        # ¥5,000 超はすべて接待交際費。一人あたり金額で 10,000 以下/超 を分ける
+        if people:
+            per = amount / people
+            if per > PER_PERSON_LIMIT:
+                return Decision(T_ENT_HIGH, f"接待交際費(一人¥{per:,.0f}・10000超)", None,
+                                None if participants else "参加者未記入")
+            return Decision(T_ENT_LOW, f"接待交際費(一人¥{per:,.0f}・10000以下)", None,
+                            None if participants else "参加者未記入")
+        # 人数不明: 合計 ¥30,000 以上なら 10,000超 と仮置き（要確認）
+        tid = T_ENT_HIGH if amount >= 30000 else T_ENT_LOW
+        return Decision(tid, "接待交際費(人数不明・要確認)", None, "参加者/人数未記入 → 一人あたり判定不可")
+
+    # --- サブスク・その他 → 消耗品テンプレ + 雑費上書き ---
+    return Decision(T_SUPPLY, "雑費", A_MISC)
+
+
+def build_description(entry: dict, dec: Decision) -> str:
+    kind = entry.get("kind", "suica")
+    if kind == "suica":
+        from_st = entry.get("from", "")
+        to_st   = entry.get("to", "")
+        route   = f"{from_st} → {to_st}" if to_st else from_st
+        return f"打ち合わせ（{route}）"
+
+    vendor = entry.get("vendor") or ""
+    default_by_template = {
+        T_TAXI:       f"タクシー利用（{vendor}）",
+        T_SHINKANSEN: f"特急・新幹線（{vendor}）",
+        T_GAS:        f"ガソリン代（{vendor}）",
+        T_PARKING:    f"駐車料金（{vendor}）",
+        T_SUPPLY:     f"{vendor} 利用料",
+    }
+    desc = entry.get("description") or default_by_template.get(dec.tid, f"打ち合わせ（{vendor}）")
+
+    # 会議費・接待交際費は参加者フルネームを末尾に付与
+    if dec.tid in (T_MEETING_IN, T_MEETING_EXT, T_ENT_LOW, T_ENT_HIGH):
+        participants = entry.get("participants") or []
+        if participants and not any(p in desc for p in participants):
+            desc = f"{desc}{'・'.join(participants)}"
+    if entry.get("shareholder"):
+        tail = f"株主{entry['shareholder']}親睦のため"
+        if tail not in desc:
+            desc = f"{desc}　{tail}"
+    return desc
+
+
+def to_line(entry: dict, dec: Decision, receipt_id: int | None, sub_receipt_ids: list[int] | None = None) -> ExpenseLine:
+    return ExpenseLine(
+        amount=int(entry["amount"]),
+        description=build_description(entry, dec),
+        expense_date=date.fromisoformat(entry["date"]),
+        line_template_id=dec.tid,
+        account_item_id=dec.account_override,
+        receipt_ids=[receipt_id] if receipt_id else [],
+        sub_receipt_ids=sub_receipt_ids or [],
+    )
+
+
+def upload_files(client: FreeeClient, paths: list[str], what: str) -> dict[str, int]:
+    """path → receipt_id（同一パスは1回だけ）"""
+    cache: dict[str, int] = {}
+    if not paths:
+        return cache
+    print(f"{what}アップロード中（{len(paths)} 件）...")
+    for p in paths:
+        full = p if os.path.isabs(p) else os.path.join(HERE, p)
+        if not os.path.exists(full):
+            print(f"  ⚠ ファイル未検出: {p}")
+            continue
+        try:
+            cache[p] = client.upload_receipt(full)
+        except Exception as e:
+            print(f"  ⚠ アップロード失敗 {p}: {e}")
+    print()
+    return cache
+
+
+def chunks(items: list, size: int) -> list[list]:
+    return [items[i:i + size] for i in range(0, len(items), size)]
+
+
+def main():
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--month", type=int, required=True, help="対象月（例: 8）")
+    ap.add_argument("--year", type=int, default=2026)
+    ap.add_argument("--dry-run", action="store_true", help="freee に送信・アップロードせずプレビューのみ")
+    ap.add_argument("--batch-size", type=int, default=DEFAULT_BATCH_SIZE)
+    ap.add_argument("--no-suica-attach", action="store_true", help="Suica 一覧ファイルを補足資料として添付しない")
+    args = ap.parse_args()
+
+    base       = os.path.join(HERE, f"inputs_{args.year}{args.month:02d}")
+    input_file = os.path.join(base, "entries.json")
+    suica_dir  = os.path.join(base, "suica")
+
+    if not os.path.exists(input_file):
+        print(f"エラー: {input_file} がありません。先に merge_entries.py --month {args.month} を実行してください。")
+        sys.exit(1)
+    with open(input_file, encoding="utf-8") as f:
+        entries: list[dict] = json.load(f)
+    if not entries:
+        print("明細が空です。")
+        sys.exit(1)
+
+    # 対象月外チェック
+    prefix = f"{args.year}-{args.month:02d}-"
+    outside = [e for e in entries if not str(e.get("date", "")).startswith(prefix)]
+
+    suica_entries   = [e for e in entries if e.get("kind") == "suica"]
+    receipt_entries = [e for e in entries if e.get("kind") != "suica"]
+    suica_batches   = chunks(suica_entries, args.batch_size)
+    receipt_batches = chunks(receipt_entries, args.batch_size)
+    total_batches   = len(suica_batches) + len(receipt_batches)
+
+    # Suica 一覧ファイル（補足資料）
+    suica_files: list[str] = []
+    if not args.no_suica_attach and os.path.isdir(suica_dir):
+        for e in ("png", "jpg", "jpeg", "pdf", "PNG", "JPG", "JPEG", "PDF"):
+            suica_files += glob.glob(os.path.join(suica_dir, f"*.{e}"))
+        suica_files = sorted(set(os.path.relpath(p, HERE) for p in suica_files))
+
+    total = sum(int(e["amount"]) for e in entries)
+    n_with_receipt = sum(1 for e in receipt_entries if e.get("receipt_path"))
+    print(f"=== {args.year}年{args.month}月分 経費精算 ===")
+    print(f"総件数: {len(entries)} 件 / ¥{total:,}   (Suica {len(suica_entries)} 件 / 領収書系 {len(receipt_entries)} 件)")
+    print(f"領収書ファイルあり: {n_with_receipt} 件 / Suica一覧ファイル: {len(suica_files)} 件")
+    print(f"申請数: {total_batches}（Suica {len(suica_batches)} + 領収書系 {len(receipt_batches)}）  バッチ {args.batch_size} 件")
+    if outside:
+        print(f"⚠ 対象月外の日付が {len(outside)} 件あります（entries.json を確認）")
+    if args.dry_run:
+        print("モード: ドライラン（freee には送信・アップロードしません）")
+    print()
+
+    # 判定を先に全件実施（警告収集）
+    decisions: dict[int, Decision] = {id(e): decide(e) for e in entries}
+    warnings: list[str] = []
+    for e in entries:
+        d = decisions[id(e)]
+        if d.warn:
+            warnings.append(f"{e['date']}  {e.get('vendor','')}  ¥{int(e['amount']):,}  → {d.warn}")
+
+    # アップロード（実行モードのみ）
+    client: FreeeClient | None = None
+    receipt_ids: dict[str, int] = {}
+    suica_file_ids: list[int] = []
+    if not args.dry_run:
+        client = FreeeClient()
+        receipt_ids = upload_files(client, sorted({e["receipt_path"] for e in receipt_entries if e.get("receipt_path")}), "領収書")
+        if suica_batches and suica_files:
+            m = upload_files(client, suica_files, "Suica一覧（補足資料）")
+            suica_file_ids = [m[p] for p in suica_files if p in m]
+
+    # 申請の組み立て
+    plan: list[tuple[str, str, list[dict], bool]] = []   # (title, description, batch, is_suica)
+    n = 0
+    suica_app_numbers: list[int] = []
+    for b in suica_batches:
+        n += 1
+        suica_app_numbers.append(n)
+        plan.append((f"経費精算申請{n}/{total_batches}",
+                     f"{args.year}年{args.month}月分 電車交通費（Suica）{len(b)}件 合計¥{sum(int(e['amount']) for e in b):,}。"
+                     f"Suica乗車一覧を申請行1の補足資料として添付。",
+                     b, True))
+    suica_ref = "・".join(str(x) for x in suica_app_numbers)
+    for b in receipt_batches:
+        n += 1
+        note = f"電車交通費は申請{suica_ref}にまとめています。" if suica_app_numbers else ""
+        plan.append((f"経費精算申請{n}/{total_batches}",
+                     f"{args.year}年{args.month}月分 経費精算 {len(b)}件 合計¥{sum(int(e['amount']) for e in b):,}。{note}",
+                     b, False))
+
+    created: list[tuple[str, int]] = []
+    for idx, (title, app_desc, batch, is_suica) in enumerate(plan):
+        batch_total = sum(int(e["amount"]) for e in batch)
+        print(f"--- {title}  {'[Suica]' if is_suica else '[領収書系]'}  ({len(batch)}件 / ¥{batch_total:,}) ---")
+        lines: list[ExpenseLine] = []
+        for i, e in enumerate(batch):
+            d = decisions[id(e)]
+            rid = receipt_ids.get(e.get("receipt_path", ""))
+            subs = suica_file_ids if (is_suica and i == 0 and idx == 0) else None
+            ln = to_line(e, d, rid, subs)
+            lines.append(ln)
+            marks = ""
+            if e.get("receipt_path"):
+                marks += " 📎" if rid else " 📎(要UP)"
+            if subs:
+                marks += f" 📄補足資料x{len(subs)}"
+            elif is_suica and i == 0 and idx == 0 and suica_files:
+                marks += f" 📄補足資料x{len(suica_files)}(要UP)"
+            if d.warn:
+                marks += f"  ⚠{d.warn}"
+            print(f"  {ln.expense_date}  [{d.label}]  {ln.description}  ¥{ln.amount:,}{marks}")
+        print(f"  備考: {app_desc}\n")
+
+        if args.dry_run:
+            continue
+        app = ExpenseApplication(title=title, lines=lines, description=app_desc,
+                                 approval_flow_route_id=APPROVAL_FLOW_ROUTE_ID)
+        result = client.create_expense_application(app)
+        created.append((title, result["id"]))
+        print(f"  → 申請ID: {result['id']}\n")
+
+    if warnings:
+        print("=" * 60)
+        print(f"⚠ 要確認 {len(warnings)} 件（entries.json の participants / people を埋めてください）")
+        for w in warnings:
+            print("  " + w)
+        print("=" * 60)
+
+    if created:
+        print("\n=== 作成した申請 ===")
+        for title, app_id in created:
+            print(f"  {title}: https://secure.freee.co.jp/expense_applications_v2/{app_id}")
+        print("\nfreee UI で内容を確認し、問題なければ各申請の「申請」ボタンを押してください。")
+
+
+if __name__ == "__main__":
+    main()
