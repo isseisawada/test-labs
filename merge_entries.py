@@ -29,8 +29,9 @@ def fix_receipt(entry: dict, year: int) -> dict:
     fname = os.path.basename(path)
     vendor = entry.get("vendor", "") or ""
 
-    # 1. GO タクシー: ファイル名から日付を抽出（GO領収書_YYYYMMDD_HHMM.pdf）
-    m = re.search(r"GO領収書_(\d{4})(\d{2})(\d{2})", fname)
+    # 1. ファイル名に日付があればそれを優先
+    #    GO領収書_YYYYMMDD_HHMM.pdf / YYYYMMDD_HHMM_receipt_..._taxifare.pdf など
+    m = re.search(r"GO領収書_(\d{4})(\d{2})(\d{2})", fname) or re.match(r"(\d{4})(\d{2})(\d{2})_\d{4}_", fname)
     if m:
         entry["date"] = f"{m.group(1)}-{m.group(2)}-{m.group(3)}"
 

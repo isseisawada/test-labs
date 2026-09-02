@@ -49,16 +49,29 @@ DEFAULT_BATCH_SIZE     = 30
 T_SUICA        = 289807  # 交通費（電車在来線・バス）
 T_SHINKANSEN   = 300519  # 交通費（特急・新幹線）
 T_TAXI         = 300520  # 交通費（タクシー）
+T_FLIGHT       = 300521  # 交通費（飛行機・船舶）
+T_TOLL         = 300523  # 高速・有料道路料金
 T_GAS          = 300524  # ガソリン代
 T_PARKING      = 300525  # 駐車場代
+T_HOTEL        = 300527  # 宿泊費
 T_MEETING_IN   = 300528  # 会議費（社内）
 T_MEETING_EXT  = 300529  # 会議費（社外）
 T_ENT_LOW      = 300530  # 接待交際費（一人税込10,000円以下）
 T_ENT_HIGH     = 300531  # 接待交際費（一人税込10,000円超）
+T_GIFT         = 300532  # 取引先への贈答・手土産代（税込3,000円以内）
 T_SUPPLY       = 300535  # 備品消耗品（事務用品等）
 
 # 勘定科目 ID（テンプレート既定を上書きしたい場合に使う）
 A_MISC         = 134321784  # 雑費
+# 名前で指定した勘定科目は実行時に /api/1/account_items から ID を解決する
+KNOWN_ACCOUNT_IDS: dict[str, int] = {"雑費": A_MISC}
+
+GIFT_LIMIT     = 3000    # 贈答・手土産テンプレートの上限（超えたら ⚠）
+BOOK_KEYWORDS  = ["書店", "書籍", "ブックス", "BOOKS", "BOOK", "紀伊國屋", "有隣堂", "ジュンク堂", "丸善", "蔦屋", "TSUTAYA", "文教堂", "くまざわ"]
+GIFT_KEYWORDS  = ["ASORA", "エアポートサービス", "JAL PLAZA", "PLUSTA", "リテイリング", "手土産", "土産", "ギフト"]
+FLIGHT_KEYWORDS = ["flight", "airline", "航空", "qunar", "peach", "jetstar", "skymark", "solaseed", "スカイマーク", "ジェットスター", "ソラシド"]
+TOLL_KEYWORDS  = ["高速道路", "nexco", "etc", "有料道路", "首都高", "阪神高速"]
+HOTEL_KEYWORDS = ["hotel", "ホテル", "宿泊", "旅館", " inn"]
 
 MEETING_LIMIT      = 5000    # 飲食代がこれ以下なら会議費、超えたら接待交際費
 PER_PERSON_LIMIT   = 10000   # 接待交際費の一人あたり閾値
@@ -66,12 +79,17 @@ PER_PERSON_LIMIT   = 10000   # 接待交際費の一人あたり閾値
 
 
 class Decision:
-    """1エントリの判定結果"""
-    def __init__(self, tid: int, label: str, account_override: int | None = None, warn: str | None = None):
+    """1エントリの判定結果。
+    account_override: ID(int) または勘定科目名(str: 実行時解決)
+    template_name:    指定時は実行時に freee のテンプレート一覧から名前で ID を解決し tid を差し替える
+                      （見つからなければ tid + account_override のフォールバックを使う）"""
+    def __init__(self, tid: int, label: str, account_override: int | str | None = None,
+                 warn: str | None = None, template_name: str | None = None):
         self.tid = tid
         self.label = label
         self.account_override = account_override
         self.warn = warn
+        self.template_name = template_name
 
 
 def decide(entry: dict) -> Decision:
@@ -87,9 +105,18 @@ def decide(entry: dict) -> Decision:
     if kind == "taxi":
         return Decision(T_TAXI, "タクシー")
 
+    # --- 取引先への贈答・手土産（空港・駅の土産物店など）: 空港系より先に判定 ---
+    if "贈答" in account or "手土産" in account or any(k.lower() in vl for k in GIFT_KEYWORDS):
+        warn = f"税込{GIFT_LIMIT:,}円超（贈答テンプレの上限を超過・要確認）" if amount > GIFT_LIMIT else None
+        return Decision(T_GIFT, "贈答・手土産(3000円以内)", None, warn)
+
     # --- 交通系（ベンダー名で判定） ---
-    if "go株式会社" in vl or vl.startswith("go") or "タクシー" in account:
+    if "飛行機" in account or any(k in vl for k in FLIGHT_KEYWORDS):
+        return Decision(T_FLIGHT, "飛行機・船舶")
+    if "go株式会社" in vl or vl.startswith("go") or "タクシー" in account or "タクシー" in vendor:
         return Decision(T_TAXI, "タクシー")
+    if "高速" in account or any(k in vl for k in TOLL_KEYWORDS):
+        return Decision(T_TOLL, "高速・有料道路")
     if "東日本旅客" in vendor or "jr" in vl or "新幹線" in vendor or "特急" in account or "新幹線" in account:
         return Decision(T_SHINKANSEN, "特急・新幹線")
     if "石油" in vendor or "ガソリン" in vendor or "ガソリン" in account or vl.endswith("ss"):
@@ -98,10 +125,16 @@ def decide(entry: dict) -> Decision:
         return Decision(T_PARKING, "駐車場代")
     if "電車" in account or "バス" in account:
         return Decision(T_SUICA, "電車・バス")
+    if "宿泊" in account or any(k in vl for k in HOTEL_KEYWORDS):
+        return Decision(T_HOTEL, "宿泊費")
 
     # --- STATION WORK は オフィスブース利用 → 会議費（社内）固定 ---
     if "station work" in vl:
         return Decision(T_MEETING_IN, "会議費(社内)")
+
+    # --- 書店・書籍 → 新聞図書費（テンプレートを名前で実行時解決。無ければ消耗品テンプレ + 勘定科目上書き） ---
+    if "新聞図書費" in account or "図書" in account or any(k.lower() in vl for k in BOOK_KEYWORDS):
+        return Decision(T_SUPPLY, "新聞図書費", "新聞図書費", template_name="新聞図書費")
 
     # --- 会議費 / 接待交際費（飲食）---
     if account in ("会議費", "接待交際費"):
@@ -145,7 +178,11 @@ def build_description(entry: dict, dec: Decision) -> str:
         T_SHINKANSEN: f"特急・新幹線（{vendor}）",
         T_GAS:        f"ガソリン代（{vendor}）",
         T_PARKING:    f"駐車料金（{vendor}）",
-        T_SUPPLY:     f"{vendor} 利用料",
+        T_GIFT:       f"手土産（{vendor}）",
+        T_FLIGHT:     f"航空券（{vendor}）",
+        T_TOLL:       f"高速道路料金（{vendor}）",
+        T_HOTEL:      f"宿泊（{vendor}）",
+        T_SUPPLY:     f"書籍（{vendor}）" if dec.account_override == "新聞図書費" else f"{vendor} 利用料",
     }
     desc = entry.get("description") or default_by_template.get(dec.tid, f"打ち合わせ（{vendor}）")
 
@@ -161,13 +198,54 @@ def build_description(entry: dict, dec: Decision) -> str:
     return desc
 
 
-def to_line(entry: dict, dec: Decision, receipt_id: int | None, sub_receipt_ids: list[int] | None = None) -> ExpenseLine:
+def resolve_template_ids(client: FreeeClient | None, names: set[str]) -> dict[str, int]:
+    """明細テンプレート名 → ID を freee から解決（dry-run 時は解決しない）"""
+    if not names or client is None:
+        return {}
+    data = client._get("/api/1/expense_application_line_templates",
+                       {"company_id": client.get_company_id(), "limit": 100})
+    templates = data.get("expense_application_line_templates", [])
+    print(f"  明細テンプレート {len(templates)} 件を取得")
+    resolved: dict[str, int] = {}
+    for n in names:
+        exact = [t for t in templates if t["name"] == n]
+        partial = [t for t in templates if n in t["name"]]
+        hit = (exact or partial)[:1]
+        if hit:
+            resolved[n] = hit[0]["id"]
+            print(f"  テンプレート「{n}」→ ID={hit[0]['id']} ({hit[0]['name']} / {hit[0].get('account_item_name','')})")
+        else:
+            print(f"  ⚠ テンプレート「{n}」が見つからないためフォールバック（消耗品テンプレ + 勘定科目上書き）")
+    return resolved
+
+
+def resolve_account_ids(client: FreeeClient | None, names: set[str]) -> dict[str, int]:
+    """勘定科目名 → ID。既知のものは KNOWN_ACCOUNT_IDS、それ以外は API で解決（dry-run 時は解決しない）"""
+    resolved = {n: KNOWN_ACCOUNT_IDS[n] for n in names if n in KNOWN_ACCOUNT_IDS}
+    missing = [n for n in names if n not in resolved]
+    if missing and client is not None:
+        items = client.get_account_items()
+        for n in missing:
+            exact = [a for a in items if a["name"] == n]
+            partial = [a for a in items if n in a["name"]]
+            hit = (exact or partial)[:1]
+            if hit:
+                resolved[n] = hit[0]["id"]
+                print(f"  勘定科目「{n}」→ ID={hit[0]['id']} ({hit[0]['name']})")
+    return resolved
+
+
+def to_line(entry: dict, dec: Decision, receipt_id: int | None, sub_receipt_ids: list[int] | None = None,
+            account_ids: dict[str, int] | None = None) -> ExpenseLine:
+    override = dec.account_override
+    if isinstance(override, str):
+        override = (account_ids or {}).get(override)
     return ExpenseLine(
         amount=int(entry["amount"]),
         description=build_description(entry, dec),
         expense_date=date.fromisoformat(entry["date"]),
         line_template_id=dec.tid,
-        account_item_id=dec.account_override,
+        account_item_id=override,
         receipt_ids=[receipt_id] if receipt_id else [],
         sub_receipt_ids=sub_receipt_ids or [],
     )
@@ -257,12 +335,29 @@ def main():
         if d.warn:
             warnings.append(f"{e['date']}  {e.get('vendor','')}  ¥{int(e['amount']):,}  → {d.warn}")
 
-    # アップロード（実行モードのみ）
+    # 名前指定の勘定科目（新聞図書費など）を解決
     client: FreeeClient | None = None
     receipt_ids: dict[str, int] = {}
     suica_file_ids: list[int] = []
     if not args.dry_run:
         client = FreeeClient()
+    # 名前指定のテンプレート（新聞図書費など）を解決して tid を差し替え
+    template_ids = resolve_template_ids(client, {d.template_name for d in decisions.values() if d.template_name})
+    for d in decisions.values():
+        if d.template_name and d.template_name in template_ids:
+            d.tid = template_ids[d.template_name]
+            d.account_override = None   # テンプレート自身の勘定科目を使う
+        elif d.template_name and args.dry_run:
+            d.label = f"{d.label}(テンプレID実行時解決)"
+    named_accounts = {d.account_override for d in decisions.values() if isinstance(d.account_override, str)}
+    account_ids = resolve_account_ids(client, named_accounts)
+    unresolved = [n for n in named_accounts if n not in account_ids]
+    if unresolved and not args.dry_run:
+        print(f"エラー: 勘定科目 ID を解決できません: {unresolved}。freee の勘定科目名を確認してください。")
+        sys.exit(1)
+
+    # アップロード（実行モードのみ）
+    if not args.dry_run:
         receipt_ids = upload_files(client, sorted({e["receipt_path"] for e in receipt_entries if e.get("receipt_path")}), "領収書")
         if suica_batches and suica_files:
             m = upload_files(client, suica_files, "Suica一覧（補足資料）")
@@ -296,7 +391,7 @@ def main():
             d = decisions[id(e)]
             rid = receipt_ids.get(e.get("receipt_path", ""))
             subs = suica_file_ids if (is_suica and i == 0 and idx == 0) else None
-            ln = to_line(e, d, rid, subs)
+            ln = to_line(e, d, rid, subs, account_ids)
             lines.append(ln)
             marks = ""
             if e.get("receipt_path"):
