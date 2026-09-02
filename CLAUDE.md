@@ -111,6 +111,17 @@ freee には「雑費」テンプレートは存在しないが、`account_item_
 ```
 - `participants` / `external` / `shareholder` / `people` は OCR では埋まらない。**merge 後に手で入れる**
 - `merge_entries.py` を再実行しても、既存 entries.json の手修正（上記フィールド + description/account/date/amount）は `receipt_path` キーで引き継がれる
+- **手修正は `inputs_2026MM/overrides.json` に書くのが確実**（merge が毎回適用する。git にも残る）:
+  ```json
+  [
+    {"match": {"vendor": "焼肉レストラン", "date": "2026-08-12"},
+     "set": {"account": "接待交際費", "participants": ["きたもと", "えんどう"], "description": "打ち合わせ（焼肉レストラン）"}},
+    {"match": {"vendor": "対象外の店"}, "drop": true}
+  ]
+  ```
+  - `match`: `vendor`（部分一致）/ `date` / `amount` / `receipt_path`（部分一致）。書いたキーは全部一致が必要
+  - `set`: 上書きするフィールド。`drop: true` でその領収書を申請から除外
+- **参加者名は実際に同席した人だけを書く**（架空の名前は入れない。分からなければ空のままにして freee UI で追記）
 
 ## 領収書アップロード
 

@@ -136,6 +136,10 @@ def decide(entry: dict) -> Decision:
     if "新聞図書費" in account or "図書" in account or any(k.lower() in vl for k in BOOK_KEYWORDS):
         return Decision(T_SUPPLY, "新聞図書費", "新聞図書費", template_name="新聞図書費")
 
+    # --- 消耗品（ドラッグストア・文具など） → 備品消耗品（事務用品等） ---
+    if "消耗品" in account:
+        return Decision(T_SUPPLY, "備品消耗品")
+
     # --- 会議費 / 接待交際費（飲食）---
     if account in ("会議費", "接待交際費"):
         participants = entry.get("participants") or []

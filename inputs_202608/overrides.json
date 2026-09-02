@@ -1,0 +1,43 @@
+[
+  {"match": {"vendor": "焼肉レストラン", "date": "2026-08-12"},
+   "set": {"account": "接待交際費", "participants": [], "description": "打ち合わせ（焼肉レストラン）　親睦のため"}},
+  {"match": {"vendor": "魚貝とろ酔ひ", "date": "2026-08-20"},
+   "set": {"account": "接待交際費", "participants": [], "description": "打ち合わせ（魚貝とろ酔ひ 大船）　親睦のため"}},
+  {"match": {"vendor": "馬桜", "date": "2026-08-27"},
+   "set": {"account": "接待交際費", "participants": [], "description": "打ち合わせ（馬桜 下通り店）　親睦のため"}},
+
+  {"match": {"vendor": "とんかつ和幸", "date": "2026-08-05"}, "set": {"participants": [], "description": "打ち合わせ（とんかつ和幸）"}},
+  {"match": {"vendor": "ドトール", "date": "2026-08-07"}, "set": {"participants": [], "description": "打ち合わせ（ドトールコーヒーショップ 相鉄星川店）"}},
+  {"match": {"vendor": "天下一品", "date": "2026-08-07"}, "set": {"participants": [], "description": "打ち合わせ（天下一品 横浜駅西口店）"}},
+  {"match": {"vendor": "サイゼリヤ", "date": "2026-08-09"}, "set": {"participants": [], "description": "打ち合わせ（サイゼリヤ）"}},
+  {"match": {"vendor": "ずんどう屋", "date": "2026-08-13"}, "set": {"participants": [], "description": "打ち合わせ（ラー麺ずんどう屋 姫路天神店）"}},
+  {"match": {"vendor": "渋谷そば粉", "date": "2026-08-19"}, "set": {"participants": [], "description": "打ち合わせ（渋谷そば粉制作委員会）"}},
+  {"match": {"vendor": "ドトール", "date": "2026-08-21"}, "set": {"participants": [], "description": "打ち合わせ（ドトールコーヒーショップ 相鉄星川店）"}},
+  {"match": {"vendor": "サンとらい", "date": "2026-08-24"}, "set": {"participants": [], "description": "打ち合わせ（サンとらい 品川）"}},
+  {"match": {"vendor": "伝統熊本豚骨", "date": "2026-08-26"}, "set": {"participants": [], "description": "打ち合わせ（伝統熊本豚骨 伝）"}},
+  {"match": {"vendor": "ドリアン", "date": "2026-08-27"}, "set": {"participants": [], "description": "打ち合わせ（カフェ ドリアン）"}},
+  {"match": {"vendor": "熊本ラーメン", "date": "2026-08-27"}, "set": {"participants": [], "description": "打ち合わせ（熊本ラーメン店）"}},
+  {"match": {"vendor": "澤本", "date": "2026-08-28"}, "set": {"participants": [], "description": "打ち合わせ（鮨 澤本）"}},
+
+  {"match": {"vendor": "REF Kumamoto", "amount": 400},
+   "set": {"account": "宿泊費", "description": "宿泊税（レフ熊本 by ベッセルホテルズ）"}},
+  {"match": {"vendor": "レフ熊本", "amount": 34600},
+   "set": {"account": "宿泊費", "description": "宿泊（レフ熊本 by ベッセルホテルズ 8/26〜8/28）"}},
+
+  {"match": {"vendor": "ココカラファイン"}, "set": {"account": "消耗品費", "description": "消耗品（ココカラファイン）"}},
+  {"match": {"vendor": "ココラファイン"}, "set": {"account": "消耗品費", "description": "消耗品（ココカラファイン）"}},
+
+  {"match": {"vendor": "TeaFlight"},
+   "set": {"date": "2026-08-26", "account": "交通費（飛行機・船舶）", "description": "航空券 羽田⇔熊本 往復（8/26・8/28）"}},
+
+  {"match": {"vendor": "note株式会社"},
+   "set": {"account": "雑費", "description": "月刊 谷尻誠 購読料　株主たにじりまこと親睦のため"}},
+  {"match": {"vendor": "Anthropic"}, "set": {"account": "雑費", "description": "Claude API 利用料（2026年8月分）"}},
+  {"match": {"vendor": "Google Cloud"}, "set": {"account": "雑費", "description": "Google Cloud 2026年8月分利用料"}},
+  {"match": {"vendor": "iTunes"}, "set": {"account": "雑費", "description": "NewsPicks月額プラン"}},
+
+  {"match": {"vendor": "久英"}, "set": {"account": "雑費", "description": "久英株式会社"}},
+  {"match": {"vendor": "スリーサウザンド"}, "set": {"account": "雑費", "description": "スリーサウザンド株式会社"}},
+  {"match": {"vendor": "エス・ピー・ワイ"}, "set": {"account": "雑費", "description": "エス・ピー・ワイ流通有限会社"}},
+  {"match": {"vendor": "TTC LIFESTYLE"}, "set": {"account": "雑費", "description": "TTC LIFESTYLE株式会社"}}
+]

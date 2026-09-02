@@ -99,6 +99,40 @@ def main():
         if carried:
             print(f"既存 entries.json から {carried} 件の手修正を引き継ぎました。")
 
+    # overrides.json（手修正の永続化）: [{"match": {...}, "set": {...}} | {"match": {...}, "drop": true}]
+    #   match: vendor（部分一致）/ date / amount / receipt_path（部分一致）— 指定したキーは全て一致が必要
+    overrides_path = os.path.join(base, "overrides.json")
+    if os.path.exists(overrides_path):
+        with open(overrides_path, encoding="utf-8") as f:
+            overrides = json.load(f)
+        applied = 0
+        dropped: list[dict] = []
+        for ov in overrides:
+            m = ov.get("match", {})
+            def hit(e: dict) -> bool:
+                if "vendor" in m and m["vendor"] not in (e.get("vendor") or ""):
+                    return False
+                if "receipt_path" in m and m["receipt_path"] not in (e.get("receipt_path") or ""):
+                    return False
+                if "date" in m and e.get("date") != m["date"]:
+                    return False
+                if "amount" in m and int(e.get("amount", 0)) != int(m["amount"]):
+                    return False
+                return bool(m)
+            targets = [e for e in receipts if hit(e)]
+            if not targets:
+                print(f"  ⚠ overrides: 該当なし {m}")
+                continue
+            for e in targets:
+                if ov.get("drop"):
+                    dropped.append(e)
+                else:
+                    e.update(ov.get("set", {}))
+                    applied += 1
+        if dropped:
+            receipts = [e for e in receipts if e not in dropped]
+        print(f"overrides.json: {applied} 件に適用、{len(dropped)} 件を除外")
+
     merged = suica + receipts
     merged.sort(key=lambda e: (e["date"], 0 if e.get("kind") == "suica" else 1))
 
