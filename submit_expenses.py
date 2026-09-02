@@ -201,7 +201,8 @@ def main():
     ap.add_argument("--month", type=int, required=True, help="対象月（例: 8）")
     ap.add_argument("--year", type=int, default=2026)
     ap.add_argument("--dry-run", action="store_true", help="freee に送信・アップロードせずプレビューのみ")
-    ap.add_argument("--batch-size", type=int, default=DEFAULT_BATCH_SIZE)
+    ap.add_argument("--batch-size", type=int, default=DEFAULT_BATCH_SIZE, help="領収書系の1申請あたり件数（既定 30）")
+    ap.add_argument("--suica-batch-size", type=int, default=0, help="Suica の1申請あたり件数。0 = 分割せず1申請にまとめる（既定）")
     ap.add_argument("--no-suica-attach", action="store_true", help="Suica 一覧ファイルを補足資料として添付しない")
     args = ap.parse_args()
 
@@ -224,7 +225,8 @@ def main():
 
     suica_entries   = [e for e in entries if e.get("kind") == "suica"]
     receipt_entries = [e for e in entries if e.get("kind") != "suica"]
-    suica_batches   = chunks(suica_entries, args.batch_size)
+    suica_batches   = chunks(suica_entries, args.suica_batch_size) if args.suica_batch_size > 0 \
+                      else ([suica_entries] if suica_entries else [])
     receipt_batches = chunks(receipt_entries, args.batch_size)
     total_batches   = len(suica_batches) + len(receipt_batches)
 
