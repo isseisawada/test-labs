@@ -110,7 +110,7 @@ freee には「雑費」テンプレートは存在しないが、`account_item_
 }
 ```
 - `participants` / `external` / `shareholder` / `people` は OCR では埋まらない。**merge 後に手で入れる**
-- `merge_entries.py` を再実行しても、既存 entries.json の手修正（上記フィールド + description/account/date/amount）は `receipt_path` キーで引き継がれる
+- `merge_entries.py` を再実行しても、既存 entries.json の `participants` / `people` / `external` / `shareholder` は `receipt_path` キーで引き継がれる（date/account/description/amount は引き継がない → overrides.json に書く）
 - **手修正は `inputs_2026MM/overrides.json` に書くのが確実**（merge が毎回適用する。git にも残る）:
   ```json
   [

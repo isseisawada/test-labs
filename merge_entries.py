@@ -83,7 +83,8 @@ def main():
 
     receipts = [fix_receipt(e, args.year) for e in receipts]
 
-    # 既存 entries.json の手修正を引き継ぐ（receipt_path キー）
+    # 既存 entries.json から参加者系フィールドだけ引き継ぐ（receipt_path キー）
+    # date / account / description / amount の手修正は overrides.json に書く（古い値の再適用を防ぐため）
     if os.path.exists(output):
         with open(output, encoding="utf-8") as f:
             prev = {e.get("receipt_path"): e for e in json.load(f) if e.get("receipt_path")}
@@ -92,12 +93,14 @@ def main():
             p = prev.get(e.get("receipt_path"))
             if not p:
                 continue
-            for k in ("participants", "people", "external", "shareholder", "description", "account", "date", "amount"):
-                if k in p and p[k] not in (None, "", []):
+            hit = False
+            for k in ("participants", "people", "external", "shareholder"):
+                if k in p and p[k] not in (None, "", [], False):
                     e[k] = p[k]
-            carried += 1
+                    hit = True
+            carried += int(hit)
         if carried:
-            print(f"既存 entries.json から {carried} 件の手修正を引き継ぎました。")
+            print(f"既存 entries.json から {carried} 件の参加者情報を引き継ぎました。")
 
     # overrides.json（手修正の永続化）: [{"match": {...}, "set": {...}} | {"match": {...}, "drop": true}]
     #   match: vendor（部分一致）/ date / amount / receipt_path（部分一致）— 指定したキーは全て一致が必要

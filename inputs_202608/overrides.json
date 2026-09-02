@@ -36,6 +36,11 @@
   {"match": {"vendor": "Google Cloud"}, "set": {"account": "雑費", "description": "Google Cloud 2026年8月分利用料"}},
   {"match": {"vendor": "iTunes"}, "set": {"account": "雑費", "description": "NewsPicks月額プラン"}},
 
+  {"match": {"vendor": "ASORA"}, "set": {"account": "贈答・手土産代", "description": "手土産（ASORA 羽田空港）"}},
+  {"match": {"vendor": "JAL PLAZA"}, "set": {"account": "贈答・手土産代", "description": "手土産（JAL PLAZA 羽田空港）"}},
+  {"match": {"vendor": "PLUSTA"}, "set": {"account": "贈答・手土産代", "description": "手土産（PLUSTA 新横浜）"}},
+  {"match": {"vendor": "足立タクシー"}, "set": {"date": "2026-08-23"}},
+
   {"match": {"vendor": "久英"}, "set": {"account": "雑費", "description": "久英株式会社"}},
   {"match": {"vendor": "スリーサウザンド"}, "set": {"account": "雑費", "description": "スリーサウザンド株式会社"}},
   {"match": {"vendor": "エス・ピー・ワイ"}, "set": {"account": "雑費", "description": "エス・ピー・ワイ流通有限会社"}},

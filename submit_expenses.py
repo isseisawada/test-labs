@@ -113,7 +113,7 @@ def decide(entry: dict) -> Decision:
     # --- 交通系（ベンダー名で判定） ---
     if "飛行機" in account or any(k in vl for k in FLIGHT_KEYWORDS):
         return Decision(T_FLIGHT, "飛行機・船舶")
-    if "go株式会社" in vl or vl.startswith("go") or "タクシー" in account or "タクシー" in vendor:
+    if "go株式会社" in vl or vl == "go" or vl.startswith("go ") or "タクシー" in account or "タクシー" in vendor:
         return Decision(T_TAXI, "タクシー")
     if "高速" in account or any(k in vl for k in TOLL_KEYWORDS):
         return Decision(T_TOLL, "高速・有料道路")
