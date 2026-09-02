@@ -99,19 +99,26 @@ def main():
     ap.add_argument("--year", type=int, default=YEAR)
     args = ap.parse_args()
 
-    input_dir = os.path.join(HERE, f"inputs_{args.year}{args.month:02d}", "receipts")
-    output    = os.path.join(HERE, f"inputs_{args.year}{args.month:02d}", "entries_receipts.json")
+    base = os.path.join(HERE, f"inputs_{args.year}{args.month:02d}")
+    # receipts/ = 手元で撮った紙の領収書、web_receipts/ = オンラインで取得した領収書 PDF 等
+    input_dirs = [os.path.join(base, "receipts"), os.path.join(base, "web_receipts")]
+    output     = os.path.join(base, "entries_receipts.json")
 
     if not os.getenv("ANTHROPIC_API_KEY"):
         print("エラー: ANTHROPIC_API_KEY が .env にありません。")
         sys.exit(1)
-    if not os.path.isdir(input_dir):
-        print(f"{input_dir} を作成し、領収書を配置してください。")
+    if not any(os.path.isdir(d) for d in input_dirs):
+        print(f"{input_dirs[0]} または {input_dirs[1]} を作成し、領収書を配置してください。")
         sys.exit(1)
 
-    files = list_files(input_dir)
+    files: list[str] = []
+    for d in input_dirs:
+        if os.path.isdir(d):
+            found = list_files(d)
+            print(f"{os.path.relpath(d, HERE)}: {len(found)} 件")
+            files += found
     if not files:
-        print(f"{input_dir} に画像/PDF がありません。")
+        print("receipts/ と web_receipts/ のどちらにも画像/PDF がありません。")
         sys.exit(1)
 
     prompt = build_prompt(args.year, args.month)

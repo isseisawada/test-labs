@@ -155,9 +155,11 @@ git pull origin claude/freee-expense-submission-fYEOe
 
 **Step 1: 画像配置**（ディレクトリは git に入っている）
 ```
-inputs_202608/suica/      ← Suica 履歴のスクショ/PDF
-inputs_202608/receipts/   ← 現金領収書・Webサービス領収書（全部ここ）
+inputs_202608/suica/         ← Suica 履歴のスクショ/PDF
+inputs_202608/receipts/      ← 手元で写真を撮った紙の領収書
+inputs_202608/web_receipts/  ← オンラインで取得した領収書（GO / STATION WORK / note / Apple / Google Cloud / Staple 等の PDF）
 ```
+- `extract_receipts.py` は receipts/ と web_receipts/ の両方を読む（分け方は整理用で、処理は同じ）
 
 **Step 2: OCR で抽出**
 ```bash
