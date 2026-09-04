@@ -139,6 +139,11 @@ def main():
         if not info:
             continue
         info.setdefault("participants", [])
+        # OCR が読んだ説明は ocr_description に退避する。
+        # description（＝freee の内容欄）は overrides.json で人が指定したときだけ入れる。
+        # 内容欄は「打ち合わせ」「駐車場利用」など目的だけを書くハウススタイルのため。
+        if info.get("description"):
+            info["ocr_description"] = info.pop("description")
         info["receipt_path"] = os.path.relpath(p, HERE)
         entries.append(info)
         print(f"  → {info.get('date')}  {info.get('vendor')}  ¥{info.get('amount')}  [{info.get('account')}]")

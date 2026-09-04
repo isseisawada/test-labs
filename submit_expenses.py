@@ -59,7 +59,8 @@ T_MEETING_EXT  = 300529  # 会議費（社外）
 T_ENT_LOW      = 300530  # 接待交際費（一人税込10,000円以下）
 T_ENT_HIGH     = 300531  # 接待交際費（一人税込10,000円超）
 T_GIFT         = 300532  # 取引先への贈答・手土産代（税込3,000円以内）
-T_SUPPLY       = 300535  # 備品消耗品（事務用品等）
+T_RENTACAR     = 300522  # レンタカー料金
+T_SUPPLY       = 300535  # 備品消耗品（事務用品等）※ 名前解決できないときのフォールバック用
 
 # 勘定科目 ID（テンプレート既定を上書きしたい場合に使う）
 A_MISC         = 134321784  # 雑費
@@ -67,8 +68,12 @@ A_MISC         = 134321784  # 雑費
 KNOWN_ACCOUNT_IDS: dict[str, int] = {"雑費": A_MISC}
 
 GIFT_LIMIT     = 3000    # 贈答・手土産テンプレートの上限（超えたら ⚠）
-BOOK_KEYWORDS  = ["書店", "書籍", "ブックス", "BOOKS", "BOOK", "紀伊國屋", "有隣堂", "ジュンク堂", "丸善", "蔦屋", "TSUTAYA", "文教堂", "くまざわ"]
+BOOK_KEYWORDS  = ["書店", "書籍", "ブックス", "BOOKS", "BOOK", "紀伊國屋", "有隣堂", "ジュンク堂", "丸善", "蔦屋",
+                  "TSUTAYA", "文教堂", "くまざわ", "ttc lifestyle"]
 GIFT_KEYWORDS  = ["ASORA", "エアポートサービス", "JAL PLAZA", "PLUSTA", "リテイリング", "手土産", "土産", "ギフト"]
+COMM_KEYWORDS  = ["google cloud", "anthropic", "aws", "amazon web", "openai", "microsoft", "azure", "vercel",
+                  "github", "ntt", "docomo", "softbank", "kddi", "通信"]
+RENTACAR_KEYWORDS = ["レンタカー", "rent a car", "rentacar", "カーシェア", "times car", "ニッポンレンタカー", "オリックスレンタカー"]
 FLIGHT_KEYWORDS = ["flight", "airline", "航空", "qunar", "peach", "jetstar", "skymark", "solaseed", "スカイマーク", "ジェットスター", "ソラシド"]
 TOLL_KEYWORDS  = ["高速道路", "nexco", "etc", "有料道路", "首都高", "阪神高速"]
 HOTEL_KEYWORDS = ["hotel", "ホテル", "宿泊", "旅館", " inn"]
@@ -110,9 +115,19 @@ def decide(entry: dict) -> Decision:
         warn = f"税込{GIFT_LIMIT:,}円超（贈答テンプレの上限を超過・要確認）" if amount > GIFT_LIMIT else None
         return Decision(T_GIFT, "贈答・手土産(3000円以内)", None, warn)
 
+    # --- 通信費（クラウド・API・通信サービス）---
+    if "通信費" in account or any(k in vl for k in COMM_KEYWORDS):
+        return Decision(T_SUPPLY, "通信費", "通信費", template_name="通信費")
+
+    # --- 新聞図書費（書店・書籍・電子書籍・情報サービス）---
+    if "新聞図書費" in account or "図書" in account or any(k.lower() in vl for k in BOOK_KEYWORDS):
+        return Decision(T_SUPPLY, "新聞図書費", "新聞図書費", template_name="新聞図書費")
+
     # --- 交通系（ベンダー名で判定） ---
     if "飛行機" in account or any(k in vl for k in FLIGHT_KEYWORDS):
         return Decision(T_FLIGHT, "飛行機・船舶")
+    if "レンタカー" in account or any(k in vl for k in RENTACAR_KEYWORDS):
+        return Decision(T_RENTACAR, "レンタカー料金")
     if "go株式会社" in vl or vl == "go" or vl.startswith("go ") or "タクシー" in account or "タクシー" in vendor:
         return Decision(T_TAXI, "タクシー")
     if "高速" in account or any(k in vl for k in TOLL_KEYWORDS):
@@ -132,10 +147,6 @@ def decide(entry: dict) -> Decision:
     if "station work" in vl:
         return Decision(T_MEETING_IN, "会議費(社内)")
 
-    # --- 書店・書籍 → 新聞図書費（テンプレートを名前で実行時解決。無ければ消耗品テンプレ + 勘定科目上書き） ---
-    if "新聞図書費" in account or "図書" in account or any(k.lower() in vl for k in BOOK_KEYWORDS):
-        return Decision(T_SUPPLY, "新聞図書費", "新聞図書費", template_name="新聞図書費")
-
     # --- 消耗品（ドラッグストア・文具など） → 備品消耗品（事務用品等） ---
     if "消耗品" in account:
         return Decision(T_SUPPLY, "備品消耗品")
@@ -149,7 +160,12 @@ def decide(entry: dict) -> Decision:
         if amount <= MEETING_LIMIT:
             tid = T_MEETING_EXT if external else T_MEETING_IN
             label = "会議費(社外)" if external else "会議費(社内)"
-            warn = None if participants else "参加者未記入"
+            if not participants:
+                warn = "参加者未記入"
+            elif "external" not in entry:
+                warn = "社内/社外の指定なし（会議費（社内）で登録）"
+            else:
+                warn = None
             return Decision(tid, label, None, warn)
 
         # ¥5,000 超はすべて接待交際費。一人あたり金額で 10,000 以下/超 を分ける
@@ -164,8 +180,8 @@ def decide(entry: dict) -> Decision:
         tid = T_ENT_HIGH if amount >= 30000 else T_ENT_LOW
         return Decision(tid, "接待交際費(人数不明・要確認)", None, "参加者/人数未記入 → 一人あたり判定不可")
 
-    # --- サブスク・その他 → 消耗品テンプレ + 雑費上書き ---
-    return Decision(T_SUPPLY, "雑費", A_MISC)
+    # --- サブスク・その他 → 雑費（テンプレートを名前で解決。無ければ消耗品テンプレ + 勘定科目上書き）---
+    return Decision(T_SUPPLY, "雑費", "雑費", template_name="雑費")
 
 
 def build_description(entry: dict, dec: Decision) -> str:
@@ -176,25 +192,40 @@ def build_description(entry: dict, dec: Decision) -> str:
         route   = f"{from_st} → {to_st}" if to_st else from_st
         return f"打ち合わせ（{route}）"
 
-    vendor = entry.get("vendor") or ""
-    default_by_template = {
-        T_TAXI:       f"タクシー利用（{vendor}）",
-        T_SHINKANSEN: f"特急・新幹線（{vendor}）",
-        T_GAS:        f"ガソリン代（{vendor}）",
-        T_PARKING:    f"駐車料金（{vendor}）",
-        T_GIFT:       f"手土産（{vendor}）",
-        T_FLIGHT:     f"航空券（{vendor}）",
-        T_TOLL:       f"高速道路料金（{vendor}）",
-        T_HOTEL:      f"宿泊（{vendor}）",
-        T_SUPPLY:     f"書籍（{vendor}）" if dec.account_override == "新聞図書費" else f"{vendor} 利用料",
+    # 内容欄のハウススタイル（2026年8月分の実績に合わせる）:
+    #   - 店名・ベンダー名は書かない。「何のためか」だけを書く
+    #   - 参加者がいれば 全角スペース + 「、」区切りのフルネーム
+    #   例: 「打ち合わせ　うえすぎせいた」「親睦のため　やましたまさき、くどうたろう」「駐車場利用」「消耗品」
+    purpose_by_label = {
+        "タクシー":            "タクシー利用",
+        "駐車場代":            "駐車場利用",
+        "高速・有料道路":      "高速道路利用",
+        "ガソリン代":          "打ち合わせ",      # 移動目的として「打ち合わせ」と書く運用
+        "備品消耗品":          "消耗品",
+        "新聞図書費":          "知識獲得のため",
+        "宿泊費":              entry.get("trip") or "出張",
+        "レンタカー料金":      entry.get("trip") or "出張利用",
+        "飛行機・船舶":        entry.get("trip") or "出張",
+        "特急・新幹線":        entry.get("trip") or "出張",
+        "贈答・手土産(3000円以内)": "親睦のため",
     }
-    desc = entry.get("description") or default_by_template.get(dec.tid, f"打ち合わせ（{vendor}）")
+    label = dec.label.split("(")[0] if dec.label.startswith("接待交際費") else dec.label
+    # 優先順位: 人が指定した description（overrides.json）> ハウススタイル > OCR が読んだ説明
+    desc = entry.get("description")
+    if not desc:
+        if label.startswith("会議費") or label.startswith("接待交際費"):
+            desc = "打ち合わせ"
+        elif label in ("通信費", "雑費"):
+            # サブスク・クラウド系はサービス名を残したいので OCR の説明を使う
+            desc = entry.get("ocr_description") or f"{vendor} 利用料"
+        else:
+            desc = purpose_by_label.get(dec.label) or purpose_by_label.get(label) or "打ち合わせ"
 
-    # 会議費・接待交際費は参加者フルネームを末尾に付与
-    if dec.tid in (T_MEETING_IN, T_MEETING_EXT, T_ENT_LOW, T_ENT_HIGH):
+    # 参加者フルネームを付与（会議費・接待交際費・贈答）
+    if label.startswith("会議費") or label.startswith("接待交際費") or dec.tid == T_GIFT:
         participants = entry.get("participants") or []
         if participants and not any(p in desc for p in participants):
-            desc = f"{desc}{'・'.join(participants)}"
+            desc = f"{desc}　{'、'.join(participants)}"
     if entry.get("shareholder"):
         tail = f"株主{entry['shareholder']}親睦のため"
         if tail not in desc:
@@ -301,6 +332,13 @@ def main():
         print("明細が空です。")
         sys.exit(1)
 
+    # overrides.json を直した後に merge を回し忘れると、古い entries.json のまま登録されてしまう
+    ov_path = os.path.join(base, "overrides.json")
+    if os.path.exists(ov_path) and os.path.getmtime(ov_path) > os.path.getmtime(input_file):
+        print(f"エラー: overrides.json が entries.json より新しいです（修正が反映されていません）。")
+        print(f"  先に実行してください: python3 merge_entries.py --month {args.month}")
+        sys.exit(1)
+
     # 対象月外チェック
     prefix = f"{args.year}-{args.month:02d}-"
     outside = [e for e in entries if not str(e.get("date", "")).startswith(prefix)]
@@ -354,8 +392,10 @@ def main():
         if d.template_name and d.template_name in template_ids:
             d.tid = template_ids[d.template_name]
             d.account_override = None   # テンプレート自身の勘定科目を使う
-        elif d.template_name and args.dry_run:
-            d.label = f"{d.label}(テンプレID実行時解決)"
+    if args.dry_run:
+        pending = sorted({d.template_name for d in decisions.values() if d.template_name})
+        if pending:
+            print(f"  ※ テンプレートID（{', '.join(pending)}）は本番実行時に freee から解決します\n")
     named_accounts = {d.account_override for d in decisions.values() if isinstance(d.account_override, str)}
     account_ids = resolve_account_ids(client, named_accounts)
     unresolved = [n for n in named_accounts if n not in account_ids]
